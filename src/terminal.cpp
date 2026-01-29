@@ -1,0 +1,289 @@
+//
+// Created by Peter Köllner on 24/1/26.
+//
+
+#include <clocale>
+#include <cstring>
+#include <haiku6502/terminal.h>
+#include <ncurses.h>
+#include <iostream>
+
+#include "haiku6502/peripheral.h"
+
+namespace haiku6502 {
+    const char *hello = "HAIKU v0.1";
+
+    Terminal::Terminal(bool dbg) : debug(dbg) {
+        int err = OK;
+        setlocale(LC_ALL, "");
+        initscr();
+        check_err(cbreak());
+        check_err(noecho());
+        noqiflush();
+        check_err(keypad(stdscr, TRUE));
+        check_err(nodelay(stdscr, TRUE));
+        check_err(start_color());
+        check_err(scrollok(stdscr, FALSE));
+        check_err(scrollok(stdscr, TRUE));
+        getmaxyx(stdscr, win_h, win_w);  // get max y,x int height and width (must add 1);
+        if (win_h > 255) {
+            win_h = 255;
+        }
+        if (win_w > 255) {
+            win_w = 255;
+        }
+        mvaddstr(1,0, "Haiku6502");
+        mvaddstr(2,0, "v0.8b");
+        mvaddstr(3,0, "1979/03/03");
+        attrset(A_REVERSE);
+        mvaddstr(5,0, "Ready");
+        attrset(A_NORMAL);
+        refresh();
+    }
+
+    Terminal::~Terminal() {
+        endwin();
+    }
+
+    void Terminal::check_err(int err) {
+        if (err != OK) {
+            throw new Error::peripheral_error();
+        }
+    }
+    void Terminal::print_geom() const {
+        if (debug) {
+            char geom[48];
+            int y,x;
+            getyx(stdscr, y, x);
+            snprintf(geom, 24, "wy: %02x wx: %02x", y, x);
+            mvaddstr(1, win_w -25, geom);
+            snprintf(geom, 24, "cy: %02x cx: %02x", cursor_y, cursor_x);
+            mvaddstr(2, win_w -25, geom);
+            snprintf(geom, 24, "h: %02x w: %02x", win_h, win_w);
+            mvaddstr(3, win_w -25, geom);
+            move(cursor_y, cursor_x);
+            refresh();
+        }
+    }
+
+    void Terminal::key_map(const int key) {
+        switch (key) {
+            case 0x0a:
+            case KEY_ENTER:
+                key_pressed.push(0x0A);
+                break;
+            case KEY_RIGHT:
+                key_pressed.push(0x08);
+                break;
+            case KEY_LEFT:
+                key_pressed.push(0x15);
+                break;
+            default:
+                if (key <= 0x7E) {
+                    key_pressed.push(key);
+                }
+        }
+    }
+
+
+    void Terminal::device_init() {
+        // first one: super init()
+
+    }
+
+    void Terminal::device_close() {
+        // last one: super close()
+    }
+
+    void Terminal::pre_cycle() {
+        int ch = getch();
+
+        if (ch != ERR) {
+            key_map(ch);
+        }
+
+    }
+
+    void Terminal::post_cycle() {
+        // TODO: maybe just remove...
+    }
+
+    //
+    constexpr uint8_t termcy  = 0x10;
+    constexpr uint8_t termcx  = 0x11;
+    constexpr uint8_t termout = 0x12;
+    constexpr uint8_t termesc = 0x13;  // esc / control op
+    constexpr uint8_t termea1 = 0x14;  // esc param 1
+    constexpr uint8_t termea2 = 0x15;  // esc param 2
+    constexpr uint8_t termwh = 0x16;   // window height
+    constexpr uint8_t termww = 0x17;   // window width
+    //
+    //
+    //  Escape commands for terminal:
+    //
+    enum term_commands {
+        t_cls,      // 0 - Clear screen
+        t_cll,      // 1 - Clear to eol
+        t_clb,      // 2 - clear from cursor pos to bottom
+        t_scr,      // 3 - scroll one line up
+        t_norm,     // 4 - set normal char mode
+        t_inv,      // 5 - set inverse character mode
+        t_blnk,     // 6 - set blinking character mode
+        t_qcch,     // 7 - query current character
+
+    };
+    // constexpr uint8_t  t_cls   = 0x00;
+    // constexpr uint8_t  t_txt   = 0x01;  // Text mode
+    // constexpr uint8_t  t_gr    = 0x02;  // Graphics mode
+    // constexpr uint8_t  t_cll   = 0x03;  // clear from cursor to end of line
+    // constexpr uint8_t  t_qh    = 0x04;  // query terminal height; for result read terminl,h
+    // constexpr uint8_t  t_qw    = 0x05;  // query terminal width; for result read terminl,h
+    // constexpr uint8_t  t_qy    = 0x04;  // query terminal cursor y; for result read terminl,h
+    // constexpr uint8_t  t_qx    = 0x05;  // query terminal cursor x; for result read terminl,h
+
+
+    bool Terminal::get_io_byte(uint8_t io_address, uint8_t& result) {
+        if (io_address == 0) {
+            // 0xC000 - keyboard value
+
+            if (!key_pressed.empty()) {
+                result = key_pressed.front();
+                key_busy = true;
+            } else {
+                result = 0;
+            }
+            return true;
+        }
+        if (io_address == 0x01) {
+            // 0xC001 - clear keyboard strobe
+            key_pressed.pop();
+            key_busy = false;
+            return true;
+        }
+        if (io_address == termout) {
+            ch = inch();
+            result = ch | A_CHARTEXT;
+            return true;
+        }
+        if (io_address == termwh) {
+            // terminal window height
+            result = win_h;
+            return true;
+        }
+        if (io_address == termww) {
+            // terminal window width
+            result = win_w;
+            return true;
+        }
+         if (io_address == 0x30) {
+            // 0xC030 Speaker
+            return true;
+        }
+        if (io_address == 0x50) {
+            // gr
+            text = false;
+            return true;
+        }
+        if (io_address == 0x51) {
+            // tx
+            text = true;
+            return true;
+        }
+        if (io_address == 0x52) {
+            // nomix
+            mixed = false;
+            return true;
+        }
+        if (io_address == 0x53) {
+            // mix
+            mixed = true;
+            return true;
+        }
+        if (io_address == 0x54) {
+            // pri
+            primary = true;
+            return true;
+        }
+        if (io_address == 0x55) {
+            // sec
+            primary = false;
+            return true;
+        }
+        if (io_address == 0x56) {
+            // lores
+            low_resolution = true;
+            return true;
+        }
+        if (io_address == 0x57) {
+            // hires
+            low_resolution = false;
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+    bool Terminal::set_io_byte(const uint8_t io_address, const uint8_t& value) {
+        if (io_address == termcy) {
+            // terminal cursor y
+            cursor_y= value;
+            return true;
+        }
+        if (io_address == termcx) {
+            // terminal cursor x
+            cursor_x = value;
+            move(cursor_y, cursor_x);
+            return true;
+        }
+        if (io_address == termout) {
+            // terminal output
+            if (value >= 0x20 && value <= 0xFE) {
+                ch = static_cast<chtype>(value) | current_attributes;
+                echochar(ch | current_attributes);
+                print_geom();
+            } else if (value < 0x20) {
+                switch (value) {
+                    case 0x07:
+                        beep();
+                    default:
+                        ;
+                }
+            }
+            refresh();
+            return true;
+        }
+        if (io_address == termesc) {
+            // terminal shortcut ESC sequences
+            switch (value) {
+                case t_cls:
+                    clear();
+                    break;
+                case t_cll:
+                    clrtoeol();
+                    break;
+                case t_clb:
+                    clrtobot();
+                    break;
+                case t_scr:
+                    scroll(stdscr);
+                    break;
+                case t_norm:
+                    current_attributes = A_NORMAL;
+                    break;
+                case t_inv:
+                    current_attributes |= A_REVERSE;
+                    break;
+                case t_blnk:
+                    current_attributes |= A_BLINK;
+                    break;
+            }
+            refresh();
+            return true;
+
+        }
+        return false;
+    }
+
+}
