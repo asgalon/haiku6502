@@ -9,15 +9,14 @@
 #include <queue>
 #include <haiku6502/device.h>
 #include <chrono>
+#include <fstream>
 
 namespace haiku6502 {
+    struct engine_setup;
+
     class Terminal : public Device {
         typedef std::chrono::high_resolution_clock Time;
 
-        bool text = true;
-        bool low_resolution = true;
-        bool primary = true;
-        bool mixed = false;
         std::queue<uint8_t> key_pressed;
 
         int cursor_x = 0;
@@ -29,6 +28,12 @@ namespace haiku6502 {
         bool key_busy = false;
         std::chrono::time_point<std::chrono::high_resolution_clock> key_pushed;
 
+        std::string tape_filepath;
+        std::fstream tape = std::fstream();
+        uint8_t tapevalue = 0;
+
+        bool tape_on = false;
+        bool tape_is_write = false;
         bool debug = false;
 
         static void check_err(int err);
@@ -36,7 +41,7 @@ namespace haiku6502 {
         void device_init() override;
         void device_close() override;
     public:
-        Terminal(bool dbg);
+        Terminal(engine_setup& setup);
         ~Terminal() override;
 
         void set_debug(bool dbg) {
@@ -46,11 +51,17 @@ namespace haiku6502 {
         void print_geom() const;
 
         void pre_cycle() override;
+        void post_tick() override;
         void post_cycle() override;
 
         void key_map(int key);
 
         bool get_io_byte(uint8_t io_address, uint8_t& result);
+
+        void prepare_read();
+
+        void close_tape();
+
         bool set_io_byte(uint8_t io_address, const uint8_t &value);
     };
 }

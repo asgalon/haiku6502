@@ -21,6 +21,10 @@ namespace haiku6502 {
         // 12 KB ROM
         rom = new uint8_t[0x3000];
 
+        // clock cycle tick waiting time - well this is a 6502, you know?
+        req.tv_sec = 0;
+        req.tv_nsec = 800;
+
         // read the rom from file. should be exactly 0x3000 = 12KB = 12288 bytes long
         // longer files will be truncated, shorter files will probably not set the three
         // important interrupt and reset vectors at 0xFFFA-0xFFFF
@@ -109,9 +113,14 @@ namespace haiku6502 {
 
             int op_cycles = cycle();
 
-            if (terminal != nullptr) {
-                terminal->post_cycle();  // before or after interrupt handling?
+            for (int i = 0; i < op_cycles; i++) {
+                nanosleep(&req, nullptr);
+
+                if (terminal != nullptr) {
+                    terminal->post_tick();  //  repeated each clock tick, 2-7 per instruction
+                }
             }
+            terminal->post_cycle();  // before or after interrupt handling?
 
             if (nmi_request) {
                 nmi_request = false;

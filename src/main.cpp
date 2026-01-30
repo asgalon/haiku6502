@@ -8,7 +8,7 @@
 #include "haiku6502/terminal.h"
 
 static void usage(char *progname) {
-    printf("Usage: %s -r <romfile.rom> [-i <sourcefile>] [-o <outputfile>]\n", progname);
+    printf("Usage: %s -r <romfile.rom> [-m <ramfile.ram>]  [-l <load address>] -t <tape.data>[-i <sourcefile>] [-o <outputfile>]\n", progname);
 }
 
 /**
@@ -21,7 +21,7 @@ int main(const int argc, char *const argv[]) {
     haiku6502::engine_setup setup{};
 
     int ch;
-    while ((ch = getopt(argc, argv, "di:o:r:")) != -1) {
+    while ((ch = getopt(argc, argv, "di:l:o:r:t:")) != -1) {
         switch (ch) {
             case 'd':
                 setup.debug = true;
@@ -34,6 +34,14 @@ int main(const int argc, char *const argv[]) {
                 break;
             case 'r':
                 setup.rom = std::string(optarg);
+                break;
+            case 'm':
+                setup.ram = std::string(optarg);
+                break;
+            case 'l':
+                setup.ram_load_address = std::stoi(std::string(optarg));
+            case 't':
+                setup.tape_file = std::string(optarg);
                 break;
             case '?':
             default:
@@ -48,7 +56,7 @@ int main(const int argc, char *const argv[]) {
 
     haiku6502::Engine engine(setup);
 
-    engine.register_terminal(new haiku6502::Terminal(setup.debug));
+    engine.register_terminal(new haiku6502::Terminal(setup));
 
     engine.run();
 

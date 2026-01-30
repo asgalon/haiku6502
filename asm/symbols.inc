@@ -9,6 +9,7 @@ wndtop  = $22
 wndbtm  = $23
 ch      = $24
 cv      = $25
+tpdir   = $26  // tape direction for header op: 0 write, 1 read
 h2      = $2C
 lmnem   = $2C
 rtnl    = $2C
@@ -75,16 +76,9 @@ termwh  = $C016     ; temrinal window height
 termww  = $C017     ; terminal window width
 
 tapeout = $C020
+tapein  = $C021
+tapecls = $C022
 spkr    = $C030
-txtclr  = $C050
-txtset  = $C051
-mixclr  = $C052
-mixset  = $C053
-lowscr  = $C056
-hiscr   = $C057
-lores   = $C056
-hires   = $C057
-tapein  = $C060
 paddl0  = $C061
 ptrig   = $C070
 

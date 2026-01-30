@@ -36,6 +36,8 @@ namespace haiku6502 {
 
         bool debug { false };
 
+        timespec req;
+
         bool irq_request { false };
         bool nmi_request { false };
 

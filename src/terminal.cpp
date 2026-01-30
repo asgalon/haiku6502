@@ -10,10 +10,12 @@
 
 #include "haiku6502/peripheral.h"
 
+#include <haiku6502/setup.h>
+
 namespace haiku6502 {
     const char *hello = "HAIKU v0.1";
 
-    Terminal::Terminal(bool dbg) : debug(dbg) {
+    Terminal::Terminal(engine_setup& setup) : debug(setup.debug), tape_filepath(setup.tape_file) {
         int err = OK;
         setlocale(LC_ALL, "");
         initscr();
@@ -104,8 +106,35 @@ namespace haiku6502 {
 
     }
 
+    //
+    // Simulates an ongoing tape write
+    // the output channel has only two levels, 0 and 255.
+    // so this produces a square wave with different lengths
+    // for 0s and 1s. While the tape operation is ongoing,
+    // this function writes one byte of the current state
+    // to the tape file. This tape file can then be stored as an audio file.
+    // With the right sampling rate, this should work with real hardware...
+    // Well, this is probably the silliest emulator feature I ever wrote :)
+    void Terminal::post_tick() {
+        if (tape_on && tape_is_write) {
+            if (!tape.is_open() && !tape_filepath.empty()) {
+                tape.open(tape_filepath, std::ios_base::out);
+            }
+            if (tape.is_open()) {
+                tape << tapevalue;
+            }
+        } else if (tape_on == true && tape.is_open() && !tape_is_write) {
+            if (!tape.eof()) {
+                uint8_t result;  // skip tape byte for tick delay on read.
+                tape >> result;
+            } else {
+                close_tape();
+            }
+        }
+    }
+
     void Terminal::post_cycle() {
-        // TODO: maybe just remove...
+
     }
 
     //
@@ -115,8 +144,12 @@ namespace haiku6502 {
     constexpr uint8_t termesc = 0x13;  // esc / control op
     constexpr uint8_t termea1 = 0x14;  // esc param 1
     constexpr uint8_t termea2 = 0x15;  // esc param 2
-    constexpr uint8_t termwh = 0x16;   // window height
-    constexpr uint8_t termww = 0x17;   // window width
+    constexpr uint8_t termwh  = 0x16;   // window height
+    constexpr uint8_t termww  = 0x17;   // window width
+    constexpr uint8_t tapeout = 0x20;  // tape out
+    constexpr uint8_t tapein  = 0x21;  // tape on
+    constexpr uint8_t tapecls = 0x22;  // tape out
+
     //
     //
     //  Escape commands for terminal:
@@ -179,51 +212,55 @@ namespace haiku6502 {
             // 0xC030 Speaker
             return true;
         }
-        if (io_address == 0x50) {
-            // gr
-            text = false;
-            return true;
-        }
-        if (io_address == 0x51) {
-            // tx
-            text = true;
-            return true;
-        }
-        if (io_address == 0x52) {
-            // nomix
-            mixed = false;
-            return true;
-        }
-        if (io_address == 0x53) {
-            // mix
-            mixed = true;
-            return true;
-        }
-        if (io_address == 0x54) {
-            // pri
-            primary = true;
-            return true;
-        }
-        if (io_address == 0x55) {
-            // sec
-            primary = false;
-            return true;
-        }
-        if (io_address == 0x56) {
-            // lores
-            low_resolution = true;
-            return true;
-        }
-        if (io_address == 0x57) {
-            // hires
-            low_resolution = false;
+        if (io_address == tapein) {
+            // read tape byte
+            prepare_read();
+
+            if (tape_on == true && tape.is_open() && !tape_is_write) {
+                if (!tape.eof()) {
+                    tape >> result;
+                } else {
+                    close_tape();
+                }
+            }
+
             return true;
         }
 
-        return false;
+        if (io_address == tapeout) {
+            // toggle tape byte
+            if (!tape_on && !tape_filepath.empty()) {
+                tape_on = true;
+                tape_is_write = true;
+            }
+            tapevalue = ~tapevalue;
+
+            return true;
+        }
+        if (io_address == tapecls) {
+            // read tape byte
+            close_tape();
+        }
+
+        return false;  // allows other components to claim i/o ports
     }
 
+    void Terminal::prepare_read() {
+        if (!tape_is_write && !tape.is_open() && !tape_filepath.empty()) {
+            tape.open(tape_filepath, std::ios_base::in);
+            tape.seekg(5000);  // skip 4 sec worth of header
+            tape_on = true;
+        }
+    }
 
+    void Terminal::close_tape() {
+        if (tape.is_open() ) {
+            tape.flush();
+            tape.close();
+        }
+        tape_on = false;
+        tape_is_write = false;
+    }
 
     bool Terminal::set_io_byte(const uint8_t io_address, const uint8_t& value) {
         if (io_address == termcy) {
@@ -283,6 +320,7 @@ namespace haiku6502 {
             return true;
 
         }
+
         return false;
     }
 

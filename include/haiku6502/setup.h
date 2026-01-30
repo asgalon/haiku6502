@@ -12,6 +12,11 @@ namespace haiku6502 {
         std::string source;
         std::string out;
         std::string rom;
+        std::string ram;
+        uint16_t ram_load_address;
+        uint16_t ram_start_address;
+        std::string tape_file;
+
         bool debug { false };
     };
 

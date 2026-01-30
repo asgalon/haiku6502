@@ -53,38 +53,13 @@
 lang:           jsr lang_init
 lang2:          jmp lang_cont
 lang_init:      rts
-lang_cont:      .dsb $17F9,$00    ; filler up to F800
-                .org $F800
-plot:           lsr                 ; Well, 2 blocks per char in low res graphics. need to find the right char to plot.
-                sta termcy          ; set y pos in accu to terminal
-                sty termcx          ; set x pos in y register to terminal
-                lda #gr_grid        ; dec grid char
-                sta termout
-                rts
-hline:          jsr plot            ; plot square
-hline1:         cpy h2              ; done?
-                bcs rts1            ;   yes, return
-                iny                 ;   no, incr x-coord index
-                jsr plot           ; plot next square
-                bcc hline1          ; always taken
-vlinez:         adc #$01            ; next y-coord
-vline:          pha                 ;  save y-coord in a on stack
-                jsr plot            ; plot square
-                pla
-                cmp v2              ; done?
-                bcc vlinez          ;   no, loop
-rts1:           rts
-clrscr:         ldy #$2F            ; max y, full scrn clr
-                bne clrsc2          ; always taken
-clrtop:         ldy #$27             ; max y, top scrn clr
-clrsc2:         sty v2              ; store as bottom coord for vline calls
-                ldy #$27            ; rightmost x.coord (column)
-clrsc3:         lda #$00            ; top coord for vline calls
-                sta color           ; clear color (black)
-                jsr vline           ; draw vline
-                dey                 ; next leftmost x-coord
-                bpl clrsc3          ; loop until done
-                rts
+lang_cont:      .dsb $1800,$00    ; filler up to F800
+                ;
+                ;  SPACE FREE in last 4k
+                ;
+keep_aligned:
+                .dsb $A8            ; blank must be on page $FE for jump table to work
+
 nxtcol:         lda color           ; increment color by 3
                 clc
                 adc #$03
@@ -96,8 +71,6 @@ setcol:         and #$0F            ; sets color = 17*A mod 16
                 asl                 ; << 4 = *16
                 ora color           ; + 1
                 sta color
-                rts
-scrn:           lda #$00            ; gone.
                 rts
 selnibl:        bcc rtmaskz         ; if even, use low nibble else use high nibble (was scrn2)
                 lsr
@@ -302,11 +275,6 @@ mnemr:          .byte $D8,$62,$5A,$48,$26,$62
                 .byte $C4,$CA,$26,$48,$44,$44
                 .byte $A2,$C8                   ; (E) Format
                 .byte $FF,$FF,$FF
-                ;
-                ;  SPACE FREE
-                ;
-keep_aligned:
-                .dsb $6D            ; blank must be on page $FE for jump table to work
 ;
 ; monitor stepping
 ; this is nice... it emulates itself to execute a program stepwise
@@ -442,15 +410,7 @@ pread2:         lda paddl0,x        ; count y-reg
 rts2d:          rts
 init:           lda #$00            ; clr status for debug
                 sta status          ;   software
-                lda lores
-                lda lowscr
-settxt:         lda txtset          ; set for text mode
-                lda #$00            ;   full screen window
-                beq setwnd
-setgr:          lda txtclr          ; set for graphics mode
-                lda mixset          ;   lower 4 lines as
-                jsr clrtop          ;   text window
-                lda #$14
+settxt:         lda #$00            ;   full screen window
 setwnd:         sta wndtop          ; set for 40 col window
                 lda #$00            ;    top in accu,
                 sta wndlft          ;    bottom at line 24
@@ -618,7 +578,7 @@ nxta1:          lda a1l             ; incr 2-byte a1
                 bne rts4b
                 inc a1h
 rts4b:          rts
-headr:          ldy #$4B            ; write A * 256 'long 1'
+headr:          ldy #$4B            ; write or skip A * 256 'long 1'
                 jsr zerdly          ;   half cycles
                 bne headr           ;     (650 usec each)
                 adc #$fe
@@ -633,7 +593,10 @@ zerdly:         dey                 ; it means 'zero delay'
                 ldy #$32            ;   timing loop
 onedly:         dey                 ; 'ones delay'
                 bne onedly
-wrtape:         ldy tapeout         ; tape output toggle
+wrtape:         pha
+                ldy tpdir
+                lda tapeout,y         ; y=0 - tape out, y=1 - tape in
+                pla
                 ldy #$2C
                 dex
                 rts
@@ -839,9 +802,9 @@ lt2:            lda a2l,x           ; copy a2 (2 bytes) to
                 ;
 move:           lda (a1l),y         ; move (a1 to a2) to
                 sta (a4l),y         ;   (a4)
-                jsr nxta4
-                bcc move
-                rts
+                jsr nxta4           ; y is set to 0 in zmode. there is no address
+                bcc move            ;  mode for zero indirect without y, and move
+                rts                 ;  must work with ranges > 255
                 ;
                 ; verify that two memory ranges have same content
                 ;
@@ -885,7 +848,7 @@ a1pclp:         lda a1l,X
                 bpl a1pclp
 a1pcrts:        rts
                 ;
-                ; set inverde character mode
+                ; set inverse character mode
                 ;
 setinv:         ldy #t_inv            ; set for inverse video
                 bne setiflg
@@ -943,7 +906,9 @@ usr:            jmp usradr          ; to usr subroutine at usradr
                 ;
                 ; write memory range to tape OUT
                 ;
-write:          lda #$40
+write:          lda #$00           ; set header to WRITE
+                sta tpdir
+                lda #$40
                 jsr headr           ; write 10-sec header
                 ldy #$27
 wr1:            ldx #$00
@@ -957,7 +922,8 @@ wr1:            ldx #$00
                 bcc wr1
                 ldy #$22
                 jsr wrbyte
-                beq bell
+                lda tapecls         ; close tape
+                beq bell            ; sound bell and return
 wrbyte:         ldx #$10
 wrbyt2:         asl
                 jsr wrbit
@@ -978,7 +944,9 @@ crmon:          jsr bli             ; handle CR as blank
                 ; 1s and 0s have different lengths, so number and frequency 
                 ; of machine cycles is important for executing this
                 ;
-read:           jsr rd2bit          ; find tapein edge
+read:           lda #$01            ; set header to READ
+                sta tpdir
+                jsr rd2bit          ; find tapein edge
                 lda #$16
                 jsr headr           ; delay 3.5s
                 sta chksum          ; init checksum = $FF
@@ -996,6 +964,7 @@ rd3:            jsr rdbyte          ; read a byte
                 ldy #$35            ; compensate 0/1 index
                 bcc rd3             ; loop until done
                 jsr rdbyte          ; read chksum byte
+                ldy tapecls         ; close tape
                 cmp chksum
                 beq bell            ; good, sound bell and return
                 ;
@@ -1115,8 +1084,8 @@ tosub:          lda #>go            ; Push high order subroutine address on stac
                 lda mode            ;  old mode to A
                 ;
                 ; 
-zmode:          ldy #$00            ; clr mode,
-                sty mode
+zmode:          ldy #$00            ; clear y
+                sty mode            ; clear mode
                 rts                 ; go to command subroutine previously pushed on the stack
 #define F(ch) (((ch ^ $30) + $89) & $0FF)
 chrtbl:         .byte F(k_ctl_c)

@@ -17,6 +17,7 @@ namespace haiku6502 {
         virtual ~Device() = default;
 
         virtual void pre_cycle() {}
+        virtual void post_tick() {}
         virtual void post_cycle() {}
     };
 }
