@@ -4,7 +4,7 @@
 This is an emulator for an early 1980ies type home computer based on the 6502 CPU. 
 It borrows much of the design from the Apple ]\[, but I made a number of 
 simplifications and modifications. The purpose is not to emulate a specific machine,
-but to provide an environment to write programs under a similarly stricht set of 
+but to provide an environment to write programs under a similarly strict set of 
 constraints like a japanese haiku poem. 
 
 ## The constraints
@@ -18,9 +18,9 @@ There are two built-in versions of the user interface: An ncurses-based virtual 
 and a standard streams interface using stdin and stdout. This way, the emulator can be used
 in a pipe. I based the machine on the Apple II layout, but removed the memory-mapped text 
 and graphics displays. I also rearranged the I/O area a bit for convenience. I left in the 
-tape interface, though, which can save and restore memory blocks by writing out rectangular 
-waves in a data file, which admittedly is very, very silly indeed. The header alone takes about 4MB 
-of uncompressed data. I also changed the pseudo ASCII-characters to normal ASCII characters.
+tape interface, though, which can save and restore memory blocks by writing out square 
+waves in a data file, which admittedly is very, very silly indeed. The header alone produces about 4MB 
+of monotone uncompressed data. I also changed the pseudo ASCII-characters to normal ASCII characters.
 'A' is now printed as 0x41 again instead of 0xC1.
 
 ## The ROM
