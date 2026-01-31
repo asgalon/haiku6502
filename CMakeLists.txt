@@ -14,6 +14,7 @@ add_subdirectory(include/haiku6502)
 enable_testing()
 add_test(NAME EngineTest COMMAND Test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/data)
 
+list(APPEND CMAKE_MODULE_PATH  "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_INCLUDE_PATH, "${PROJECT_SOURCE_DIR}/include")
 
 set(CURSES_NEED_NCURSES TRUE)
@@ -31,9 +32,12 @@ if(Curses_FOUND AND NOT TARGET Curses::Curses)
     )
 endif()
 
+find_package(Readline REQUIRED)
+
+
 ## TODO Cleanup for installation
 target_include_directories(haiku6502 PUBLIC ${CURSES_INCLUDE_DIR} ./include )
 target_include_directories(haiku6502lib PUBLIC ${CURSES_INCLUDE_DIR} ./include)
-target_link_libraries(haiku6502 PRIVATE Curses::Curses)
-target_link_libraries(Test Curses::Curses)
+target_link_libraries(haiku6502 PRIVATE Curses::Curses readline)
+target_link_libraries(Test Curses::Curses readline)
 

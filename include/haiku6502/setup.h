@@ -16,6 +16,7 @@ namespace haiku6502 {
         uint16_t ram_load_address;
         uint16_t ram_start_address;
         std::string tape_file;
+        bool console_mode { false };
 
         bool debug { false };
     };

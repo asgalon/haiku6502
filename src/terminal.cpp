@@ -12,39 +12,49 @@
 
 #include <haiku6502/setup.h>
 
-namespace haiku6502 {
-    const char *hello = "HAIKU v0.1";
+#include <readline/readline.h>
+#include <readline/history.h>
 
-    Terminal::Terminal(engine_setup& setup) : debug(setup.debug), tape_filepath(setup.tape_file) {
-        int err = OK;
+namespace haiku6502 {
+    using namespace std;
+
+    Terminal::Terminal(const engine_setup& setup) : tape_filepath(setup.tape_file),
+            stdio_mode(setup.console_mode), debug(setup.debug) {
+
         setlocale(LC_ALL, "");
-        initscr();
-        check_err(cbreak());
-        check_err(noecho());
-        noqiflush();
-        check_err(keypad(stdscr, TRUE));
-        check_err(nodelay(stdscr, TRUE));
-        check_err(start_color());
-        check_err(scrollok(stdscr, FALSE));
-        check_err(scrollok(stdscr, TRUE));
-        getmaxyx(stdscr, win_h, win_w);  // get max y,x int height and width (must add 1);
-        if (win_h > 255) {
-            win_h = 255;
+        if (!stdio_mode) {
+            initscr();
+            check_err(cbreak());
+            check_err(noecho());
+            noqiflush();
+            check_err(keypad(stdscr, TRUE));
+            check_err(nodelay(stdscr, TRUE));
+            check_err(start_color());
+            check_err(scrollok(stdscr, FALSE));
+            check_err(scrollok(stdscr, TRUE));
+            getmaxyx(stdscr, win_h, win_w);  // get max y,x int height and width (must add 1);
+            if (win_h > 255) {
+                win_h = 255;
+            }
+            if (win_w > 255) {
+                win_w = 255;
+            }
+            mvaddstr(1,0, "Haiku6502");
+            mvaddstr(2,0, "v0.8b");
+            mvaddstr(3,0, "1979/03/03");
+            refresh();
+        } else {
+            cout << "Haiku6502" << endl;
+            cout << "v0.8b" << endl;
+            cout << "1979/03/03" << endl;
         }
-        if (win_w > 255) {
-            win_w = 255;
-        }
-        mvaddstr(1,0, "Haiku6502");
-        mvaddstr(2,0, "v0.8b");
-        mvaddstr(3,0, "1979/03/03");
-        attrset(A_REVERSE);
-        mvaddstr(5,0, "Ready");
-        attrset(A_NORMAL);
-        refresh();
     }
 
     Terminal::~Terminal() {
-        endwin();
+        close_tape();
+        if (!stdio_mode) {
+            endwin();
+        }
     }
 
     void Terminal::check_err(int err) {
@@ -52,8 +62,9 @@ namespace haiku6502 {
             throw new Error::peripheral_error();
         }
     }
+
     void Terminal::print_geom() const {
-        if (debug) {
+        if (!stdio_mode && debug) {
             char geom[48];
             int y,x;
             getyx(stdscr, y, x);
@@ -116,19 +127,21 @@ namespace haiku6502 {
     // With the right sampling rate, this should work with real hardware...
     // Well, this is probably the silliest emulator feature I ever wrote :)
     void Terminal::post_tick() {
-        if (tape_on && tape_is_write) {
-            if (!tape.is_open() && !tape_filepath.empty()) {
-                tape.open(tape_filepath, std::ios_base::out);
-            }
-            if (tape.is_open()) {
-                tape << tapevalue;
-            }
-        } else if (tape_on == true && tape.is_open() && !tape_is_write) {
-            if (!tape.eof()) {
-                uint8_t result;  // skip tape byte for tick delay on read.
-                tape >> result;
-            } else {
-                close_tape();
+        if (!tape_filepath.empty() && tape_on) {
+            if (tape_is_write) {
+                if (!tape.is_open()) {
+                    tape.open(tape_filepath, std::ios_base::out);
+                }
+                if (tape.is_open()) {
+                    tape << tapevalue;
+                }
+            } else if (tape.is_open()) {
+                if (!tape.eof()) {
+                    uint8_t result;  // skip tape byte for tick delay on read.
+                    tape >> result;
+                } else {
+                    close_tape();
+                }
             }
         }
     }
@@ -138,17 +151,21 @@ namespace haiku6502 {
     }
 
     //
-    constexpr uint8_t termcy  = 0x10;
-    constexpr uint8_t termcx  = 0x11;
-    constexpr uint8_t termout = 0x12;
-    constexpr uint8_t termesc = 0x13;  // esc / control op
-    constexpr uint8_t termea1 = 0x14;  // esc param 1
-    constexpr uint8_t termea2 = 0x15;  // esc param 2
-    constexpr uint8_t termwh  = 0x16;   // window height
-    constexpr uint8_t termww  = 0x17;   // window width
-    constexpr uint8_t tapeout = 0x20;  // tape out
-    constexpr uint8_t tapein  = 0x21;  // tape on
-    constexpr uint8_t tapecls = 0x22;  // tape out
+    constexpr uint8_t termcy    = 0x10;
+    constexpr uint8_t termcx    = 0x11;
+    constexpr uint8_t termout   = 0x12;
+    constexpr uint8_t termesc   = 0x13; // esc / control op
+    constexpr uint8_t termea1   = 0x14; // esc param 1
+    constexpr uint8_t termea2   = 0x15; // esc param 2
+    constexpr uint8_t termwh    = 0x16; // window height
+    constexpr uint8_t termww    = 0x17; // window width
+    constexpr uint8_t termin    = 0x18; // stdio read char
+    constexpr uint8_t terml     = 0x19; // stdio read line
+    constexpr uint8_t termp     = 0x1A; // stdio prompt
+    constexpr uint8_t termmd    = 0x1F; // terminal mode; 0 - ncurses, 1 - stdio
+    constexpr uint8_t tapeout   = 0x20; // tape out
+    constexpr uint8_t tapein    = 0x21; // tape on
+    constexpr uint8_t tapecls   = 0x22; // tape out
 
     //
     //
@@ -178,24 +195,29 @@ namespace haiku6502 {
     bool Terminal::get_io_byte(uint8_t io_address, uint8_t& result) {
         if (io_address == 0) {
             // 0xC000 - keyboard value
-
-            if (!key_pressed.empty()) {
-                result = key_pressed.front();
-                key_busy = true;
-            } else {
-                result = 0;
+            if (!stdio_mode) {
+                if (!key_pressed.empty()) {
+                    result = key_pressed.front();
+                    key_busy = true;
+                } else {
+                    result = 0;
+                }
             }
             return true;
         }
         if (io_address == 0x01) {
-            // 0xC001 - clear keyboard strobe
-            key_pressed.pop();
-            key_busy = false;
+            if (!stdio_mode) {
+                // 0xC001 - clear keyboard strobe
+                key_pressed.pop();
+                key_busy = false;
+            }
             return true;
         }
         if (io_address == termout) {
-            ch = inch();
-            result = ch | A_CHARTEXT;
+            if (!stdio_mode) {
+                chtype ch = inch();
+                result = ch | A_CHARTEXT;
+            }
             return true;
         }
         if (io_address == termwh) {
@@ -208,7 +230,38 @@ namespace haiku6502 {
             result = win_w;
             return true;
         }
-         if (io_address == 0x30) {
+        if (io_address == termmd) {
+            // terminal mode
+            result = stdio_mode ? 1 : 0;
+            return true;
+        }
+        if (io_address == termin) {
+            cin >> result;
+            return true;
+        }
+        if (io_address == terml) {
+            // terminal mode
+            if (stdio_mode) {
+                if (lineptr == -1) {
+                    strncpy(stdio_line, readline(&stdio_prompt), 256);
+                    lineptr = 0;
+                }
+                if (lineptr != -1) {
+                    result = toupper(stdio_line[lineptr]);
+                    if (result == 0) {
+                        lineptr = -1;
+                    } else {
+                        lineptr++;
+                    }
+                }
+            }
+            return true;
+        }
+        if (io_address == termp) {
+            result = stdio_prompt;
+            return true;
+        }
+        if (io_address == 0x30) {
             // 0xC030 Speaker
             return true;
         }
@@ -276,49 +329,61 @@ namespace haiku6502 {
         }
         if (io_address == termout) {
             // terminal output
-            if (value >= 0x20 && value <= 0xFE) {
-                ch = static_cast<chtype>(value) | current_attributes;
-                echochar(ch | current_attributes);
-                print_geom();
-            } else if (value < 0x20) {
-                switch (value) {
-                    case 0x07:
-                        beep();
-                    default:
-                        ;
+            if (stdio_mode) {
+                cout << value << flush;
+            } else {
+                if (value >= 0x20 && value <= 0xFE) {
+                    chtype ch = static_cast<chtype>(value) | current_attributes;
+                    echochar(ch | current_attributes);
+                    print_geom();
+                } else if (value < 0x20) {
+                    switch (value) {
+                        case 0x07:
+                            beep();
+                        default:
+                            ;
+                    }
                 }
+                refresh();
             }
-            refresh();
             return true;
         }
         if (io_address == termesc) {
             // terminal shortcut ESC sequences
-            switch (value) {
-                case t_cls:
-                    clear();
-                    break;
-                case t_cll:
-                    clrtoeol();
-                    break;
-                case t_clb:
-                    clrtobot();
-                    break;
-                case t_scr:
-                    scroll(stdscr);
-                    break;
-                case t_norm:
-                    current_attributes = A_NORMAL;
-                    break;
-                case t_inv:
-                    current_attributes |= A_REVERSE;
-                    break;
-                case t_blnk:
-                    current_attributes |= A_BLINK;
-                    break;
+            if (stdio_mode) {
+
+            } else {
+                switch (value) {
+                    case t_cls:
+                        clear();
+                        break;
+                    case t_cll:
+                        clrtoeol();
+                        break;
+                    case t_clb:
+                        clrtobot();
+                        break;
+                    case t_scr:
+                        scroll(stdscr);
+                        break;
+                    case t_norm:
+                        current_attributes = A_NORMAL;
+                        break;
+                    case t_inv:
+                        current_attributes |= A_REVERSE;
+                        break;
+                    case t_blnk:
+                        current_attributes |= A_BLINK;
+                        break;
+                }
+                refresh();
             }
-            refresh();
             return true;
 
+        }
+        if (io_address == termp) {
+            stdio_prompt = value;
+            return true;
         }
 
         return false;

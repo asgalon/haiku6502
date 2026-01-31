@@ -24,7 +24,7 @@ namespace haiku6502 {
         int win_h = 40;
         int win_w = 24;
         int current_attributes = A_NORMAL;
-        chtype ch = ' ';
+
         bool key_busy = false;
         std::chrono::time_point<std::chrono::high_resolution_clock> key_pushed;
 
@@ -32,6 +32,10 @@ namespace haiku6502 {
         std::fstream tape = std::fstream();
         uint8_t tapevalue = 0;
 
+        bool stdio_mode = false;
+        char stdio_line[256];
+        int lineptr = -1;
+        char stdio_prompt;
         bool tape_on = false;
         bool tape_is_write = false;
         bool debug = false;
@@ -41,7 +45,7 @@ namespace haiku6502 {
         void device_init() override;
         void device_close() override;
     public:
-        Terminal(engine_setup& setup);
+        Terminal(const engine_setup& setup);
         ~Terminal() override;
 
         void set_debug(bool dbg) {

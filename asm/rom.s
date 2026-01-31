@@ -53,13 +53,46 @@
 lang:           jsr lang_init
 lang2:          jmp lang_cont
 lang_init:      rts
-lang_cont:      .dsb $1800,$00    ; filler up to F800
-                ;
-                ;  SPACE FREE in last 4k
-                ;
-keep_aligned:
-                .dsb $A8            ; blank must be on page $FE for jump table to work
+lang_cont:      .dsb $17f9,$00    ; filler up to F800
 
+                ;  SPACE FREE in last 4k
+keep_aligned:
+                .dsb $1F            ; Make sure 6502 vectors stay at $FFFA
+                ;
+                ; Emulator exit
+                ; terminate by setting PC to $FFFF, which should not happen in normal operation.
+                ;
+exit:           jmp $FFFF
+                ;
+                ; getline vector.
+                ;
+getlnv:         jmp (rdline)
+stdin:          lda termin
+                rts
+                ;
+                ; readline from stdio
+                ; this will block until line is read
+                ; this way it uses standard readline
+                ; funcionality hostside.
+                ;
+stdrdln:        .(
+                tya
+                pha
+                lda prompt      ; set prompt
+                sta termp
+                ldy #$FF
+loop:           iny
+                lda terml
+                sta in,y
+                bne loop
+                lda #k_entr
+                sta in,y
+                pla
+                tay
+                rts
+                .)
+stdout:         sta termout
+                rts
 nxtcol:         lda color           ; increment color by 3
                 clc
                 adc #$03
@@ -393,11 +426,11 @@ initbl:         nop
                 nop                 ; dummy fill for
                 jmp nbranch         ;   xeq area
                 jmp branch
-rtbl:           .byte $C1           ; 'A'
-                .byte $D8           ; 'X'
-                .byte $D9           ; 'Y'
-                .byte $D0           ; 'P'
-                .byte $D3           ; 'S'
+rtbl:           .byte 'A'
+                .byte 'X'
+                .byte 'Y'
+                .byte 'P'
+                .byte 'S'
 pread:          lda ptrig           ; paddle read; trigger paddles
                 ldy #$00            ; init count
                 nop                 ; compensate timing for first count
@@ -666,7 +699,8 @@ notcr1:         inx                 ; advance input index
 cancel:         lda #'\\'          ; backslash after cancelled LTN?
                 jsr cout
 getlnz:         jsr crout           ; output cr
-getln:          lda prompt
+getln:          jmp (rdline)
+getlnw:         lda prompt
                 jsr cout            ; output prompt char
                 ldx #$01            ; init input index
 bckspc:         txa                 ;   will backspace to u
@@ -683,6 +717,7 @@ addinp:         sta in,x            ; add to input buffer
                 cmp #k_entr
                 bne notcr
                 jsr clreol          ; clear to eol if cr
+
 crout:          lda #k_entr
                 bne cout            ; branches always ?!?
 pra1:           ldy a1h             ; print CR,A1 in hex
@@ -859,27 +894,79 @@ setnorm:        ldy #t_norm            ; set for normal video
 setiflg:        sty invflg
                 rts
                 ;
+                ; Switch terminal configuration
+                ; Terminal mode in $C01F is 0 when in screen mode,
+                ; and 1 when in stdio mode
+                ;
+termsw:
+                rts
+                ;
                 ; set input port to standard keyboard
                 ;
 setkbd:         lda #$00            ; simulate port #0 input
 inport:         sta a2l             ;   specified (keyin routine)
-inprt:          ldx #kswl
-                ldy #<keyin         ; see if it is the default vector
-                bne ioprt
+inprt:          .(
+                ldx #kswl
+                lda termmd          ; window mode - 0, stdio mode - 1
+                bne inprt3         ; stdio
+                ldy #<keyin
+                lda #>keyin
+                sta a2h             ; default msb
+                jmp ioprt
+inprt3:         ldy #<stdin         ; load stdout vector
+                lda #>stdin         ; y lsb of cout1 standard vector
+                sta a2h             ; default msb
+                jmp ioprt
+                .)
+                ;
+                ; set input port to standard keyboard
+                ;
+setrdl:         lda #$00            ; simulate port #0 input
+rdport:         sta a2l             ;   specified (keyin routine)
+rdprt:          .(
+                ldx #rdline
+                lda termmd          ; window mode - 0, stdio mode - 1
+                bne rdprt3          ; stdio
+                ldy #<getlnw
+                lda #>getlnw
+                sta a2h             ; default msb
+                jmp ioprt
+rdprt3:         ldy #<stdrdln       ; load stdout vector
+                lda #>stdrdln       ; y lsb of cout1 standard vector
+                sta a2h             ; default msb
+                jmp ioprt
+                .)
                 ;
                 ; Set output port to standard terminal
                 ;
 setvid:         lda #$00            ; simulate port #0 output
 outport:        sta a2l             ;   specified (cout routine)
-outprt:         ldx #cswl
-                ldy #<cout1         ; compare with address of default vector
+outprt:         .(
+                ldx #cswl           ; x has zero page location for cout vector
+                lda termmd          ; window mode - 0, stdio mode - 1
+                bne outprt3         ; stdio
+                ldy #<cout1
+                lda #>cout1
+                sta a2h             ; default msb
+                jmp ioprt
+outprt3:        ldy #<stdout         ; load stdout vector
+                lda #>stdout         ; y lsb of cout1 standard vector
+                sta a2h             ; default msb
+                .)
+                ;
+                ; set either internal or peripheral port
+                ; a2l contains a port number 0-7
+                ; a2l = 0 - use internal port
+                ; a2l > 0 - It is a peripheral, the msb of the address is
+                ; 0xCn where n is peripheral #1-7
+                ;
 ioprt:          lda a2l             ; set ram in/out vectors
                 and #$0F
                 beq ioprt1
                 ora #>ioadr         ; high byte
                 ldy #$00
                 beq ioprt2
-ioprt1:         lda #>cout1
+ioprt1:         lda a2h
 ioprt2:         sty loc0,x
                 sta loc1,x
                 rts
@@ -1010,6 +1097,7 @@ reset:          jsr setnorm
                 jsr init
                 jsr setvid
                 jsr setkbd
+                jsr setrdl
                 ;
                 ; Monitor entry point
                 ;
@@ -1024,7 +1112,7 @@ monz:           lda #'*'            ; Monitor prompt
                 ;
 nxtitm:         jsr getnum          ; get item, non-hex
                 sty ysav
-                ldy #$17            ; x-reg=0 if no hex input
+                ldy #$18 ; x-reg=0 if no hex input
                 ;
                 ; look up command subroutine for current character
                 ;
@@ -1077,18 +1165,24 @@ nxtchr:         lda in,y            ; get char
                 ;
                 ; Go to command routine
                 ;
-tosub:          lda #>go            ; Push high order subroutine address on stack
+tosub:          tya
+                asl                 ; subroutine table has 16 bit addresses now.
+                tay                 ; to much fumbling making them all stay on page $FE
+                lda subtbl,y        ; Push high order subroutine address on stack
+                iny
                 pha
                 lda subtbl,y        ; Push low order subroutine address on stack
                 pha
                 lda mode            ;  old mode to A
                 ;
-                ; 
+                ; clear the y flag and the current mode for next subsequence
+                ;
 zmode:          ldy #$00            ; clear y
                 sty mode            ; clear mode
                 rts                 ; go to command subroutine previously pushed on the stack
 #define F(ch) (((ch ^ $30) + $89) & $0FF)
-chrtbl:         .byte F(k_ctl_c)
+chrtbl:         .byte F('Q')
+                .byte F(k_ctl_c)
                 .byte F(k_ctl_y)
                 .byte F(k_ctl_e)
                 .byte F('T')
@@ -1112,6 +1206,7 @@ chrtbl:         .byte F(k_ctl_c)
                 .byte F(k_entr)
                 .byte F(' ')
 ; Monitor commands:
+; 'Q'           terminate emulator by jumping to $FFFF. When PC=$FFFF, the cpu loop terminates.
 ; ctrl-c        bascont
 ; ctrl-y        usr
 ; ctrl-e        regz
@@ -1135,30 +1230,34 @@ chrtbl:         .byte F(k_ctl_c)
 ; '.'           hexdump addr1,addr2
 ; enter         execute monitor command line
 ; ' '           add preceding command to line
-
-subtbl:         .byt <bascont       ; CTL-C - exit moitor to installed language
-                .byt <usr           ; CTL-Y - execute user command at vector %3F8
-                .byt <regz          ; CTL-E - examine registers
-                .byt <trace         ; "T" - Trace until reset or brk
-                .byt <vfy           ; "V" - Verify memory range
-                .byt <inprt         ; [0-7] CTL-K - input from keyboard (0) or peripheral card 1-7
-                .byt <stepz         ; "S" - Step
-                .byt <outprt        ; [0-7] CTL-P - send output to video (0) or printer peripheral 1-7
-                .byt <x_lang        ; CTL-B -
-                .byt <setmode       ; "-" - hexadecimal substraction
-                .byt <setmode       ; "+" - hexadecimal addition
-                .byt <move          ; "M" - mpve memory range
-                .byt <lt            ; "< aaaa.bbbb M|V" - Move / compare memory range
-                .byt <setnorm       ; "N" - set to normal output
-                .byt <setinv        ; "I" - set to inverse output
-                .byt <list          ; "L" - list preceding memory add
-                .byt <write         ; "aaaa.bbbb W" - Save memory range on tape
-                .byt <go            ; "aaaa G" - Run program as subroutine at aaaa
-                .byt <read          ; "aaaa.bbbb R" - Read memory range from tape
-                .byt <setmode       ; colon xx yy... - change current location. to given ehx bytes
-                .byt <setmode       ; ".yyyy" - examine bytes between after current position and yyyy
-                .byt <crmon         ; enter - starts evaluation of commands in input line
-                .byt <blank         ; space separator
+                ;
+                ; table must have msb first lsb second
+                ;
+#define vector(addr) .byte >addr,<addr
+subtbl:         vector(exit)          ; Q - Quit emulator
+                vector(bascont)       ; CTL-C - exit moitor to installed language
+                vector(usr)           ; CTL-Y - execute user command at vector %3F8
+                vector(regz)          ; CTL-E - examine registers
+                vector(trace)         ; "T" - Trace until reset or brk
+                vector(vfy)           ; "V" - Verify memory range
+                vector(inprt)         ; [0-7] CTL-K - input from keyboard (0) or peripheral card 1-7
+                vector(stepz)         ; "S" - Step
+                vector(outprt)        ; [0-7] CTL-P - send output to video (0) or printer peripheral 1-7
+                vector(x_lang)        ; CTL-B -
+                vector(setmode)       ; "-" - hexadecimal substraction
+                vector(setmode)       ; "+" - hexadecimal addition
+                vector(move)          ; "M" - mpve memory range
+                vector(lt)            ; "< aaaa.bbbb M|V" - Move / compare memory range
+                vector(setnorm)       ; "N" - set to normal output
+                vector(setinv)        ; "I" - set to inverse output
+                vector(list)          ; "L" - list preceding memory add
+                vector(write)         ; "aaaa.bbbb W" - Save memory range on tape
+                vector(go)            ; "aaaa G" - Run program as subroutine at aaaa
+                vector(read)          ; "aaaa.bbbb R" - Read memory range from tape
+                vector(setmode)       ; colon xx yy... - change current location. to given ehx bytes
+                vector(setmode)       ; ".yyyy" - examine bytes between after current position and yyyy
+                vector(crmon)         ; enter - starts evaluation of commands in input line
+                vector(blank)         ; space separator
                 ;
                 ; 6502 fixed system vectors. Must start at 0xFFFA
                 ; .org not working here, adjusting with

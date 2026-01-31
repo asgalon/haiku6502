@@ -120,12 +120,15 @@ namespace haiku6502 {
                     terminal->post_tick();  //  repeated each clock tick, 2-7 per instruction
                 }
             }
+
             terminal->post_cycle();  // before or after interrupt handling?
 
             if (nmi_request) {
                 nmi_request = false;
                 pc = indirect(NMI_VECTOR);
-                shutdown = true;
+            } else if (irq_request) {
+                irq_request = false;
+                pc = indirect(IRQ_VECTOR);
             }
         }
     }
@@ -153,6 +156,11 @@ namespace haiku6502 {
 
     int Engine::cycle() {
         cursor = pc;
+
+        if (cursor == 0xFFFF) {
+            shutdown = true;        // shutdown emulator
+            return 0;               // no cpu cycles spent
+        }
 
         const uint8_t op = get_byte(pc++);
         uint8_t arg1 = 0;
@@ -482,7 +490,7 @@ namespace haiku6502 {
         set_status_flag(STATUS_BREAK, true);
         push_stackw(pc);
         push_stack(p);
-        nmi_request = true;
+        irq_request = true;
     }
 
     void Engine::op_bpl(uint8_t arg) {
