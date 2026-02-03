@@ -21,8 +21,6 @@ namespace haiku6502 {
         BCS,
         BEQ,
         BIT,
-        BGE,
-        BLT,
         BMI,
         BNE,
         BPL,
@@ -111,7 +109,7 @@ namespace haiku6502 {
         // program counter pc
         uint16_t pc {0};
         // stack pointer
-        uint8_t s {0};
+        uint8_t s { 0xFF };
 
         // status flags (known as P register)
         uint8_t p { STATUS_IGNORE };

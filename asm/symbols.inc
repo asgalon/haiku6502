@@ -1,4 +1,4 @@
-; common symbol definitions, borrowed from
+; common symbol definitions, based on
 ; 1979 Apple ][ Reference Manual, Monitor ROM Listing
 
 loc0    = $00
@@ -47,10 +47,15 @@ a3h     = $41
 a4l     = $42
 a4h     = $43
 a5l     = $44
+opcode  = $44   ; temp opcode for assembler
 a5h     = $45
+adrl    = $45   ; low address byte for assembler
 acc     = $45
+adrh    = $46   ; high address byte for assembler
 xreg    = $46
+opb     = $47   ; opcode 'b' bits
 yreg    = $47
+cmdlen  = $47   ; instruction length for assembler, 1-3 bytes
 status  = $48
 spnt    = $49
 rndl    = $4E   ; pseudo-random
@@ -68,6 +73,7 @@ irqloc  = $03FE
 ioadr   = $C000
 kbd     = $C000
 kbdstrb = $C001
+rnd     = $C00F     ; random byte RO
 termcy  = $C010     ; terminal cursor y   RW
 termcx  = $C011     ; terminal cursor x   RW
 termout = $C012     ; termout character under cursor RW
@@ -133,4 +139,5 @@ k_esc   = $1B
 k_entr  = k_cr
 gr_top  = '+'
 gr_btm  = '_'
+colon   = $3A
 gr_grid = $61

@@ -10,6 +10,7 @@
 #include <haiku6502/device.h>
 #include <chrono>
 #include <fstream>
+#include <random>
 
 namespace haiku6502 {
     struct engine_setup;
@@ -39,6 +40,11 @@ namespace haiku6502 {
         bool tape_on = false;
         bool tape_is_write = false;
         bool debug = false;
+
+        std::random_device rnd_dev;
+        std::mt19937 gen = std::mt19937(rnd_dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist256 = std::uniform_int_distribution<std::mt19937::result_type>(0,255); // distribution in range [1, 6]
+
 
         static void check_err(int err);
     protected:

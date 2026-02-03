@@ -151,6 +151,9 @@ namespace haiku6502 {
     }
 
     //
+    constexpr uint8_t kbd       = 0x00;
+    constexpr uint8_t kbdstrb   = 0x01;
+    constexpr uint8_t rnd       = 0x0F;
     constexpr uint8_t termcy    = 0x10;
     constexpr uint8_t termcx    = 0x11;
     constexpr uint8_t termout   = 0x12;
@@ -193,7 +196,7 @@ namespace haiku6502 {
 
 
     bool Terminal::get_io_byte(uint8_t io_address, uint8_t& result) {
-        if (io_address == 0) {
+        if (io_address == kbd) {
             // 0xC000 - keyboard value
             if (!stdio_mode) {
                 if (!key_pressed.empty()) {
@@ -205,12 +208,16 @@ namespace haiku6502 {
             }
             return true;
         }
-        if (io_address == 0x01) {
+        if (io_address == kbdstrb) {
             if (!stdio_mode) {
                 // 0xC001 - clear keyboard strobe
                 key_pressed.pop();
                 key_busy = false;
             }
+            return true;
+        }
+        if (io_address == rnd) {
+            result = dist256(gen);
             return true;
         }
         if (io_address == termout) {

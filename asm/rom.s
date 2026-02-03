@@ -19,13 +19,16 @@
 ; - Bell just sends a CTL-G to terminal
 ; - Tape in/out goes to a tape file. with the right sampling rate, it should be possible to read in data tapes.
 ;   not much use though, since the rom routine addresses are now no longer compatible.
+;   TODO: Should be changed to just write the content to some output file, would make much more sense.
 ; - The screen size is taken from the terminal dimensions. Size is no longer restricted to 1KB text pages.
 ; - Lo-Res and Hi-Res graphics modes are gone for now since they don't work too well with the standard ncurses based
 ;   terminal peripheral. A graphics terminal peripheral could be added, though.
 ; - The peripheral system is not completed, especially emulator interrupt management is rudimentary. So peripheral
 ;   rom areas can be addressed, but the extension rom area 0xC800-0xC8FF needs work. This does not ffect this rom,
 ;   though...
-;
+; - Added 'Q' command to monitor to terminate emulator via jump to address $FFFF
+; - Added Mni-Assembler command as '!', '*' returns from mini-assembler to monitor
+; - Mini-Assembler resurrected following mostly the manual description. It is a complete new implementation in asm.s
 ; The monitor part works pretty much the same as described in the Apple II Reference Manual. It has a nice disassembler.
 ; It provides RAM editing as hex dump only for now.
 ;
@@ -38,7 +41,8 @@
 ; 0x0400-0xBFFF free RAM
 ; 0xC000-0xCFFF I/O
 ; 0xD000-0xFFFF ROM; thereof
-;               0xD000 - 0xF800 Reserved for language modules
+;               0xD000 - 0xF500 Reserved for language modules
+;               0xF4BF - 0xF800 Mini-Assembler (asm.s)
 ;               0xF800 - 0xFFFF System Monitor ROM
 ;               0xFFFA - 0xFFFF Hardwired 6502 NMI, Reset and IRQ vectors, have to be kept at fixed addresses.
 ; On Reset, the program counter is loaded from 0xFFFC and 0xFFFD. all addresses with least
@@ -48,16 +52,28 @@
 ;
 
                 .include "symbols.inc"
+
                 .org    $D000       ; ROM start address
                 .dsb $1000,$00      ; first filler, 4KB low ROM
 lang:           jsr lang_init
 lang2:          jmp lang_cont
 lang_init:      rts
-lang_cont:      .dsb $17f9,$00    ; filler up to F800
+lang_cont:      .dsb $14B2,$00    ; filler up to F800
 
-                ;  SPACE FREE in last 4k
-keep_aligned:
-                .dsb $1F            ; Make sure 6502 vectors stay at $FFFA
+                .include "asm.s"
+
+                ;
+                ; print zero terminated string
+                ; max 255 chars.
+                ; input:
+                ;   string address in a5l/h
+print:          ldy #$00
+@loop:          lda (a5l),y
+                beq @fin
+                jsr cout
+                iny
+                bne @loop
+@fin:           rts
                 ;
                 ; Emulator exit
                 ; terminate by setting PC to $FFFF, which should not happen in normal operation.
@@ -75,8 +91,7 @@ stdin:          lda termin
                 ; this way it uses standard readline
                 ; funcionality hostside.
                 ;
-stdrdln:        .(
-                tya
+stdrdln:        tya
                 pha
                 lda prompt      ; set prompt
                 sta termp
@@ -90,7 +105,6 @@ loop:           iny
                 pla
                 tay
                 rts
-                .)
 stdout:         sta termout
                 rts
 nxtcol:         lda color           ; increment color by 3
@@ -993,6 +1007,10 @@ usr:            jmp usradr          ; to usr subroutine at usradr
                 ;
                 ; write memory range to tape OUT
                 ;
+                ; "Tape" now writes the content directly into the tape file.
+                ; Without cassette I/O ports writing square waves no longer
+                ; makes sense.
+                ;
 write:          lda #$00           ; set header to WRITE
                 sta tpdir
                 lda #$40
@@ -1103,7 +1121,7 @@ reset:          jsr setnorm
                 ;
 mon:            cld
                 jsr bell
-monz:           lda #'*'            ; Monitor prompt
++monz:          lda #'*'            ; Monitor prompt
                 sta prompt
                 jsr getlnz          ; get line
                 jsr zmode           ; clear monitor mode, scan idx
@@ -1112,7 +1130,7 @@ monz:           lda #'*'            ; Monitor prompt
                 ;
 nxtitm:         jsr getnum          ; get item, non-hex
                 sty ysav
-                ldy #$18 ; x-reg=0 if no hex input
+                ldy #$19 ; x-reg=0 if no hex input
                 ;
                 ; look up command subroutine for current character
                 ;
@@ -1124,31 +1142,36 @@ chrsrch:        dey
                 ldy ysav
                 jmp nxtitm
                 ;
-                ; get one hex digit from input
+                ; save one digit from input
+                ; input:
+                ;    a - 0x00 - 0x0F
                 ;
 dig:            ldx #$03
                 asl
-                asl                 ; got hex digit in low nibble, shift into A2
+                asl                 ; shift hex digit to upper nibble
                 asl
-                asl                 ; first, position in high nibble of accu
-nxtbit:         asl                 ; transport a high bit to carry
-                rol a2l             ; rotate carry into low byte into carry
-                rol a2h             ; rotate carry into high byte
-                dex                 ; leave x = $FF if digit
+                asl                 ; now it is 0x00-0xF0
+nxtbit:         asl                 ; transport the high bit to carry
+                rol a2l             ; rotate carry into low byte of a2,
+                rol a2h             ;   carry from a2l to a2h
+                dex                 ; repeat 4 times until new digit shifted into lowest nibble of a2
                 bpl nxtbit
-nxtbas:         lda mode
+nxtbas:         lda mode            ; x is $FF here
                 bne nxtbs2          ;   if mode is zero
                 lda a2h,x           ;    then copy a2 to
                 sta a1h,x           ;     a1 and a3
                 sta a3h,x
-nxtbs2:         inx
+nxtbs2:         inx                 ;   repeat once for l,h pair
                 beq nxtbas
                 bne nxtchr
                 ;
                 ; getnum read command
+                ; input: y - pointer to current input char
                 ; result:
-                ;   a - mode
-                ;   x - number of numeric args
+                ;   a - mode (non-hex char after number)
+                ;   x - (changed)
+                ;   y - pointer to next char
+                ;   (a2) - number found or 0x0000
                 ;
 getnum:         ldx #$00            ;  clear A2
                 stx a2h
@@ -1180,32 +1203,38 @@ tosub:          tya
 zmode:          ldy #$00            ; clear y
                 sty mode            ; clear mode
                 rts                 ; go to command subroutine previously pushed on the stack
-#define F(ch) (((ch ^ $30) + $89) & $0FF)
-chrtbl:         .byte F('Q')
-                .byte F(k_ctl_c)
-                .byte F(k_ctl_y)
-                .byte F(k_ctl_e)
-                .byte F('T')
-                .byte F('V')
-                .byte F(k_ctl_k)
-                .byte F('S')
-                .byte F(k_ctl_p)
-                .byte F(k_ctl_b)
-                .byte F('-')
-                .byte F('+')
-                .byte F('M')
-                .byte F('<')
-                .byte F('N')
-                .byte F('I')
-                .byte F('L')
-                .byte F('W')
-                .byte F('G')
-                .byte F('R')
-                .byte F(':')
-                .byte F('.')
-                .byte F(k_entr)
-                .byte F(' ')
+;
+; macros for command line parser used in mon and asm
+;
+#define coded(ch) (((ch ^ $30) + $89) & $0FF)
+#define vector(addr) .byte >addr,<addr
+chrtbl:         .byte coded('!')
+                .byte coded('Q')
+                .byte coded(k_ctl_c)
+                .byte coded(k_ctl_y)
+                .byte coded(k_ctl_e)
+                .byte coded('T')
+                .byte coded('V')
+                .byte coded(k_ctl_k)
+                .byte coded('S')
+                .byte coded(k_ctl_p)
+                .byte coded(k_ctl_b)
+                .byte coded('-')
+                .byte coded('+')
+                .byte coded('M')
+                .byte coded('<')
+                .byte coded('N')
+                .byte coded('I')
+                .byte coded('L')
+                .byte coded('W')
+                .byte coded('G')
+                .byte coded('R')
+                .byte coded(':')
+                .byte coded('.')
+                .byte coded(k_entr)
+                .byte coded(' ')
 ; Monitor commands:
+; '!'           enter mini assembler
 ; 'Q'           terminate emulator by jumping to $FFFF. When PC=$FFFF, the cpu loop terminates.
 ; ctrl-c        bascont
 ; ctrl-y        usr
@@ -1233,8 +1262,8 @@ chrtbl:         .byte F('Q')
                 ;
                 ; table must have msb first lsb second
                 ;
-#define vector(addr) .byte >addr,<addr
-subtbl:         vector(exit)          ; Q - Quit emulator
+subtbl:         vector(asm_entry)     ; ! - Enter assembler
+                vector(exit)          ; Q - Quit emulator
                 vector(bascont)       ; CTL-C - exit moitor to installed language
                 vector(usr)           ; CTL-Y - execute user command at vector %3F8
                 vector(regz)          ; CTL-E - examine registers

@@ -168,6 +168,8 @@ namespace haiku6502 {
 
         Instruction i = operations[op];
 
+        int ticks = i.cycles;
+
         if (i.length > 1) {
             arg1 = get_byte(pc++);
         }
@@ -176,43 +178,43 @@ namespace haiku6502 {
         }
         switch (i.op) {
             case ADC:
-                op_adc(get_param(i.addr, arg1, arg2));
+                op_adc(get_param(i.addr, arg1, arg2), ticks);
                 break;
             case AND:
-                op_and(get_param(i.addr, arg1, arg2));
+                op_and(get_param(i.addr, arg1, arg2), ticks);
                 break;
             case ASL:
                 op_asl(i.addr, arg1, arg2);
                 break;
             case BCC:
-                op_bcc(arg1);
+                op_bcc(arg1, ticks);
                 break;
             case BCS:
-                op_bcs(arg1);
+                op_bcs(arg1, ticks);
                 break;
             case BEQ:
-                op_beq(arg1);
+                op_beq(arg1, ticks);
                 break;
             case BIT:
                 op_bit(i.addr, arg1, arg2);
                 break;
             case BMI:
-                op_bmi(arg1);
+                op_bmi(arg1, ticks);
                 break;
             case BNE:
-                op_bne(arg1);
+                op_bne(arg1, ticks);
                 break;
             case BPL:
-                op_bpl(arg1);
+                op_bpl(arg1, ticks);
                 break;
             case BRK:
                 op_brk();
                 break;
             case BVC:
-                op_bvc(arg1);
+                op_bvc(arg1, ticks);
                 break;
             case BVS:
-                op_bvs(arg1);
+                op_bvs(arg1, ticks);
                 break;
             case CLC:
                 op_clc();
@@ -227,7 +229,7 @@ namespace haiku6502 {
                 op_clv();
                 break;
             case CMP:
-                op_cmp(get_param(i.addr, arg1, arg2));
+                op_cmp(get_param(i.addr, arg1, arg2), ticks);
                 break;
             case CPX:
                 op_cpx(get_param(i.addr, arg1, arg2));
@@ -245,7 +247,7 @@ namespace haiku6502 {
                 op_dey();
                 break;
             case EOR:
-                op_eor(get_param(i.addr, arg1, arg2));
+                op_eor(get_param(i.addr, arg1, arg2), ticks);
                 break;
             case INC:
                 op_inc(i.addr, arg1, arg2);
@@ -257,19 +259,19 @@ namespace haiku6502 {
                 op_iny();
                 break;
             case JMP:
-                op_jmp(i.addr, arg1, arg2);
+                op_jmp(i.addr, arg1, arg2, ticks);
                 break;
             case JSR:
                 op_jsr(arg1, arg2);
                 break;
             case LDA:
-                op_lda(i.addr, arg1, arg2);
+                op_lda(i.addr, arg1, arg2, ticks);
                 break;
             case LDX:
-                op_ldx(i.addr, arg1, arg2);
+                op_ldx(i.addr, arg1, arg2, ticks);
                 break;
             case LDY:
-                op_ldy(i.addr, arg1, arg2);
+                op_ldy(i.addr, arg1, arg2, ticks);
                 break;
             case LSR:
                 op_lsr(i.addr, arg1, arg2);
@@ -278,7 +280,7 @@ namespace haiku6502 {
                 op_nop();
                 break;
             case ORA:
-                op_ora(get_param(i.addr, arg1, arg2));
+                op_ora(get_param(i.addr, arg1, arg2), ticks);
                 break;
             case PHA:
                 op_pha();
@@ -305,7 +307,7 @@ namespace haiku6502 {
                 op_rts();
                 break;
             case SBC:
-                op_sbc(i.addr, get_param(i.addr, arg1, arg2));
+                op_sbc(i.addr, get_param(i.addr, arg1, arg2), ticks);
                 break;
             case SEC:
                 op_sec();
@@ -346,7 +348,7 @@ namespace haiku6502 {
             default:
                 ;
         }
-        return i.cycles;
+        return ticks;
     }
 
     uint8_t Engine::get_param(const AddressMode mode, const uint8_t arg1, const uint8_t arg2) {
@@ -406,7 +408,7 @@ namespace haiku6502 {
         return param;
     }
 
-    void Engine::op_adc(uint8_t param) {
+    void Engine::op_adc(uint8_t param, int& ticks) {
         // see http://6502.org/tutorials/decimal_mode.html
         if (!is_bcd()) {
             const uint8_t oper = param + carry_bit();
@@ -430,7 +432,7 @@ namespace haiku6502 {
         }
     }
 
-    void Engine::op_and(uint8_t param) {
+    void Engine::op_and(uint8_t param, int& ticks) {
         a &= param;
 
         set_status_nz(a);
@@ -449,21 +451,24 @@ namespace haiku6502 {
         write_result(addr, arg1, arg2, oper);
     }
 
-    void Engine::op_bcc(uint8_t arg) {
+    void Engine::op_bcc(uint8_t arg, int& ticks) {
         if (!carry()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
-    void Engine::op_bcs(uint8_t arg) {
+    void Engine::op_bcs(uint8_t arg, int &ticks) {
         if (carry()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
-    void Engine::op_beq(uint8_t arg) {
+    void Engine::op_beq(uint8_t arg, int &ticks) {
         if (zero()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
@@ -474,15 +479,17 @@ namespace haiku6502 {
         set_status_flag(STATUS_ZERO, (a & oper) == 0);
     }
 
-    void Engine::op_bmi(uint8_t arg) {
+    void Engine::op_bmi(uint8_t arg, int &ticks) {
         if (negative()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
-    void Engine::op_bne(uint8_t arg) {
+    void Engine::op_bne(uint8_t arg, int &ticks) {
         if (!zero()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
@@ -493,21 +500,24 @@ namespace haiku6502 {
         irq_request = true;
     }
 
-    void Engine::op_bpl(uint8_t arg) {
+    void Engine::op_bpl(uint8_t arg, int &ticks) {
         if (!negative()) {
             pc = pc + static_cast<int8_t>(arg);
+            ticks++;
         }
     }
 
-    void Engine::op_bvc(uint8_t arg) {
+    void Engine::op_bvc(uint8_t arg, int &ticks) {
         if (!overflow()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
-    void Engine::op_bvs(uint8_t arg) {
+    void Engine::op_bvs(uint8_t arg, int &ticks) {
         if (overflow()) {
             pc = pc + relative(arg);
+            ticks++;
         }
     }
 
@@ -527,7 +537,7 @@ namespace haiku6502 {
         set_status_flag(STATUS_OVERFLOW, false);
     }
 
-    void Engine::op_cmp(uint8_t param) {
+    void Engine::op_cmp(uint8_t param, int &ticks) {
         uint8_t cmp = a - param;
         set_status_flag(STATUS_CARRY, a >= param);
         set_status_nz(cmp);
@@ -562,7 +572,7 @@ namespace haiku6502 {
         set_status_nz(y);
     }
 
-    void Engine::op_eor(uint8_t param) {
+    void Engine::op_eor(uint8_t param, int &ticks) {
         a ^= param;
 
         set_status_nz(a);
@@ -585,7 +595,7 @@ namespace haiku6502 {
         set_status_nz(y);
     }
 
-    void Engine::op_jmp(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+    void Engine::op_jmp(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks) {
         if (addr == ABSOLUTE_INDIRECT) {
             pc = indirect(address(arg1, arg2));
         } else {
@@ -599,17 +609,17 @@ namespace haiku6502 {
         pc = address(arg1, arg2);
     }
 
-    void Engine::op_lda(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+    void Engine::op_lda(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks) {
         a = get_param(addr, arg1, arg2);
         set_status_nz(a);
     }
 
-    void Engine::op_ldx(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+    void Engine::op_ldx(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks) {
         x = get_param(addr, arg1, arg2);
         set_status_nz(x);
     }
 
-    void Engine::op_ldy(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+    void Engine::op_ldy(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks) {
         y = get_param(addr, arg1, arg2);
         set_status_nz(y);
     }
@@ -630,7 +640,7 @@ namespace haiku6502 {
         // TODO debug stuff
     }
 
-    void Engine::op_ora(uint8_t param) {
+    void Engine::op_ora(uint8_t param, int &ticks) {
         a |= param;
 
         set_status_nz(a);
@@ -692,7 +702,7 @@ namespace haiku6502 {
         pc = pull_stackw();
     }
 
-    void Engine::op_sbc(AddressMode addr, uint8_t param) {
+    void Engine::op_sbc(AddressMode addr, uint8_t param, int &ticks) {
         // see http://6502.org/tutorials/decimal_mode.html
         if (!is_bcd()) {
             const uint8_t oper = param + not_carry_bit();

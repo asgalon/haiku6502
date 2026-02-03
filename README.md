@@ -7,6 +7,18 @@ simplifications and modifications. The purpose is not to emulate a specific mach
 but to provide an environment to write programs under a similarly strict set of 
 constraints like a japanese haiku poem. 
 
+## The Goal
+The goal for completing the project was to have the emulator running in a virtual terminal window,
+with the ability to enter and debug programs at least in machine language and run them, providing 
+text-based output in upper case ASCII characters (codes 0x20-0x7F).
+Optional features, depending on effort:
+ - add assembler input
+ - load and save content to file
+ - fill the remaining10KB of ROM with a small LISP interpreter
+ - add graphics character support to the ncurses terminal
+ - add color support
+ - add further virtual peripherals such as printer interface, graphics card or simple networking.
+
 ## The constraints
 There is 48KB of RAM, of which 47KB are free to use, 12KB of ROM, of which the standard
 system ROM takes up the top 2KB. The ROM file can be loaded at startup. The only immediately

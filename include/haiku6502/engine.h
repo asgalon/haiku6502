@@ -42,8 +42,8 @@ namespace haiku6502 {
         bool nmi_request { false };
 
         void push_stack(uint8_t byte) {
-            s = s - 1;
             ram[0x100 | s] = byte;
+            s = s - 1;
         }
 
         void push_stackw(uint16_t word) {
@@ -52,7 +52,8 @@ namespace haiku6502 {
         }
 
         uint8_t pull_stack() {
-            return ram[0x100 | s++];
+            ++s;
+            return ram[0x100 | s];
         }
 
         uint16_t pull_stackw() {
@@ -185,41 +186,41 @@ namespace haiku6502 {
         // soft reset. set pc to 0
         void soft_reset();
 
-        void op_adc(uint8_t param);
-        void op_and(uint8_t param);
+        void op_adc(uint8_t param, int &ticks);
+        void op_and(uint8_t param, int &ticks);
         void op_asl(AddressMode addr, uint8_t arg1, uint8_t arg2);
-        void op_bcc(uint8_t arg);
-        void op_bcs(uint8_t arg);
-        void op_beq(uint8_t arg);
+        void op_bcc(uint8_t arg, int &ticks);
+        void op_bcs(uint8_t arg, int &ticks);
+        void op_beq(uint8_t arg, int &ticks);
         void op_bit(AddressMode addr, uint8_t arg1, uint8_t arg2);
-        void op_bmi(uint8_t arg);
-        void op_bne(uint8_t arg);
-        void op_bpl(uint8_t arg);
+        void op_bmi(uint8_t arg, int &ticks);
+        void op_bne(uint8_t arg, int &ticks);
+        void op_bpl(uint8_t arg, int &ticks);
         void op_brk();
-        void op_bvc(uint8_t arg);
-        void op_bvs(uint8_t arg);
+        void op_bvc(uint8_t arg, int &ticks);
+        void op_bvs(uint8_t arg, int &ticks);
         void op_clc();
         void op_cld();
         void op_cli();
         void op_clv();
-        void op_cmp(uint8_t param);
+        void op_cmp(uint8_t param, int &ticks);
         void op_cpx(uint8_t param);
         void op_cpy(uint8_t param);
         void op_dec(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_dex();
         void op_dey();
-        void op_eor(uint8_t param);
+        void op_eor(uint8_t param, int &ticks);
         void op_inc(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_inx();
         void op_iny();
-        void op_jmp(AddressMode addr, uint8_t arg1, uint8_t arg2);
+        void op_jmp(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks);
         void op_jsr(uint8_t arg1, uint8_t arg2);
-        void op_lda(AddressMode addr, uint8_t arg1, uint8_t arg2);
-        void op_ldx(AddressMode addr, uint8_t arg1, uint8_t arg2);
-        void op_ldy(AddressMode addr, uint8_t arg1, uint8_t arg2);
+        void op_lda(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks);
+        void op_ldx(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks);
+        void op_ldy(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks);
         void op_lsr(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_nop();
-        void op_ora(uint8_t param);
+        void op_ora(uint8_t param, int &ticks);
         void op_pha();
         void op_php();
         void op_pla();
@@ -228,7 +229,7 @@ namespace haiku6502 {
         void op_ror(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_rti();
         void op_rts();
-        void op_sbc(AddressMode addr, uint8_t param);
+        void op_sbc(AddressMode addr, uint8_t param, int &ticks);
         void op_sec();
         void op_sed();
         void op_sei();
