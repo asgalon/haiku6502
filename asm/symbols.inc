@@ -9,7 +9,6 @@ wndtop  = $22
 wndbtm  = $23
 ch      = $24
 cv      = $25
-
 rdline  = $28   ; vector for readline
 rdlinh  = $29   ;   msb
 h2      = $2C
@@ -45,17 +44,11 @@ a2h     = $3F
 a3l     = $40
 a3h     = $41
 a4l     = $42
-mnem    = $42   ; temp mnemonic index
 a4h     = $43
-cmdlen  = $43   ; instruction length for assembler, 1-3 bytes
 a5l     = $44
-opcode  = $44   ; temp opcode for assembler
 a5h     = $45
-adrl    = $45   ; low address byte for assembler
 acc     = $45
-adrh    = $46   ; high address byte for assembler
 xreg    = $46
-opb     = $47   ; opcode 'b' bits
 yreg    = $47
 status  = $48
 spnt    = $49
@@ -66,8 +59,22 @@ ach     = $51
 xtndl   = $52
 xtndh   = $53
 auxl    = $54
-opmode  = $54
 auxh    = $55
+;
+; mini-assembler: $60-$70
+;
+mnem    = $60   ; temp mnemonic index
+opcode  = $61   ; temp opcode for assembler
+adrl    = $62   ; low address byte for assembler
+adrh    = $63   ; high address byte for assembler
+opmode  = $64   ; opcode "mode"
+opb     = $65   ; opcode 'b' bits
+cmdlen  = $66   ; instruction length for assembler, 1-3 bytes
+calcl   = $67   ; calculations intermediate storage 16 bit
+calch   = $68
+tmpl    = $69   ; temporary storage 16 bit
+tmph    = $6A
+
 in      = $0200 ; input buffer base
 usradr  = $03F8
 nmiloc  = $03FB

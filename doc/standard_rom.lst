@@ -67,143 +67,150 @@ symbols.inc
     9 A:1000                                    wndbtm=$23
    10 A:1000                                    ch=$24
    11 A:1000                                    cv=$25
+   12 A:1000                                    rdline=$28           ; vector for readline
+   13 A:1000                                    rdlinh=$29           ;   msb
+   14 A:1000                                    h2=$2c
+   15 A:1000                                    lmnem=$2c
+   16 A:1000                                    rtnl=$2c
+   17 A:1000                                    v2=$2d
+   18 A:1000                                    rmnem=$2d
+   19 A:1000                                    rtnh=$2d
+   20 A:1000                                    mask=$2e
+   21 A:1000                                    chksum=$2e
+   22 A:1000                                    format=$2e
 
-   13 A:1000                                    rdline=$28           ; vector for readline
-   14 A:1000                                    rdlinh=$29           ;   msb
-   15 A:1000                                    h2=$2c
-   16 A:1000                                    lmnem=$2c
-   17 A:1000                                    rtnl=$2c
-   18 A:1000                                    v2=$2d
-   19 A:1000                                    rmnem=$2d
-   20 A:1000                                    rtnh=$2d
-   21 A:1000                                    mask=$2e
-   22 A:1000                                    chksum=$2e
-   23 A:1000                                    format=$2e
+   24 A:1000                                    length=$2f
+   25 A:1000                                    sign=$2f
+   26 A:1000                                    color=$30
+   27 A:1000                                    mode=$31
+   28 A:1000                                    invflg=$32
+   29 A:1000                                    prompt=$33
+   30 A:1000                                    ysav=$34
+   31 A:1000                                    ysav1=$35
+   32 A:1000                                    cswl=$36           ; CSW character out vector
+   33 A:1000                                    cswh=$37
+   34 A:1000                                    kswl=$38           ; keyboard input vector
+   35 A:1000                                    kswh=$39
+   36 A:1000                                    pcl=$3a
+   37 A:1000                                    pch=$3b
+   38 A:1000                                    xqt=$3c
+   39 A:1000                                    xqtnz=$3c
+   40 A:1000                                    a1l=$3c
+   41 A:1000                                    a1h=$3d
+   42 A:1000                                    a2l=$3e
+   43 A:1000                                    a2h=$3f
+   44 A:1000                                    a3l=$40
+   45 A:1000                                    a3h=$41
+   46 A:1000                                    a4l=$42
+   47 A:1000                                    a4h=$43
+   48 A:1000                                    a5l=$44
+   49 A:1000                                    a5h=$45
+   50 A:1000                                    acc=$45
+   51 A:1000                                    xreg=$46
+   52 A:1000                                    yreg=$47
+   53 A:1000                                    status=$48
+   54 A:1000                                    spnt=$49
+   55 A:1000                                    rndl=$4e           ; pseudo-random
+   56 A:1000                                    rndh=$4f
+   57 A:1000                                    acl=$50
+   58 A:1000                                    ach=$51
+   59 A:1000                                    xtndl=$52
+   60 A:1000                                    xtndh=$53
+   61 A:1000                                    auxl=$54
+   62 A:1000                                    auxh=$55
+   63 A:1000                                    ;
+   64 A:1000                                    ; mini-assembler: $60-$70
+   65 A:1000                                    ;
+   66 A:1000                                    mnem=$60           ; temp mnemonic index
+   67 A:1000                                    opcode=$61           ; temp opcode for assembler
+   68 A:1000                                    adrl=$62           ; low address byte for assembler
+   69 A:1000                                    adrh=$63           ; high address byte for assembler
+   70 A:1000                                    opmode=$64           ; opcode "mode"
+   71 A:1000                                    opb=$65           ; opcode 'b' bits
+   72 A:1000                                    cmdlen=$66           ; instruction length for assembler, 1-3 bytes
+   73 A:1000                                    calcl=$67           ; calculations intermediate storage 16 bit
+   74 A:1000                                    calch=$68
+   75 A:1000                                    tmpl=$69           ; temporary storage 16 bit
+   76 A:1000                                    tmph=$6a
 
-   25 A:1000                                    length=$2f
-   26 A:1000                                    sign=$2f
-   27 A:1000                                    color=$30
-   28 A:1000                                    mode=$31
-   29 A:1000                                    invflg=$32
-   30 A:1000                                    prompt=$33
-   31 A:1000                                    ysav=$34
-   32 A:1000                                    ysav1=$35
-   33 A:1000                                    cswl=$36           ; CSW character out vector
-   34 A:1000                                    cswh=$37
-   35 A:1000                                    kswl=$38           ; keyboard input vector
-   36 A:1000                                    kswh=$39
-   37 A:1000                                    pcl=$3a
-   38 A:1000                                    pch=$3b
-   39 A:1000                                    xqt=$3c
-   40 A:1000                                    xqtnz=$3c
-   41 A:1000                                    a1l=$3c
-   42 A:1000                                    a1h=$3d
-   43 A:1000                                    a2l=$3e
-   44 A:1000                                    a2h=$3f
-   45 A:1000                                    a3l=$40
-   46 A:1000                                    a3h=$41
-   47 A:1000                                    a4l=$42
-   48 A:1000                                    mnem=$42           ; temp mnemonic index
-   49 A:1000                                    a4h=$43
-   50 A:1000                                    cmdlen=$43           ; instruction length for assembler, 1-3 bytes
-   51 A:1000                                    a5l=$44
-   52 A:1000                                    opcode=$44           ; temp opcode for assembler
-   53 A:1000                                    a5h=$45
-   54 A:1000                                    adrl=$45           ; low address byte for assembler
-   55 A:1000                                    acc=$45
-   56 A:1000                                    adrh=$46           ; high address byte for assembler
-   57 A:1000                                    xreg=$46
-   58 A:1000                                    opb=$47           ; opcode 'b' bits
-   59 A:1000                                    yreg=$47
-   60 A:1000                                    status=$48
-   61 A:1000                                    spnt=$49
-   62 A:1000                                    rndl=$4e           ; pseudo-random
-   63 A:1000                                    rndh=$4f
-   64 A:1000                                    acl=$50
-   65 A:1000                                    ach=$51
-   66 A:1000                                    xtndl=$52
-   67 A:1000                                    xtndh=$53
-   68 A:1000                                    auxl=$54
-   69 A:1000                                    opmode=$54
-   70 A:1000                                    auxh=$55
-   71 A:1000                                    in=$0200           ; input buffer base
-   72 A:1000                                    usradr=$03f8
-   73 A:1000                                    nmiloc=$03fb
-   74 A:1000                                    irqloc=$03fe
+   78 A:1000                                    in=$0200           ; input buffer base
+   79 A:1000                                    usradr=$03f8
+   80 A:1000                                    nmiloc=$03fb
+   81 A:1000                                    irqloc=$03fe
 
-   76 A:1000                                    ioadr=$c000
-   77 A:1000                                    kbd=$c000
-   78 A:1000                                    kbdstrb=$c001
-   79 A:1000                                    rnd=$c00f           ; random byte RO
+   83 A:1000                                    ioadr=$c000
+   84 A:1000                                    kbd=$c000
+   85 A:1000                                    kbdstrb=$c001
+   86 A:1000                                    rnd=$c00f           ; random byte RO
 
-   81 A:1000                                    termcy=$c010           ; terminal cursor y   RW
-   82 A:1000                                    termcx=$c011           ; terminal cursor x   RW
-   83 A:1000                                    termout=$c012           ; termout character under cursor RW
-   84 A:1000                                    termesc=$c013           ; terminal connamd byte W
-   85 A:1000                                    termea1=$c014           ; terminal command argl   (bad design, will change)
-   86 A:1000                                    termea2=$c015           ; terminal command argh
-   87 A:1000                                    termwh=$c016           ; temrinal window height
-   88 A:1000                                    termww=$c017           ; terminal window width
-   89 A:1000                                    termin=$c018
-   90 A:1000                                    terml=$c019           ; stdio mode next line char of 0 terminated string. R
-   91 A:1000                                    termp=$c01a           ; stdio mode next line char of 0 terminated string. RW
-   92 A:1000                                    termmd=$c01f           ; terminal mode, RO. #$00 - screen, #$01 - stdio
+   88 A:1000                                    termcy=$c010           ; terminal cursor y   RW
+   89 A:1000                                    termcx=$c011           ; terminal cursor x   RW
+   90 A:1000                                    termout=$c012           ; termout character under cursor RW
+   91 A:1000                                    termesc=$c013           ; terminal connamd byte W
+   92 A:1000                                    termea1=$c014           ; terminal command argl   (bad design, will change)
+   93 A:1000                                    termea2=$c015           ; terminal command argh
+   94 A:1000                                    termwh=$c016           ; temrinal window height
+   95 A:1000                                    termww=$c017           ; terminal window width
+   96 A:1000                                    termin=$c018
+   97 A:1000                                    terml=$c019           ; stdio mode next line char of 0 terminated string. R
+   98 A:1000                                    termp=$c01a           ; stdio mode next line char of 0 terminated string. RW
+   99 A:1000                                    termmd=$c01f           ; terminal mode, RO. #$00 - screen, #$01 - stdio
 
-   94 A:1000                                    tapeio=$c020           ; read/write byte from/to tape file
-   95 A:1000                                    tapecls=$c021
+  101 A:1000                                    tapeio=$c020           ; read/write byte from/to tape file
+  102 A:1000                                    tapecls=$c021
 
-   97 A:1000                                    spkr=$c030
-   98 A:1000                                    paddl0=$c061
-   99 A:1000                                    ptrig=$c070
+  104 A:1000                                    spkr=$c030
+  105 A:1000                                    paddl0=$c061
+  106 A:1000                                    ptrig=$c070
 
-  101 A:1000                                    ;
-  102 A:1000                                    ;  Ecape commands for terminal:
-  103 A:1000                                    ;
-  104 A:1000                                    t_cls=$00           ; Clear screen
-  105 A:1000                                    t_cll=$01           ; clear from cursor to end of line
-  106 A:1000                                    t_clb=$02           ; clear from cursor to end of line
-  107 A:1000                                    t_scr=$03           ; scroll one line up
-  108 A:1000                                    t_norm=$04           ; normal chars
-  109 A:1000                                    t_inv=$05           ; inverse chars
-  110 A:1000                                    t_blnk=$06           ; blinking chars
-  111 A:1000                                    t_qcch=$07           ; query current character under cursor
+  108 A:1000                                    ;
+  109 A:1000                                    ;  Ecape commands for terminal:
+  110 A:1000                                    ;
+  111 A:1000                                    t_cls=$00           ; Clear screen
+  112 A:1000                                    t_cll=$01           ; clear from cursor to end of line
+  113 A:1000                                    t_clb=$02           ; clear from cursor to end of line
+  114 A:1000                                    t_scr=$03           ; scroll one line up
+  115 A:1000                                    t_norm=$04           ; normal chars
+  116 A:1000                                    t_inv=$05           ; inverse chars
+  117 A:1000                                    t_blnk=$06           ; blinking chars
+  118 A:1000                                    t_qcch=$07           ; query current character under cursor
 
-  113 A:1000                                    ; t_qy    = $04   ; query terminal cursor y; for result read terminl,h
-  114 A:1000                                    ; t_qx    = $05   ; query terminal cursor x; for result read terminl,h
+  120 A:1000                                    ; t_qy    = $04   ; query terminal cursor y; for result read terminl,h
+  121 A:1000                                    ; t_qx    = $05   ; query terminal cursor x; for result read terminl,h
 
-  116 A:1000                                    ; characters
-  117 A:1000                                    k_ctl_a=$01
-  118 A:1000                                    k_ctl_b=$02
-  119 A:1000                                    k_ctl_c=$03
-  120 A:1000                                    k_ctl_d=$04
-  121 A:1000                                    k_ctl_e=$05
-  122 A:1000                                    k_ctl_f=$06
-  123 A:1000                                    k_ctl_g=$07
-  124 A:1000                                    k_bs=$08
-  125 A:1000                                    k_tab=$09
-  126 A:1000                                    k_lf=$0a
-  127 A:1000                                    k_ctl_k=$0b
-  128 A:1000                                    k_ctl_l=$0c
-  129 A:1000                                    k_cr=$0a
-  130 A:1000                                    k_ctl_n=$0e
-  131 A:1000                                    k_ctl_o=$0f
-  132 A:1000                                    k_ctl_p=$10
-  133 A:1000                                    k_ctl_q=$11
-  134 A:1000                                    k_ctl_r=$12
-  135 A:1000                                    k_ctl_s=$13
-  136 A:1000                                    k_ctl_t=$14
-  137 A:1000                                    k_ctl_u=$15
-  138 A:1000                                    k_ctl_v=$16
-  139 A:1000                                    k_ctl_w=$17
-  140 A:1000                                    k_ctl_x=$18
-  141 A:1000                                    k_ctl_y=$19
-  142 A:1000                                    k_ctl_z=$1a
-  143 A:1000                                    k_esc=$1b
-  144 A:1000                                    k_entr=k_cr
-  145 A:1000                                    gr_top='+'
-  146 A:1000                                    gr_btm='_'
-  147 A:1000                                    colon=$3a
-  148 A:1000                                    gr_grid=$61
+  123 A:1000                                    ; characters
+  124 A:1000                                    k_ctl_a=$01
+  125 A:1000                                    k_ctl_b=$02
+  126 A:1000                                    k_ctl_c=$03
+  127 A:1000                                    k_ctl_d=$04
+  128 A:1000                                    k_ctl_e=$05
+  129 A:1000                                    k_ctl_f=$06
+  130 A:1000                                    k_ctl_g=$07
+  131 A:1000                                    k_bs=$08
+  132 A:1000                                    k_tab=$09
+  133 A:1000                                    k_lf=$0a
+  134 A:1000                                    k_ctl_k=$0b
+  135 A:1000                                    k_ctl_l=$0c
+  136 A:1000                                    k_cr=$0a
+  137 A:1000                                    k_ctl_n=$0e
+  138 A:1000                                    k_ctl_o=$0f
+  139 A:1000                                    k_ctl_p=$10
+  140 A:1000                                    k_ctl_q=$11
+  141 A:1000                                    k_ctl_r=$12
+  142 A:1000                                    k_ctl_s=$13
+  143 A:1000                                    k_ctl_t=$14
+  144 A:1000                                    k_ctl_u=$15
+  145 A:1000                                    k_ctl_v=$16
+  146 A:1000                                    k_ctl_w=$17
+  147 A:1000                                    k_ctl_x=$18
+  148 A:1000                                    k_ctl_y=$19
+  149 A:1000                                    k_ctl_z=$1a
+  150 A:1000                                    k_esc=$1b
+  151 A:1000                                    k_entr=k_cr
+  152 A:1000                                    gr_top='+'
+  153 A:1000                                    gr_btm='_'
+  154 A:1000                                    colon=$3a
+  155 A:1000                                    gr_grid=$61
 
 rom.s
 
@@ -217,794 +224,838 @@ rom.s
    58 A:e006                           lang_init 
    58 A:e006  60                                 rts 
    59 A:e007                           lang_cont 
-   59 A:e007  00 ff 03 15 00 24 2c ...           .dsb $1503,$00        ; filler up to F800
+   59 A:e007  00 ff c6 14 00 24 2c ...           .dsb $14c6,$00        ; filler up to F800
 
-   61 A:f50a                                     .include "asm.s"
+   61 A:f4cd                                     .include "asm.s"
 
 asm.s
 
-    1 A:f50a                                    ;
-    2 A:f50a                                    ; Mini-Assembler
-    3 A:f50a                                    ;
-    4 A:f50a                                    ; Assembles single instruction at the program cursor into machine code.
-    5 A:f50a                                    ; Following the syntax documented in the Apple II Reference manual
-    6 A:f50a                                    ;
-    7 A:f50a                                    ; xa assembler seems to have some obscure problems with block markers, so everything
-    8 A:f50a                                    ; is on top level. I tried with block proc and (, but tht produced sntax errors far, far away
-    9 A:f50a                                    ; Solution would be to use a different assembler. but they all have their quirks.
-   10 A:f50a                                    ;
-   11 A:f50a                           nextch    
-   11 A:f50a  c8                                 iny 
-   12 A:f50b  b9 00 02                           lda in,y
-   13 A:f50e  60                                 rts 
-   14 A:f50f                                    ;
-   15 A:f50f                                    ; consume blanks and $ signs,
-   16 A:f50f                                    ; since all numbers are hex
-   17 A:f50f                                    ; returns first non ignored char in a
-   18 A:f50f                                    ;
-   19 A:f50f                           eatblp    
-   19 A:f50f  c8                                 iny 
-   20 A:f510                           eatblank  
-   20 A:f510  b9 00 02                           lda in,y
-   21 A:f513  c9 20                              cmp #' '
-   22 A:f515  f0 f8                              beq eatblp
-   23 A:f517  c9 24                              cmp #'$'
-   24 A:f519  f0 f4                              beq eatblp
-   25 A:f51b  60                                 rts 
-   26 A:f51c                                    ; get code for menmonic
-   27 A:f51c                                    ; input: a has first letter.
-   28 A:f51c                                    ; return: mnem index in x
-   29 A:f51c                           syntaxerr 
-   29 A:f51c  20 15 ff                           jsr bell
-   30 A:f51f  a9 20                              lda #' '
-   31 A:f521                           @blnks    
-   31 A:f521  20 c2 fd                           jsr cout
-   32 A:f524  88                                 dey 
-   33 A:f525  10 fa                              bpl @blnks
-   34 A:f527  a9 5e                              lda #'^'
-   35 A:f529  20 c2 fd                           jsr cout
-   36 A:f52c  a6 49                              ldx spnt                ; restore entry point stack position
-   37 A:f52e  9a                                 txs 
-   38 A:f52f  4c 55 f5                           jmp asmz
+    1 A:f4cd                                    ;
+    2 A:f4cd                                    ; Mini-Assembler
+    3 A:f4cd                                    ;
+    4 A:f4cd                                    ; Assembles single instruction at the program cursor into machine code.
+    5 A:f4cd                                    ; Following the syntax documented in the Apple II Reference manual
+    6 A:f4cd                                    ;
+    7 A:f4cd                                    ; xa assembler seems to have some obscure problems with block markers, so everything
+    8 A:f4cd                                    ; is on top level. I tried with block proc and (, but tht produced sntax errors far, far away
+    9 A:f4cd                                    ; Solution would be to use a different assembler. but they all have their quirks.
+   10 A:f4cd                                    ;
+   11 A:f4cd                           nextch    
+   11 A:f4cd  c8                                 iny 
+   12 A:f4ce  b9 00 02                           lda in,y
+   13 A:f4d1  60                                 rts 
+   14 A:f4d2                                    ;
+   15 A:f4d2                                    ; consume blanks and $ signs,
+   16 A:f4d2                                    ; since all numbers are hex
+   17 A:f4d2                                    ; returns first non ignored char in a
+   18 A:f4d2                                    ;
+   19 A:f4d2                           eatblp    
+   19 A:f4d2  c8                                 iny 
+   20 A:f4d3                           eatblank  
+   20 A:f4d3  b9 00 02                           lda in,y
+   21 A:f4d6  c9 20                              cmp #' '
+   22 A:f4d8  f0 f8                              beq eatblp
+   23 A:f4da  c9 24                              cmp #'$'
+   24 A:f4dc  f0 f4                              beq eatblp
+   25 A:f4de  60                                 rts 
+   26 A:f4df                                    ; get code for menmonic
+   27 A:f4df                                    ; input: a has first letter.
+   28 A:f4df                                    ; return: mnem index in x
+   29 A:f4df                           syntaxerr 
+   29 A:f4df  20 15 ff                           jsr bell
+   30 A:f4e2  a9 20                              lda #' '
+   31 A:f4e4                           @blnks    
+   31 A:f4e4  20 c2 fd                           jsr cout
+   32 A:f4e7  88                                 dey 
+   33 A:f4e8  10 fa                              bpl @blnks
+   34 A:f4ea  a9 5e                              lda #'^'
+   35 A:f4ec  20 c2 fd                           jsr cout
+   36 A:f4ef  a6 49                              ldx spnt                ; restore entry point stack position
+   37 A:f4f1  9a                                 txs 
+   38 A:f4f2  4c 17 f5                           jmp asmz
 
-   40 A:f532                           setaddr   
-   40 A:f532  20 aa ff                           jsr zmode                ; clear (reused) monitor mode, scan idx
-   41 A:f535  20 85 ff                           jsr getnum
-   42 A:f538  88                                 dey                    ; recover non-digit item
-   43 A:f539  60                                 rts 
-   44 A:f53a                           hasaddr   
-   44 A:f53a  a0 04                              ldy #$04             ; look at first 5 chars, beginning with last
-   45 A:f53c                           @hadrlp   
-   45 A:f53c  b9 00 02                           lda in,y
-   46 A:f53f  c9 3a                              cmp #':'
-   47 A:f541  f0 ef                              beq setaddr                ; if so, set current address
-   48 A:f543  88                                 dey 
-   49 A:f544  10 f6                              bpl @hadrlp
-   50 A:f546  a0 00                              ldy #$00             ; no address found, reset 'in' pointer
-   51 A:f548  60                                 rts 
-   52 A:f549                                    ;
-   53 A:f549                                    ; Mini-Assembler entry point.
-   54 A:f549                                    ;
-   55 A:f549                           asm_entry 
-   55 A:f549  d8                                 cld                    ; who knows where we came from... bcd mode tends to confuse hex based arithmetics.
-   56 A:f54a                                    ;
-   57 A:f54a                                    ; save stack pointer to spnt to return to clean state
-   58 A:f54a                                    ; when processing syntax errors
-   59 A:f54a                                    ; from deeper subroutine level.
-   60 A:f54a                                    ; very crude exception handling.
-   61 A:f54a                                    ; This makes it possible to handle syntax errors in subroutines
-   62 A:f54a                                    ; without too much overhead - process is aborted and asm returns to prompt.
-   63 A:f54a                                    ;
-   64 A:f54a  ba                                 tsx 
-   65 A:f54b  86 49                              stx spnt
-   66 A:f54d  a5 3c                              lda a1l
-   67 A:f54f  85 3a                              sta pcl
-   68 A:f551  a5 3d                              lda a1h
-   69 A:f553  85 3b                              sta pch
-   70 A:f555                                    ;
-   71 A:f555                                    ; main assembler loop
-   72 A:f555                                    ;
-   73 A:f555                           asmz      
-   73 A:f555  a9 21                              lda #'!'
-   74 A:f557  85 33                              sta prompt                ; set prompt to '!'
-   75 A:f559  20 63 fd                           jsr crout
-   76 A:f55c  a4 3d                              ldy a1h                ; print CR,A1 in hex
-   77 A:f55e  a6 3c                              ldx a1l
-   78 A:f560  20 a7 f9                           jsr prntyx                ; output cr and address
-   79 A:f563  20 a9 f8                           jsr getlnv
-   80 A:f566  20 aa ff                           jsr zmode
-   81 A:f569  20 3a f5                           jsr hasaddr                ; see if line has address label "%x:"
-   82 A:f56c  a2 01                              ldx #$01
-   83 A:f56e                           @setpcl   
-   83 A:f56e  b5 3c                              lda a1l,x
-   84 A:f570  95 3a                              sta pcl,x
-   85 A:f572  ca                                 dex 
-   86 A:f573  10 f9                              bpl @setpcl
+   40 A:f4f5                           setaddr   
+   40 A:f4f5  20 aa ff                           jsr zmode                ; clear (reused) monitor mode, scan idx
+   41 A:f4f8  20 85 ff                           jsr getnum                ; leaves the eor'ed ':' in a and in,y pointing to next chat
+   42 A:f4fb  60                                 rts 
+   43 A:f4fc                           hasaddr   
+   43 A:f4fc  a0 04                              ldy #$04             ; look at first 5 chars, beginning with last
+   44 A:f4fe                           @hadrlp   
+   44 A:f4fe  b9 00 02                           lda in,y
+   45 A:f501  c9 3a                              cmp #':'
+   46 A:f503  f0 f0                              beq setaddr                ; if so, set current address
+   47 A:f505  88                                 dey 
+   48 A:f506  10 f6                              bpl @hadrlp
+   49 A:f508  a0 00                              ldy #$00             ; no address found, reset 'in' pointer
+   50 A:f50a  60                                 rts 
+   51 A:f50b                                    ;
+   52 A:f50b                                    ; Mini-Assembler entry point.
+   53 A:f50b                                    ;
+   54 A:f50b                           asm_entry 
+   54 A:f50b  d8                                 cld                    ; who knows where we came from... bcd mode tends to confuse hex based arithmetics.
+   55 A:f50c                                    ;
+   56 A:f50c                                    ; save stack pointer to spnt to return to clean state
+   57 A:f50c                                    ; when processing syntax errors
+   58 A:f50c                                    ; from deeper subroutine level.
+   59 A:f50c                                    ; very crude exception handling.
+   60 A:f50c                                    ; This makes it possible to handle syntax errors in subroutines
+   61 A:f50c                                    ; without too much overhead - process is aborted and asm returns to prompt.
+   62 A:f50c                                    ;
+   63 A:f50c  ba                                 tsx 
+   64 A:f50d  86 49                              stx spnt
+   65 A:f50f  a5 3c                              lda a1l
+   66 A:f511  85 3a                              sta pcl
+   67 A:f513  a5 3d                              lda a1h
+   68 A:f515  85 3b                              sta pch
+   69 A:f517                                    ;
+   70 A:f517                                    ; main assembler loop
+   71 A:f517                                    ;
+   72 A:f517                           asmz      
+   72 A:f517  a9 21                              lda #'!'
+   73 A:f519  85 33                              sta prompt                ; set prompt to '!'
+   74 A:f51b  20 63 fd                           jsr crout
+   75 A:f51e  a4 3d                              ldy a1h                ; print CR,A1 in hex
+   76 A:f520  a6 3c                              ldx a1l
+   77 A:f522  20 a7 f9                           jsr prntyx                ; output cr and address
+   78 A:f525  20 a9 f8                           jsr getlnv
+   79 A:f528  20 aa ff                           jsr zmode
+   80 A:f52b  20 fc f4                           jsr hasaddr                ; see if line has address label "%x:"
+   81 A:f52e  a2 01                              ldx #$01
+   82 A:f530                           @setpcl   
+   82 A:f530  b5 3c                              lda a1l,x
+   83 A:f532  95 3a                              sta pcl,x
+   84 A:f534  ca                                 dex 
+   85 A:f535  10 f9                              bpl @setpcl
 
-   88 A:f575  20 10 f5                           jsr eatblank                ; skip whitespace
-   89 A:f578  c9 0a                              cmp #k_entr               ; empty line, return to prompt
-   90 A:f57a  f0 d9                              beq asmz
+   87 A:f537  20 d3 f4                           jsr eatblank                ; skip whitespace
+   88 A:f53a  c9 0a                              cmp #k_entr               ; empty line, return to prompt
+   89 A:f53c  f0 d9                              beq asmz
 
-   92 A:f57c                                    ;
-   93 A:f57c                                    ; on '*' return to monitor.
-   94 A:f57c                                    ;
-   95 A:f57c  c9 2a                              cmp #'*'
-   96 A:f57e  d0 03                              bne @procmnm
-   97 A:f580  4c 47 ff                           jmp monz
-   98 A:f583                                    ;
-   99 A:f583                                    ; get the mnemonic from input line
-  100 A:f583                                    ;
-  101 A:f583                                    ;
-  102 A:f583                                    ; get coded mnemonic into a4
-  103 A:f583                                    ; ((menm0 & 0x1f) << 10) + ((menm1 & 0x1f) << 5) + (menm2 & 0x1f)
-  104 A:f583                                    ; so the opcode forms a word with 13 bits used.
-  105 A:f583                                    ; impossible mnemonics produce a syntax error, invalid mnemonics will produce an
-  106 A:f583                                    ; unknown opcode
-  107 A:f583                                    ;
-  108 A:f583                           @procmnm  
-  108 A:f583  29 1f                              and #$1f             ; ex.:  PHP                                            'P' = $50 -> $10
-  109 A:f585  85 43                              sta a4h                ;
-  110 A:f587  a9 00                              lda #$00
-  111 A:f589  8d 00 02                           sta in                ; put a zero into first position to mark input buffer old news.
-  112 A:f58c  20 0a f5                           jsr nextch                ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
-  113 A:f58f  0a                                 asl                    ; $3E                                                        $90
-  114 A:f590  0a                                 asl                    ; $7C                                                        $20
-  115 A:f591  0a                                 asl                    ; $F8                                                        $40
-  116 A:f592  0a                                 asl                    ; $01F0 high bit-> carry                                     $80 + 0
-  117 A:f593  26 43                              rol a4h                ; $3FF0                                               $20    $80
-  118 A:f595  0a                                 asl                    ; $03E0 high bit-> carry                                     $00 + 1
-  119 A:f596  26 43                              rol a4h                ; $7FE0                                               $41    $00
-  120 A:f598  85 42                              sta a4l                ; $E0 , five lower bits free                                 $00
-  121 A:f59a  20 0a f5                           jsr nextch                ; $1F                                                  'P' = $50
-  122 A:f59d  29 1f                              and #$1f             ;                                                            $10
-  123 A:f59f  05 42                              ora a4l                ;                                                            $10
-  124 A:f5a1  85 42                              sta a4l                ;                                                     $41    $10
-  125 A:f5a3                                    ;
-  126 A:f5a3                                    ; now we have the short form in a4.
-  127 A:f5a3                                    ; go on to find the mnemonic in opcodex table
-  128 A:f5a3                                    ; and tehn return this index to the opcode lookup tables
-  129 A:f5a3  a2 71                              ldx #(opcodez-opcodex-1)+2
-  130 A:f5a5                           @firstfail 
-  130 A:f5a5  ca                                 dex 
-  131 A:f5a6                           @scndfail 
-  131 A:f5a6  ca                                 dex 
-  132 A:f5a7  10 03                              bpl @cont
-  133 A:f5a9  4c 1c f5                           jmp syntaxerr
-  134 A:f5ac                           @cont     
-  134 A:f5ac  bd c6 f5                           lda opcodex,x     high
-  135 A:f5af  c5 43                              cmp a4h
-  136 A:f5b1  d0 f2                              bne @firstfail
-  137 A:f5b3  ca                                 dex 
-  138 A:f5b4  bd c6 f5                           lda opcodex,x     low
-  139 A:f5b7  c5 42                              cmp a4l
-  140 A:f5b9  d0 eb                              bne @scndfail
-  141 A:f5bb  8a                                 txa 
-  142 A:f5bc  4a                                 lsr                    ; rest of the tables have bytes not words, so half it.
-  143 A:f5bd  85 42                              sta mnem
-  144 A:f5bf  c8                                 iny                    ; point to char after mnemonic
-  145 A:f5c0                                    ;
-  146 A:f5c0                                    ; at this point, we have the address set in a1-a3 and the
-  147 A:f5c0                                    ; mnemonic code number in a4l.
-  148 A:f5c0                                    ; Now proceed to  evaluate address part.
-  149 A:f5c0                                    ; Following modes are possible:
-  150 A:f5c0                                    ; - None. Command does not take arguments, it is finished.
-  151 A:f5c0                                    ; - Immediate:  #Value
-  152 A:f5c0                                    ; - Adr/Rel:    Address
-  153 A:f5c0                                    ; - Indexed:    Address,X|Y
-  154 A:f5c0                                    ; - indirect:   (Address)
-  155 A:f5c0                                    ; - indir. indxd (Address),Y
-  156 A:f5c0                                    ; - indexed ind. (Address,X)
-  157 A:f5c0  20 10 f5                           jsr eatblank
-  158 A:f5c3  4c 07 f7                           jmp eval_arg
-  159 A:f5c6                                    ;
-  160 A:f5c6                                    ; opcode char mappings
-  161 A:f5c6                                    ;
-  162 A:f5c6                           opcodex   
-  162 A:f5c6                                    
-  163 A:f5c6                                     .include "opcodes_compressed.s"
+   91 A:f53e                                    ;
+   92 A:f53e                                    ; on '*' return to monitor.
+   93 A:f53e                                    ;
+   94 A:f53e  c9 2a                              cmp #'*'
+   95 A:f540  d0 03                              bne @procmnm
+   96 A:f542  4c 47 ff                           jmp monz
+   97 A:f545                                    ;
+   98 A:f545                                    ; get the mnemonic from input line
+   99 A:f545                                    ;
+  100 A:f545                                    ;
+  101 A:f545                                    ; get coded mnemonic into tmp
+  102 A:f545                                    ; ((menm0 & 0x1f) << 10) + ((menm1 & 0x1f) << 5) + (menm2 & 0x1f)
+  103 A:f545                                    ; so the opcode forms a word with 13 bits used.
+  104 A:f545                                    ; impossible mnemonics produce a syntax error, invalid mnemonics will produce an
+  105 A:f545                                    ; unknown opcode
+  106 A:f545                                    ;
+  107 A:f545                           @procmnm  
+  107 A:f545  29 1f                              and #$1f             ; ex.:  PHP                                            'P' = $50 -> $10
+  108 A:f547  85 6a                              sta tmph                ;
+  109 A:f549  a9 00                              lda #$00
+  110 A:f54b  8d 00 02                           sta in                ; put a zero into first position to mark input buffer old news.
+  111 A:f54e  20 cd f4                           jsr nextch                ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
+  112 A:f551  0a                                 asl                    ; $3E                                                        $90
+  113 A:f552  0a                                 asl                    ; $7C                                                        $20
+  114 A:f553  0a                                 asl                    ; $F8                                                        $40
+  115 A:f554  0a                                 asl                    ; $01F0 high bit-> carry                                     $80 + 0
+  116 A:f555  26 6a                              rol tmph                ; $3FF0                                               $20    $80
+  117 A:f557  0a                                 asl                    ; $03E0 high bit-> carry                                     $00 + 1
+  118 A:f558  26 6a                              rol tmph                ; $7FE0                                               $41    $00
+  119 A:f55a  85 69                              sta tmpl                ; $E0 , five lower bits free                                 $00
+  120 A:f55c  20 cd f4                           jsr nextch                ; $1F                                                  'P' = $50
+  121 A:f55f  29 1f                              and #$1f             ;                                                            $10
+  122 A:f561  05 69                              ora tmpl                ;                                                            $10
+  123 A:f563  85 69                              sta tmpl                ;                                                     $41    $10
+  124 A:f565                                    ;
+  125 A:f565                                    ; now we have the short form in tmp.
+  126 A:f565                                    ; go on to find the mnemonic in opcodex table
+  127 A:f565                                    ; and tehn return this index to the opcode lookup tables
+  128 A:f565  a2 71                              ldx #(opcodez-opcodex-1)+2
+  129 A:f567                           @firstfail 
+  129 A:f567  ca                                 dex 
+  130 A:f568                           @scndfail 
+  130 A:f568  ca                                 dex 
+  131 A:f569  10 03                              bpl @cont
+  132 A:f56b  4c df f4                           jmp syntaxerr
+  133 A:f56e                           @cont     
+  133 A:f56e  bd 88 f5                           lda opcodex,x     high
+  134 A:f571  c5 6a                              cmp tmph
+  135 A:f573  d0 f2                              bne @firstfail
+  136 A:f575  ca                                 dex 
+  137 A:f576  bd 88 f5                           lda opcodex,x     low
+  138 A:f579  c5 69                              cmp tmpl
+  139 A:f57b  d0 eb                              bne @scndfail
+  140 A:f57d  8a                                 txa 
+  141 A:f57e  4a                                 lsr                    ; rest of the tables have bytes not words, so half it.
+  142 A:f57f  85 60                              sta mnem
+  143 A:f581  c8                                 iny                    ; point to char after mnemonic
+  144 A:f582                                    ;
+  145 A:f582                                    ; at this point, we have the address set in a1-a3 and the
+  146 A:f582                                    ; mnemonic code number in mnem.
+  147 A:f582                                    ; Now proceed to  evaluate address part.
+  148 A:f582                                    ; Following modes are possible:
+  149 A:f582                                    ; - None. Command does not take arguments, it is finished.
+  150 A:f582                                    ; - Immediate:  #Value
+  151 A:f582                                    ; - Adr/Rel:    Address
+  152 A:f582                                    ; - Indexed:    Address,X|Y
+  153 A:f582                                    ; - indirect:   (Address)
+  154 A:f582                                    ; - indir. indxd (Address),Y
+  155 A:f582                                    ; - indexed ind. (Address,X)
+  156 A:f582  20 d3 f4                           jsr eatblank
+  157 A:f585  4c c9 f6                           jmp eval_arg
+  158 A:f588                                    ;
+  159 A:f588                                    ; opcode char mappings
+  160 A:f588                                    ;
+  161 A:f588                           opcodex   
+  161 A:f588                                    
+  162 A:f588                                     .include "opcodes_compressed.s"
 
 opcodes_compressed.s
 
-    1 A:f5c6                                    ;
-    2 A:f5c6                                    ; opcode char mappings
-    3 A:f5c6                                    ;
-    4 A:f5c6                                    ; mnemonic letters lower 5 bits with first letter left shifted 10 bits,
-    5 A:f5c6                                    ; second letter left-shifted 5 bits.
-    6 A:f5c6                                    ;
-    7 A:f5c6                                    ; python calc_opval.py > opcodes_compressed.s
-    8 A:f5c6                                    ;
-    9 A:f5c6  83 04                              .word $0483              ; ADC   - $00   ($00)
-   10 A:f5c8  c4 05                              .word $05c4              ; AND   - $01   ($02)
-   11 A:f5ca  6c 06                              .word $066c              ; ASL   - $02   ($04)
-   12 A:f5cc  63 08                              .word $0863              ; BCC   - $03   ($06)
-   13 A:f5ce  73 08                              .word $0873              ; BCS   - $04   ($08)
-   14 A:f5d0  b1 08                              .word $08b1              ; BEQ   - $05   ($0a)
-   15 A:f5d2  34 09                              .word $0934              ; BIT   - $06   ($0c)
-   16 A:f5d4  a9 09                              .word $09a9              ; BMI   - $07   ($0e)
-   17 A:f5d6  c5 09                              .word $09c5              ; BNE   - $08   ($10)
-   18 A:f5d8  0c 0a                              .word $0a0c              ; BPL   - $09   ($12)
-   19 A:f5da  4b 0a                              .word $0a4b              ; BRK   - $0a   ($14)
-   20 A:f5dc  c3 0a                              .word $0ac3              ; BVC   - $0b   ($16)
-   21 A:f5de  d3 0a                              .word $0ad3              ; BVS   - $0c   ($18)
-   22 A:f5e0  83 0d                              .word $0d83              ; CLC   - $0d   ($1a)
-   23 A:f5e2  84 0d                              .word $0d84              ; CLD   - $0e   ($1c)
-   24 A:f5e4  89 0d                              .word $0d89              ; CLI   - $0f   ($1e)
-   25 A:f5e6  96 0d                              .word $0d96              ; CLV   - $10   ($20)
-   26 A:f5e8  b0 0d                              .word $0db0              ; CMP   - $11   ($22)
-   27 A:f5ea  18 0e                              .word $0e18              ; CPX   - $12   ($24)
-   28 A:f5ec  19 0e                              .word $0e19              ; CPY   - $13   ($26)
-   29 A:f5ee  a3 10                              .word $10a3              ; DEC   - $14   ($28)
-   30 A:f5f0  b8 10                              .word $10b8              ; DEX   - $15   ($2a)
-   31 A:f5f2  b9 10                              .word $10b9              ; DEY   - $16   ($2c)
-   32 A:f5f4  f2 15                              .word $15f2              ; EOR   - $17   ($2e)
-   33 A:f5f6  c3 25                              .word $25c3              ; INC   - $18   ($30)
-   34 A:f5f8  d8 25                              .word $25d8              ; INX   - $19   ($32)
-   35 A:f5fa  d9 25                              .word $25d9              ; INY   - $1a   ($34)
-   36 A:f5fc  b0 29                              .word $29b0              ; JMP   - $1b   ($36)
-   37 A:f5fe  72 2a                              .word $2a72              ; JSR   - $1c   ($38)
-   38 A:f600  81 30                              .word $3081              ; LDA   - $1d   ($3a)
-   39 A:f602  98 30                              .word $3098              ; LDX   - $1e   ($3c)
-   40 A:f604  99 30                              .word $3099              ; LDY   - $1f   ($3e)
-   41 A:f606  72 32                              .word $3272              ; LSR   - $20   ($40)
-   42 A:f608  f0 39                              .word $39f0              ; NOP   - $21   ($42)
-   43 A:f60a  41 3e                              .word $3e41              ; ORA   - $22   ($44)
-   44 A:f60c  01 41                              .word $4101              ; PHA   - $23   ($46)
-   45 A:f60e  10 41                              .word $4110              ; PHP   - $24   ($48)
-   46 A:f610  81 41                              .word $4181              ; PLA   - $25   ($4a)
-   47 A:f612  90 41                              .word $4190              ; PLP   - $26   ($4c)
-   48 A:f614  ec 49                              .word $49ec              ; ROL   - $27   ($4e)
-   49 A:f616  f2 49                              .word $49f2              ; ROR   - $28   ($50)
-   50 A:f618  89 4a                              .word $4a89              ; RTI   - $29   ($52)
-   51 A:f61a  93 4a                              .word $4a93              ; RTS   - $2a   ($54)
-   52 A:f61c  43 4c                              .word $4c43              ; SBC   - $2b   ($56)
-   53 A:f61e  a3 4c                              .word $4ca3              ; SEC   - $2c   ($58)
-   54 A:f620  a4 4c                              .word $4ca4              ; SED   - $2d   ($5a)
-   55 A:f622  a9 4c                              .word $4ca9              ; SEI   - $2e   ($5c)
-   56 A:f624  81 4e                              .word $4e81              ; STA   - $2f   ($5e)
-   57 A:f626  98 4e                              .word $4e98              ; STX   - $30   ($60)
-   58 A:f628  99 4e                              .word $4e99              ; STY   - $31   ($62)
-   59 A:f62a  38 50                              .word $5038              ; TAX   - $32   ($64)
-   60 A:f62c  39 50                              .word $5039              ; TAY   - $33   ($66)
-   61 A:f62e  78 52                              .word $5278              ; TSX   - $34   ($68)
-   62 A:f630  01 53                              .word $5301              ; TXA   - $35   ($6a)
-   63 A:f632  13 53                              .word $5313              ; TXS   - $36   ($6c)
-   64 A:f634  21 53                              .word $5321              ; TYA   - $37   ($6e)
+    1 A:f588                                    ;
+    2 A:f588                                    ; opcode char mappings
+    3 A:f588                                    ;
+    4 A:f588                                    ; mnemonic letters lower 5 bits with first letter left shifted 10 bits,
+    5 A:f588                                    ; second letter left-shifted 5 bits.
+    6 A:f588                                    ;
+    7 A:f588                                    ; python calc_opval.py > opcodes_compressed.s
+    8 A:f588                                    ;
+    9 A:f588  83 04                              .word $0483              ; ADC   - $00   ($00)
+   10 A:f58a  c4 05                              .word $05c4              ; AND   - $01   ($02)
+   11 A:f58c  6c 06                              .word $066c              ; ASL   - $02   ($04)
+   12 A:f58e  63 08                              .word $0863              ; BCC   - $03   ($06)
+   13 A:f590  73 08                              .word $0873              ; BCS   - $04   ($08)
+   14 A:f592  b1 08                              .word $08b1              ; BEQ   - $05   ($0a)
+   15 A:f594  34 09                              .word $0934              ; BIT   - $06   ($0c)
+   16 A:f596  a9 09                              .word $09a9              ; BMI   - $07   ($0e)
+   17 A:f598  c5 09                              .word $09c5              ; BNE   - $08   ($10)
+   18 A:f59a  0c 0a                              .word $0a0c              ; BPL   - $09   ($12)
+   19 A:f59c  4b 0a                              .word $0a4b              ; BRK   - $0a   ($14)
+   20 A:f59e  c3 0a                              .word $0ac3              ; BVC   - $0b   ($16)
+   21 A:f5a0  d3 0a                              .word $0ad3              ; BVS   - $0c   ($18)
+   22 A:f5a2  83 0d                              .word $0d83              ; CLC   - $0d   ($1a)
+   23 A:f5a4  84 0d                              .word $0d84              ; CLD   - $0e   ($1c)
+   24 A:f5a6  89 0d                              .word $0d89              ; CLI   - $0f   ($1e)
+   25 A:f5a8  96 0d                              .word $0d96              ; CLV   - $10   ($20)
+   26 A:f5aa  b0 0d                              .word $0db0              ; CMP   - $11   ($22)
+   27 A:f5ac  18 0e                              .word $0e18              ; CPX   - $12   ($24)
+   28 A:f5ae  19 0e                              .word $0e19              ; CPY   - $13   ($26)
+   29 A:f5b0  a3 10                              .word $10a3              ; DEC   - $14   ($28)
+   30 A:f5b2  b8 10                              .word $10b8              ; DEX   - $15   ($2a)
+   31 A:f5b4  b9 10                              .word $10b9              ; DEY   - $16   ($2c)
+   32 A:f5b6  f2 15                              .word $15f2              ; EOR   - $17   ($2e)
+   33 A:f5b8  c3 25                              .word $25c3              ; INC   - $18   ($30)
+   34 A:f5ba  d8 25                              .word $25d8              ; INX   - $19   ($32)
+   35 A:f5bc  d9 25                              .word $25d9              ; INY   - $1a   ($34)
+   36 A:f5be  b0 29                              .word $29b0              ; JMP   - $1b   ($36)
+   37 A:f5c0  72 2a                              .word $2a72              ; JSR   - $1c   ($38)
+   38 A:f5c2  81 30                              .word $3081              ; LDA   - $1d   ($3a)
+   39 A:f5c4  98 30                              .word $3098              ; LDX   - $1e   ($3c)
+   40 A:f5c6  99 30                              .word $3099              ; LDY   - $1f   ($3e)
+   41 A:f5c8  72 32                              .word $3272              ; LSR   - $20   ($40)
+   42 A:f5ca  f0 39                              .word $39f0              ; NOP   - $21   ($42)
+   43 A:f5cc  41 3e                              .word $3e41              ; ORA   - $22   ($44)
+   44 A:f5ce  01 41                              .word $4101              ; PHA   - $23   ($46)
+   45 A:f5d0  10 41                              .word $4110              ; PHP   - $24   ($48)
+   46 A:f5d2  81 41                              .word $4181              ; PLA   - $25   ($4a)
+   47 A:f5d4  90 41                              .word $4190              ; PLP   - $26   ($4c)
+   48 A:f5d6  ec 49                              .word $49ec              ; ROL   - $27   ($4e)
+   49 A:f5d8  f2 49                              .word $49f2              ; ROR   - $28   ($50)
+   50 A:f5da  89 4a                              .word $4a89              ; RTI   - $29   ($52)
+   51 A:f5dc  93 4a                              .word $4a93              ; RTS   - $2a   ($54)
+   52 A:f5de  43 4c                              .word $4c43              ; SBC   - $2b   ($56)
+   53 A:f5e0  a3 4c                              .word $4ca3              ; SEC   - $2c   ($58)
+   54 A:f5e2  a4 4c                              .word $4ca4              ; SED   - $2d   ($5a)
+   55 A:f5e4  a9 4c                              .word $4ca9              ; SEI   - $2e   ($5c)
+   56 A:f5e6  81 4e                              .word $4e81              ; STA   - $2f   ($5e)
+   57 A:f5e8  98 4e                              .word $4e98              ; STX   - $30   ($60)
+   58 A:f5ea  99 4e                              .word $4e99              ; STY   - $31   ($62)
+   59 A:f5ec  38 50                              .word $5038              ; TAX   - $32   ($64)
+   60 A:f5ee  39 50                              .word $5039              ; TAY   - $33   ($66)
+   61 A:f5f0  78 52                              .word $5278              ; TSX   - $34   ($68)
+   62 A:f5f2  01 53                              .word $5301              ; TXA   - $35   ($6a)
+   63 A:f5f4  13 53                              .word $5313              ; TXS   - $36   ($6c)
+   64 A:f5f6  21 53                              .word $5321              ; TYA   - $37   ($6e)
 
 asm.s
 
-    1 A:f636                           opcodez   
-    1 A:f636                                    
+    1 A:f5f8                           opcodez   
+    1 A:f5f8                                    
 
-  165 A:f636                                    ;
-  166 A:f636                                    ; opmode groups
-  167 A:f636                                    ;
-  168 A:f636                                    ;                                       |Impl|Imm|Abs |Zero|z_x |z_y |a_x |a_y |Rel |ix_ir|ir_ix|Ind
-  169 A:f636                                    ; type 0: implied/accu, no arguments    | *  |   |    |    |    |    |    |    |    |     |     |
-  170 A:f636                                    ; type 1: relative                      |    |   |(*) |    |    |    |    |    | <- |     |     |
-  171 A:f636                                    ; type 2: full in (like adc)            |    | * | *  | *  | *  |    | *  | *  |    | *   | *   |
-  172 A:f636                                    ; type 3: full out (without implied)    |    |   | *  | *  | *  |    | *  | *  |    | *   | *   |
-  173 A:f636                                    ; type 4: shifting                      | *  |   | *  | *  | *  |    | *  |    |    |     |     |
-  174 A:f636                                    ; type 5: cpx                           |    | * | *  | *  |    |    |    |    |    |     |     |
-  175 A:f636                                    ; type 6: bit                           |    |   | *  | *  |    |    |    |    |    |     |     |
-  176 A:f636                                    ; type 7: dec                           |    |   | *  | *  | *  |    | *  |    |    |     |     |
-  177 A:f636                                    ; type 8: jmp                           |    |   | *  |    |    |    |    |    |    |     |     | *
-  178 A:f636                                    ; type 9: jsr                           |    |   | *  |    |    |    |    |    |    |     |     |
-  179 A:f636                                    ; type a: ldx/ldy changing index reg    |    | * |    | *  | y  | x  | y  | x  |    |     |     |
-  180 A:f636                                    ; type b: stx/sty changing index reg    |    |   | *  | *  | y  | x  |    |    |    |     |     |
-  181 A:f636                                    ;
-  182 A:f636                           opmodes   
-  182 A:f636                                    
-  183 A:f636  02                                 .byt $02              ; 'ADC'    - 00
-  184 A:f637  02                                 .byt $02              ; 'AND'
-  185 A:f638  04                                 .byt $04              ; 'ASL'
-  186 A:f639  01                                 .byt $01              ; 'BCC'
-  187 A:f63a  01                                 .byt $01              ; 'BCS'
-  188 A:f63b  01                                 .byt $01              ; 'BEQ'
-  189 A:f63c  06                                 .byt $06              ; 'BIT'
-  190 A:f63d  01                                 .byt $01              ; 'BMI'
-  191 A:f63e  01                                 .byt $01              ; 'BNE'    - 08
-  192 A:f63f  01                                 .byt $01              ; 'BPL'
-  193 A:f640  00                                 .byt $00              ; 'BRK'
-  194 A:f641  01                                 .byt $01              ; 'BVC'
-  195 A:f642  01                                 .byt $01              ; 'BVS'
-  196 A:f643  00                                 .byt $00              ; 'CLC'
-  197 A:f644  00                                 .byt $00              ; 'CLD'
-  198 A:f645  00                                 .byt $00              ; 'CLI'
-  199 A:f646  00                                 .byt $00              ; 'CLV'    - 10
-  200 A:f647  02                                 .byt $02              ; 'CMP'
-  201 A:f648  05                                 .byt $05              ; 'CPX'
-  202 A:f649  05                                 .byt $05              ; 'CPY'
-  203 A:f64a  07                                 .byt $07              ; 'DEC'
-  204 A:f64b  00                                 .byt $00              ; 'DEX'
-  205 A:f64c  00                                 .byt $00              ; 'DEY'
-  206 A:f64d  02                                 .byt $02              ; 'EOR'
-  207 A:f64e  07                                 .byt $07              ; 'INC'    - 18
-  208 A:f64f  00                                 .byt $00              ; 'INX'
-  209 A:f650  00                                 .byt $00              ; 'INY'
-  210 A:f651  08                                 .byt $08              ; 'JMP'
-  211 A:f652  09                                 .byt $09              ; 'JSR'
-  212 A:f653  02                                 .byt $02              ; 'LDA'
-  213 A:f654  0a                                 .byt $0a              ; 'LDX'
-  214 A:f655  0a                                 .byt $0a              ; 'LDY'
-  215 A:f656  04                                 .byt $04              ; 'LSR'    - 20
-  216 A:f657  00                                 .byt $00              ; 'NOP'
-  217 A:f658  02                                 .byt $02              ; 'ORA'
-  218 A:f659  00                                 .byt $00              ; 'PHA'
-  219 A:f65a  00                                 .byt $00              ; 'PHP'
-  220 A:f65b  00                                 .byt $00              ; 'PLA'
-  221 A:f65c  00                                 .byt $00              ; 'PLP'
-  222 A:f65d  04                                 .byt $04              ; 'ROL'
-  223 A:f65e  04                                 .byt $04              ; 'ROR'    - 28
-  224 A:f65f  00                                 .byt $00              ; 'RTI'
-  225 A:f660  00                                 .byt $00              ; 'RTS'
-  226 A:f661  02                                 .byt $02              ; 'SBC'
-  227 A:f662  00                                 .byt $00              ; 'SEC'
-  228 A:f663  00                                 .byt $00              ; 'SED'
-  229 A:f664  00                                 .byt $00              ; 'SEI'
-  230 A:f665  03                                 .byt $03              ; 'STA'
-  231 A:f666  0b                                 .byt $0b              ; 'STX'    - 30
-  232 A:f667  0b                                 .byt $0b              ; 'STY'
-  233 A:f668  00                                 .byt $00              ; 'TAX'
-  234 A:f669  00                                 .byt $00              ; 'TAY'
-  235 A:f66a  00                                 .byt $00              ; 'TSX'
-  236 A:f66b  00                                 .byt $00              ; 'TXA'
-  237 A:f66c  00                                 .byt $00              ; 'TXS'
-  238 A:f66d  00                                 .byt $00              ; 'TYA'    - 37
-  239 A:f66e                           opmodez   
-  239 A:f66e                                    
-  240 A:f66e                                    ;
-  241 A:f66e                                    ;   This is the basic opcodes with bits %aaabbbcc
-  242 A:f66e                                    ;   for instructions that only have implied mode
-  243 A:f66e                                    ;   the full opcode is given with bbb bits
-  244 A:f66e                                    ;   also set to speed up emission.
-  245 A:f66e                                    ;   see https:
-  246 A:f66e                                    ;
-  247 A:f66e                           code_ac   
-  247 A:f66e                                    
-  248 A:f66e  61                                 .byt $61              ; 'ADC'    - 00
-  249 A:f66f  21                                 .byt $21              ; 'AND'
-  250 A:f670  02                                 .byt $02              ; 'ASL'
-  251 A:f671  90                                 .byt $90              ; 'BCC'
-  252 A:f672  b0                                 .byt $b0              ; 'BCS'
-  253 A:f673  f0                                 .byt $f0              ; 'BEQ'
-  254 A:f674  06                                 .byt $06              ; 'BIT'
-  255 A:f675  30                                 .byt $30              ; 'BMI'
-  256 A:f676  d0                                 .byt $d0              ; 'BNE'    - 08
-  257 A:f677  10                                 .byt $10              ; 'BPL'
-  258 A:f678  00                                 .byt $00              ; 'BRK'
-  259 A:f679  50                                 .byt $50              ; 'BVC'
-  260 A:f67a  70                                 .byt $70              ; 'BVS'
-  261 A:f67b  18                                 .byt $18              ; 'CLC'
-  262 A:f67c  d8                                 .byt $d8              ; 'CLD'
-  263 A:f67d  58                                 .byt $58              ; 'CLI'
-  264 A:f67e  b8                                 .byt $b8              ; 'CLV'    - 10
-  265 A:f67f  61                                 .byt $61              ; 'CMP'
-  266 A:f680  e0                                 .byt $e0              ; 'CPX'
-  267 A:f681  c0                                 .byt $c0              ; 'CPY'
-  268 A:f682  c2                                 .byt $c2              ; 'DEC'
-  269 A:f683  ca                                 .byt $ca              ; 'DEX'
-  270 A:f684  88                                 .byt $88              ; 'DEY'
-  271 A:f685  41                                 .byt $41              ; 'EOR'
-  272 A:f686  e2                                 .byt $e2              ; 'INC'    - 18
-  273 A:f687  e8                                 .byt $e8              ; 'INX'
-  274 A:f688  c8                                 .byt $c8              ; 'INY'
-  275 A:f689  4c                                 .byt $4c              ; 'JMP'
-  276 A:f68a  20                                 .byt $20              ; 'JSR'
-  277 A:f68b  a1                                 .byt $a1              ; 'LDA'
-  278 A:f68c  a2                                 .byt $a2              ; 'LDX'
-  279 A:f68d  a0                                 .byt $a0              ; 'LDY'
-  280 A:f68e  42                                 .byt $42              ; 'LSR'    - 20
-  281 A:f68f  ea                                 .byt $ea              ; 'NOP'
-  282 A:f690  01                                 .byt $01              ; 'ORA'
-  283 A:f691  48                                 .byt $48              ; 'PHA'
-  284 A:f692  08                                 .byt $08              ; 'PHP'
-  285 A:f693  68                                 .byt $68              ; 'PLA'
-  286 A:f694  28                                 .byt $28              ; 'PLP'
-  287 A:f695  22                                 .byt $22              ; 'ROL'
-  288 A:f696  62                                 .byt $62              ; 'ROR'    - 28
-  289 A:f697  40                                 .byt $40              ; 'RTI'
-  290 A:f698  60                                 .byt $60              ; 'RTS'
-  291 A:f699  e1                                 .byt $e1              ; 'SBC'
-  292 A:f69a  38                                 .byt $38              ; 'SEC'
-  293 A:f69b  f8                                 .byt $f8              ; 'SED'
-  294 A:f69c  78                                 .byt $78              ; 'SEI'
-  295 A:f69d  81                                 .byt $81              ; 'STA'
-  296 A:f69e  82                                 .byt $82              ; 'STX'    - 30
-  297 A:f69f  80                                 .byt $80              ; 'STY'
-  298 A:f6a0  aa                                 .byt $aa              ; 'TAX'
-  299 A:f6a1  a8                                 .byt $a8              ; 'TAY'
-  300 A:f6a2  ba                                 .byt $ba              ; 'TSX'
-  301 A:f6a3  8a                                 .byt $8a              ; 'TXA'
-  302 A:f6a4  9a                                 .byt $9a              ; 'TXS'
-  303 A:f6a5  98                                 .byt $98              ; 'TYA'    - 37
-  304 A:f6a6                           code_az   
-  304 A:f6a6                                    
+  164 A:f5f8                                    ;
+  165 A:f5f8                                    ; opmode groups
+  166 A:f5f8                                    ;
+  167 A:f5f8                                    ;                                       |Impl|Imm|Abs |Zero|z_x |z_y |a_x |a_y |Rel |ix_ir|ir_ix|Ind
+  168 A:f5f8                                    ; type 0: implied/accu, no arguments    | *  |   |    |    |    |    |    |    |    |     |     |
+  169 A:f5f8                                    ; type 1: relative                      |    |   |(*) |    |    |    |    |    | <- |     |     |
+  170 A:f5f8                                    ; type 2: full in (like adc)            |    | * | *  | *  | *  |    | *  | *  |    | *   | *   |
+  171 A:f5f8                                    ; type 3: full out (without implied)    |    |   | *  | *  | *  |    | *  | *  |    | *   | *   |
+  172 A:f5f8                                    ; type 4: shifting                      | *  |   | *  | *  | *  |    | *  |    |    |     |     |
+  173 A:f5f8                                    ; type 5: cpx                           |    | * | *  | *  |    |    |    |    |    |     |     |
+  174 A:f5f8                                    ; type 6: bit                           |    |   | *  | *  |    |    |    |    |    |     |     |
+  175 A:f5f8                                    ; type 7: dec                           |    |   | *  | *  | *  |    | *  |    |    |     |     |
+  176 A:f5f8                                    ; type 8: jmp                           |    |   | *  |    |    |    |    |    |    |     |     | *
+  177 A:f5f8                                    ; type 9: jsr                           |    |   | *  |    |    |    |    |    |    |     |     |
+  178 A:f5f8                                    ; type a: ldx/ldy changing index reg    |    | * |    | *  | y  | x  | y  | x  |    |     |     |
+  179 A:f5f8                                    ; type b: stx/sty changing index reg    |    |   | *  | *  | y  | x  |    |    |    |     |     |
+  180 A:f5f8                                    ;
+  181 A:f5f8                           opmodes   
+  181 A:f5f8                                    
+  182 A:f5f8  02                                 .byt $02              ; 'ADC'    - 00
+  183 A:f5f9  02                                 .byt $02              ; 'AND'
+  184 A:f5fa  04                                 .byt $04              ; 'ASL'
+  185 A:f5fb  01                                 .byt $01              ; 'BCC'
+  186 A:f5fc  01                                 .byt $01              ; 'BCS'
+  187 A:f5fd  01                                 .byt $01              ; 'BEQ'
+  188 A:f5fe  06                                 .byt $06              ; 'BIT'
+  189 A:f5ff  01                                 .byt $01              ; 'BMI'
+  190 A:f600  01                                 .byt $01              ; 'BNE'    - 08
+  191 A:f601  01                                 .byt $01              ; 'BPL'
+  192 A:f602  00                                 .byt $00              ; 'BRK'
+  193 A:f603  01                                 .byt $01              ; 'BVC'
+  194 A:f604  01                                 .byt $01              ; 'BVS'
+  195 A:f605  00                                 .byt $00              ; 'CLC'
+  196 A:f606  00                                 .byt $00              ; 'CLD'
+  197 A:f607  00                                 .byt $00              ; 'CLI'
+  198 A:f608  00                                 .byt $00              ; 'CLV'    - 10
+  199 A:f609  02                                 .byt $02              ; 'CMP'
+  200 A:f60a  05                                 .byt $05              ; 'CPX'
+  201 A:f60b  05                                 .byt $05              ; 'CPY'
+  202 A:f60c  07                                 .byt $07              ; 'DEC'
+  203 A:f60d  00                                 .byt $00              ; 'DEX'
+  204 A:f60e  00                                 .byt $00              ; 'DEY'
+  205 A:f60f  02                                 .byt $02              ; 'EOR'
+  206 A:f610  07                                 .byt $07              ; 'INC'    - 18
+  207 A:f611  00                                 .byt $00              ; 'INX'
+  208 A:f612  00                                 .byt $00              ; 'INY'
+  209 A:f613  08                                 .byt $08              ; 'JMP'
+  210 A:f614  09                                 .byt $09              ; 'JSR'
+  211 A:f615  02                                 .byt $02              ; 'LDA'
+  212 A:f616  0a                                 .byt $0a              ; 'LDX'
+  213 A:f617  0a                                 .byt $0a              ; 'LDY'
+  214 A:f618  04                                 .byt $04              ; 'LSR'    - 20
+  215 A:f619  00                                 .byt $00              ; 'NOP'
+  216 A:f61a  02                                 .byt $02              ; 'ORA'
+  217 A:f61b  00                                 .byt $00              ; 'PHA'
+  218 A:f61c  00                                 .byt $00              ; 'PHP'
+  219 A:f61d  00                                 .byt $00              ; 'PLA'
+  220 A:f61e  00                                 .byt $00              ; 'PLP'
+  221 A:f61f  04                                 .byt $04              ; 'ROL'
+  222 A:f620  04                                 .byt $04              ; 'ROR'    - 28
+  223 A:f621  00                                 .byt $00              ; 'RTI'
+  224 A:f622  00                                 .byt $00              ; 'RTS'
+  225 A:f623  02                                 .byt $02              ; 'SBC'
+  226 A:f624  00                                 .byt $00              ; 'SEC'
+  227 A:f625  00                                 .byt $00              ; 'SED'
+  228 A:f626  00                                 .byt $00              ; 'SEI'
+  229 A:f627  03                                 .byt $03              ; 'STA'
+  230 A:f628  0b                                 .byt $0b              ; 'STX'    - 30
+  231 A:f629  0b                                 .byt $0b              ; 'STY'
+  232 A:f62a  00                                 .byt $00              ; 'TAX'
+  233 A:f62b  00                                 .byt $00              ; 'TAY'
+  234 A:f62c  00                                 .byt $00              ; 'TSX'
+  235 A:f62d  00                                 .byt $00              ; 'TXA'
+  236 A:f62e  00                                 .byt $00              ; 'TXS'
+  237 A:f62f  00                                 .byt $00              ; 'TYA'    - 37
+  238 A:f630                           opmodez   
+  238 A:f630                                    
+  239 A:f630                                    ;
+  240 A:f630                                    ;   This is the basic opcodes with bits %aaabbbcc
+  241 A:f630                                    ;   for instructions that only have implied mode
+  242 A:f630                                    ;   the full opcode is given with bbb bits
+  243 A:f630                                    ;   also set to speed up emission.
+  244 A:f630                                    ;   see https:
+  245 A:f630                                    ;
+  246 A:f630                           code_ac   
+  246 A:f630                                    
+  247 A:f630  61                                 .byt $61              ; 'ADC'    - 00
+  248 A:f631  21                                 .byt $21              ; 'AND'
+  249 A:f632  02                                 .byt $02              ; 'ASL'
+  250 A:f633  90                                 .byt $90              ; 'BCC'
+  251 A:f634  b0                                 .byt $b0              ; 'BCS'
+  252 A:f635  f0                                 .byt $f0              ; 'BEQ'
+  253 A:f636  06                                 .byt $06              ; 'BIT'
+  254 A:f637  30                                 .byt $30              ; 'BMI'
+  255 A:f638  d0                                 .byt $d0              ; 'BNE'    - 08
+  256 A:f639  10                                 .byt $10              ; 'BPL'
+  257 A:f63a  00                                 .byt $00              ; 'BRK'
+  258 A:f63b  50                                 .byt $50              ; 'BVC'
+  259 A:f63c  70                                 .byt $70              ; 'BVS'
+  260 A:f63d  18                                 .byt $18              ; 'CLC'
+  261 A:f63e  d8                                 .byt $d8              ; 'CLD'
+  262 A:f63f  58                                 .byt $58              ; 'CLI'
+  263 A:f640  b8                                 .byt $b8              ; 'CLV'    - 10
+  264 A:f641  61                                 .byt $61              ; 'CMP'
+  265 A:f642  e0                                 .byt $e0              ; 'CPX'
+  266 A:f643  c0                                 .byt $c0              ; 'CPY'
+  267 A:f644  c2                                 .byt $c2              ; 'DEC'
+  268 A:f645  ca                                 .byt $ca              ; 'DEX'
+  269 A:f646  88                                 .byt $88              ; 'DEY'
+  270 A:f647  41                                 .byt $41              ; 'EOR'
+  271 A:f648  e2                                 .byt $e2              ; 'INC'    - 18
+  272 A:f649  e8                                 .byt $e8              ; 'INX'
+  273 A:f64a  c8                                 .byt $c8              ; 'INY'
+  274 A:f64b  4c                                 .byt $4c              ; 'JMP'
+  275 A:f64c  20                                 .byt $20              ; 'JSR'
+  276 A:f64d  a1                                 .byt $a1              ; 'LDA'
+  277 A:f64e  a2                                 .byt $a2              ; 'LDX'
+  278 A:f64f  a0                                 .byt $a0              ; 'LDY'
+  279 A:f650  42                                 .byt $42              ; 'LSR'    - 20
+  280 A:f651  ea                                 .byt $ea              ; 'NOP'
+  281 A:f652  01                                 .byt $01              ; 'ORA'
+  282 A:f653  48                                 .byt $48              ; 'PHA'
+  283 A:f654  08                                 .byt $08              ; 'PHP'
+  284 A:f655  68                                 .byt $68              ; 'PLA'
+  285 A:f656  28                                 .byt $28              ; 'PLP'
+  286 A:f657  22                                 .byt $22              ; 'ROL'
+  287 A:f658  62                                 .byt $62              ; 'ROR'    - 28
+  288 A:f659  40                                 .byt $40              ; 'RTI'
+  289 A:f65a  60                                 .byt $60              ; 'RTS'
+  290 A:f65b  e1                                 .byt $e1              ; 'SBC'
+  291 A:f65c  38                                 .byt $38              ; 'SEC'
+  292 A:f65d  f8                                 .byt $f8              ; 'SED'
+  293 A:f65e  78                                 .byt $78              ; 'SEI'
+  294 A:f65f  81                                 .byt $81              ; 'STA'
+  295 A:f660  82                                 .byt $82              ; 'STX'    - 30
+  296 A:f661  80                                 .byt $80              ; 'STY'
+  297 A:f662  aa                                 .byt $aa              ; 'TAX'
+  298 A:f663  a8                                 .byt $a8              ; 'TAY'
+  299 A:f664  ba                                 .byt $ba              ; 'TSX'
+  300 A:f665  8a                                 .byt $8a              ; 'TXA'
+  301 A:f666  9a                                 .byt $9a              ; 'TXS'
+  302 A:f667  98                                 .byt $98              ; 'TYA'    - 37
+  303 A:f668                           code_az   
+  303 A:f668                                    
 
-  306 A:f6a6                                    ;
-  307 A:f6a6                                    ; print code
-  308 A:f6a6                                    ;
-  309 A:f6a6                           p_opcode  
-  309 A:f6a6  a5 44                              lda opcode
-  310 A:f6a8  05 47                              ora opb
-  311 A:f6aa  85 44                              sta opcode
-  312 A:f6ac  60                                 rts 
+  305 A:f668                                    ;
+  306 A:f668                                    ; print code
+  307 A:f668                                    ;
+  308 A:f668                           p_opcode  
+  308 A:f668  a5 61                              lda opcode
+  309 A:f66a  05 65                              ora opb
+  310 A:f66c  85 61                              sta opcode
+  311 A:f66e  60                                 rts 
 
-  314 A:f6ad                                    ;
-  315 A:f6ad                                    ; set instruction length
-  316 A:f6ad                                    ; 0, 1 or 2 additional bytes
-  317 A:f6ad                                    ; modifies x
-  318 A:f6ad                                    ;
-  319 A:f6ad                           one_byte  
-  319 A:f6ad  a2 00                              ldx #$00
-  320 A:f6af  f0 06                              beq setcmdlen                ;always jump
-  321 A:f6b1                           two_bytes 
-  321 A:f6b1  a2 01                              ldx #$01
-  322 A:f6b3  d0 02                              bne setcmdlen                ;always jump
-  323 A:f6b5                           three_bytes 
-  323 A:f6b5  a2 02                              ldx #$02
-  324 A:f6b7                           setcmdlen 
-  324 A:f6b7  86 43                              stx cmdlen
-  325 A:f6b9  4c b0 f7                           jmp finish_asm                ; done, ready to emit code
+  313 A:f66f                                    ;
+  314 A:f66f                                    ; set instruction length
+  315 A:f66f                                    ; 0, 1 or 2 additional bytes
+  316 A:f66f                                    ; modifies x
+  317 A:f66f                                    ;
+  318 A:f66f                           one_byte  
+  318 A:f66f  a2 00                              ldx #$00
+  319 A:f671  f0 06                              beq setcmdlen                ;always jump
+  320 A:f673                           two_bytes 
+  320 A:f673  a2 01                              ldx #$01
+  321 A:f675  d0 02                              bne setcmdlen                ;always jump
+  322 A:f677                           three_bytes 
+  322 A:f677  a2 02                              ldx #$02
+  323 A:f679                           setcmdlen 
+  323 A:f679  86 66                              stx cmdlen
+  324 A:f67b  4c 71 f7                           jmp finish_asm                ; done, ready to emit code
 
-  327 A:f6bc                           asm_simple 
-  327 A:f6bc  a5 54                              lda opmode
-  328 A:f6be  c9 02                              cmp #$02             ; type 0 and 1 do not need address mode specification, use code_a directl
-  329 A:f6c0  10 03                              bpl @chk_shft
-  330 A:f6c2  4c ad f6                           jmp one_byte
-  331 A:f6c5                           @chk_shft 
-  331 A:f6c5  c9 04                              cmp #$04             ; deal with accu mode shift operations
-  332 A:f6c7  d0 15                              bne loc_err
-  333 A:f6c9  a9 08                              lda #$08             ; b = %010 -> aaa010cc
-  334 A:f6cb  85 47                              sta opb
-  335 A:f6cd  4c ad f6                           jmp one_byte
+  326 A:f67e                           asm_simple 
+  326 A:f67e  a5 64                              lda opmode
+  327 A:f680  c9 02                              cmp #$02             ; type 0 and 1 do not need address mode specification, use code_a directl
+  328 A:f682  10 03                              bpl @chk_shft
+  329 A:f684  4c 6f f6                           jmp one_byte
+  330 A:f687                           @chk_shft 
+  330 A:f687  c9 04                              cmp #$04             ; deal with accu mode shift operations
+  331 A:f689  d0 15                              bne loc_err
+  332 A:f68b  a9 08                              lda #$08             ; b = %010 -> aaa010cc
+  333 A:f68d  85 65                              sta opb
+  334 A:f68f  4c 6f f6                           jmp one_byte
 
-  337 A:f6d0                           asm_imm   
-  337 A:f6d0  a5 54                              lda opmode
-  338 A:f6d2  c9 02                              cmp #$02             ; type 2
-  339 A:f6d4  f0 0b                              beq asm_imm_ct
-  340 A:f6d6  c9 05                              cmp #$05             ; type 5
-  341 A:f6d8  f0 07                              beq asm_imm_ct
-  342 A:f6da  c9 0a                              cmp #$0a             ; type a
-  343 A:f6dc  f0 03                              beq asm_imm_ct
-  344 A:f6de                           loc_err   
-  344 A:f6de  4c 1c f5                           jmp syntaxerr
-  345 A:f6e1                           asm_imm_ct 
-  345 A:f6e1  20 f3 f6                           jsr g_adr
-  346 A:f6e4  a5 44                              lda opcode
-  347 A:f6e6  29 03                              and #$03             ; isolate 'c' bits
-  348 A:f6e8  c9 01                              cmp #$01             ; c=3 has b = %010 for imm, others b=000
-  349 A:f6ea  d0 02                              bne @zerob
-  350 A:f6ec  a9 08                              lda #$08             ; when c= %11 immediate is placed at b=%010
-  351 A:f6ee                           @zerob    
-  351 A:f6ee  85 47                              sta opb
-  352 A:f6f0  4c b1 f6                           jmp two_bytes
-  353 A:f6f3                                    ;
-  354 A:f6f3                                    ; get the address
-  355 A:f6f3                                    ; if byte size is demanded, only the lower byte is used.
-  356 A:f6f3                                    ; return the character after the numbers in a
-  357 A:f6f3                                    ;
-  358 A:f6f3                           g_adr     
-  358 A:f6f3  c8                                 iny 
-  359 A:f6f4                           g_adr_l   
-  359 A:f6f4  20 10 f5                           jsr eatblank                ; get rid of spaces and $
-  360 A:f6f7  20 85 ff                           jsr getnum
-  361 A:f6fa  88                                 dey 
-  362 A:f6fb  a5 3e                              lda a2l
-  363 A:f6fd  85 45                              sta adrl
-  364 A:f6ff  a5 3f                              lda a2h
-  365 A:f701  85 46                              sta adrh
-  366 A:f703  b9 00 02                           lda in,y
-  367 A:f706  60                                 rts 
+  336 A:f692                           asm_imm   
+  336 A:f692  a5 64                              lda opmode
+  337 A:f694  c9 02                              cmp #$02             ; type 2
+  338 A:f696  f0 0b                              beq asm_imm_ct
+  339 A:f698  c9 05                              cmp #$05             ; type 5
+  340 A:f69a  f0 07                              beq asm_imm_ct
+  341 A:f69c  c9 0a                              cmp #$0a             ; type a
+  342 A:f69e  f0 03                              beq asm_imm_ct
+  343 A:f6a0                           loc_err   
+  343 A:f6a0  4c df f4                           jmp syntaxerr
+  344 A:f6a3                           asm_imm_ct 
+  344 A:f6a3  20 b5 f6                           jsr g_adr
+  345 A:f6a6  a5 61                              lda opcode
+  346 A:f6a8  29 03                              and #$03             ; isolate 'c' bits
+  347 A:f6aa  c9 01                              cmp #$01             ; c=3 has b = %010 for imm, others b=000
+  348 A:f6ac  d0 02                              bne @zerob
+  349 A:f6ae  a9 08                              lda #$08             ; when c= %11 immediate is placed at b=%010
+  350 A:f6b0                           @zerob    
+  350 A:f6b0  85 65                              sta opb
+  351 A:f6b2  4c 73 f6                           jmp two_bytes
+  352 A:f6b5                                    ;
+  353 A:f6b5                                    ; get the address
+  354 A:f6b5                                    ; if byte size is demanded, only the lower byte is used.
+  355 A:f6b5                                    ; return the character after the numbers in a
+  356 A:f6b5                                    ;
+  357 A:f6b5                           g_adr     
+  357 A:f6b5  c8                                 iny 
+  358 A:f6b6                           g_adr_l   
+  358 A:f6b6  20 d3 f4                           jsr eatblank                ; get rid of spaces and $
+  359 A:f6b9  20 85 ff                           jsr getnum
+  360 A:f6bc  88                                 dey 
+  361 A:f6bd  a5 3e                              lda a2l
+  362 A:f6bf  85 62                              sta adrl
+  363 A:f6c1  a5 3f                              lda a2h
+  364 A:f6c3  85 63                              sta adrh
+  365 A:f6c5  b9 00 02                           lda in,y
+  366 A:f6c8  60                                 rts 
 
-  369 A:f707                                    ; So after the mnemonic, there can be three options:
-  370 A:f707                                    ; - #
-  371 A:f707                                    ; - (
-  372 A:f707                                    ; - Address
-  373 A:f707                                    ;
-  374 A:f707                                    ; After the address there can only be
-  375 A:f707                                    ; - ,X|Y  for indexed
-  376 A:f707                                    ; - ) for indirect
-  377 A:f707                                    ; - ),Y
-  378 A:f707                                    ; - ,X)
-  379 A:f707                                    ;
-  380 A:f707                                    ; Value is $?[\dA-Z]{1,2}
-  381 A:f707                                    ; Address is [$?][\dA-Z]{1,4}
-  382 A:f707                           eval_arg  
-  382 A:f707  a6 42                              ldx mnem                ; load x with opcode index
-  383 A:f709  bd 36 f6                           lda opmodes,x              ; mode for x
-  384 A:f70c  85 54                              sta opmode                ; for access without x reg
-  385 A:f70e  bd 6e f6                           lda code_ac,x              ; bac opcode base for x
-  386 A:f711  85 44                              sta opcode                ; for access without x reg
-  387 A:f713  a9 00                              lda #$00
-  388 A:f715  85 47                              sta opb                ; clear opcode b
-  389 A:f717  b9 00 02                           lda in,y
-  390 A:f71a  85 31                              sta mode
-  391 A:f71c  20 cd f7                           jsr chk_eol                ; end of line
-  392 A:f71f  f0 9b                              beq asm_simple                ; nothing there
+  368 A:f6c9                                    ; So after the mnemonic, there can be three options:
+  369 A:f6c9                                    ; - #
+  370 A:f6c9                                    ; - (
+  371 A:f6c9                                    ; - Address
+  372 A:f6c9                                    ;
+  373 A:f6c9                                    ; After the address there can only be
+  374 A:f6c9                                    ; - ,X|Y  for indexed
+  375 A:f6c9                                    ; - ) for indirect
+  376 A:f6c9                                    ; - ),Y
+  377 A:f6c9                                    ; - ,X)
+  378 A:f6c9                                    ;
+  379 A:f6c9                                    ; Value is $?[\dA-Z]{1,2}
+  380 A:f6c9                                    ; Address is [$?][\dA-Z]{1,4}
+  381 A:f6c9                           eval_arg  
+  381 A:f6c9  a6 60                              ldx mnem                ; load x with opcode index
+  382 A:f6cb  bd f8 f5                           lda opmodes,x              ; mode for x
+  383 A:f6ce  85 64                              sta opmode                ; for access without x reg
+  384 A:f6d0  bd 30 f6                           lda code_ac,x              ; bac opcode base for x
+  385 A:f6d3  85 61                              sta opcode                ; for access without x reg
+  386 A:f6d5  a9 00                              lda #$00
+  387 A:f6d7  85 65                              sta opb                ; clear opcode b
+  388 A:f6d9  b9 00 02                           lda in,y
+  389 A:f6dc  85 31                              sta mode                ; set mode so getln does not copy a1 to a2, a3
+  390 A:f6de  20 8e f7                           jsr chk_eol                ; end of line
+  391 A:f6e1  f0 9b                              beq asm_simple                ; nothing there
+  392 A:f6e3  a5 64                              lda opmode
+  393 A:f6e5  f0 1d                              beq @err                ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
+  394 A:f6e7  b9 00 02                           lda in,y              ; back to input char
+  395 A:f6ea  c9 23                              cmp #'#'
+  396 A:f6ec  f0 a4                              beq asm_imm
+  397 A:f6ee                                    ;
+  398 A:f6ee                                    ;
+  399 A:f6ee                                    ; now parse rest of address to determine address mode and get argument
+  400 A:f6ee                                    ;
+  401 A:f6ee                                    ; following options are possible (h = hex digit):
+  402 A:f6ee                                    ; h{1.4}       absolute or zero             ; case 0: just 4 hex numbers   2 or 3 bytes
+  403 A:f6ee                                    ; h{1.4},x|y   absolute or zero indexed     ; case 1: ends with ,x|y       2 or 3 bytes
+  404 A:f6ee                                    ; (h{1,4})     indirect                     ; case 2: starts with (, ends with )  3 bytes
+  405 A:f6ee                                    ; (h{1,2}),y   post-indexed indirect        ; case 3: starts with (, ends with ),y  2 bytes
+  406 A:f6ee                                    ; (h{1,2},x)   pre-indexed indirect;       ; case 4: starts with (, ends with ,x)   2 bytes
+  407 A:f6ee  c9 28                              cmp #'('
+  408 A:f6f0  f0 20                              beq @indirect
+  409 A:f6f2                                    ;
+  410 A:f6f2                                    ; cases 0 and 1
+  411 A:f6f2                                    ;
+  412 A:f6f2  20 b6 f6                           jsr g_adr_l
+  413 A:f6f5  20 8e f7                           jsr chk_eol
+  414 A:f6f8  d0 03                              bne @cont
+  415 A:f6fa  4c f6 f7                           jmp asm_direct                ; no more input -> case 0
+  416 A:f6fd                           @cont     
+  416 A:f6fd  20 d3 f4                           jsr eatblank
+  417 A:f700  c9 2c                              cmp #','             ; only , x|y possible now
+  418 A:f702  f0 03                              beq @reg_indexed                ; -> check reg next
+  419 A:f704                           @err      
+  419 A:f704  4c df f4                           jmp syntaxerr                ; syntax error for weverything else
+  420 A:f707                           @reg_indexed 
+  420 A:f707  20 cd f4                           jsr nextch
+  421 A:f70a  20 95 f7                           jsr chk_xy                ; check if valid reg
+  422 A:f70d  d0 f5                              bne @err                ; no, syntax error
+  423 A:f70f  4c 12 f8                           jmp asm_indexed                ; yes, handle hhhh,reg (case 1)
+  424 A:f712                                    ;
+  425 A:f712                                    ; cases 2-4
+  426 A:f712                           @indirect 
+  426 A:f712  20 b5 f6                           jsr g_adr                ; address comes after the brace in any case left..
+  427 A:f715  c9 2c                              cmp #','
+  428 A:f717  f0 06                              beq @preindexed                ; ',' can only be (hh,x)  -> case 4
+  429 A:f719  c9 29                              cmp #')'             ;
+  430 A:f71b  f0 21                              beq @ind_or_pi                ; ) can be indirect or indirect post-indexed (hhhh) or (hh),y
+  431 A:f71d  d0 e5                              bne @err                ; else err; we have to close the brace at least.
+  432 A:f71f                                    ;
+  433 A:f71f                                    ; case 4
+  434 A:f71f                                    ;
+  435 A:f71f                           @preindexed 
+  435 A:f71f  20 cd f4                           jsr nextch
+  436 A:f722  c9 58                              cmp #'X'
+  437 A:f724  d0 de                              bne @err
+  438 A:f726  20 cd f4                           jsr nextch
+  439 A:f729  c9 29                              cmp #')'
+  440 A:f72b  d0 d7                              bne @err
+  441 A:f72d  20 cd f4                           jsr nextch
+  442 A:f730  20 8e f7                           jsr chk_eol
+  443 A:f733  d0 cf                              bne @err
+  444 A:f735                           @chk23    
+  444 A:f735  a5 64                              lda opmode
+  445 A:f737  c9 04                              cmp #$04             ; only works for types 2 % 3
+  446 A:f739  10 c9                              bpl @err
+  447 A:f73b  4c 73 f6                           jmp two_bytes                ; b = 0, no need to change opcode, opb already set for hh,Y
+  448 A:f73e                                    ;
+  449 A:f73e                                    ; cases 2-3
+  450 A:f73e                                    ;
+  451 A:f73e                           @ind_or_pi 
+  451 A:f73e  20 cd f4                           jsr nextch
+  452 A:f741  c9 2c                              cmp #','
+  453 A:f743  f0 07                              beq @indir_reg                ; (hh), -> case 3 reg test
+  454 A:f745  20 8e f7                           jsr chk_eol
+  455 A:f748  f0 17                              beq asm_indirect                ; ->  case 2
+  456 A:f74a  d0 b8                              bne @err                ; something unexpected in the line
+  457 A:f74c                           @indir_reg 
+  457 A:f74c  20 cd f4                           jsr nextch
+  458 A:f74f  c9 59                              cmp #'Y'
+  459 A:f751  d0 b1                              bne @err
+  460 A:f753                                    ;
+  461 A:f753                                    ; case 3
+  462 A:f753                                    ;
+  463 A:f753  20 cd f4                           jsr nextch
+  464 A:f756  20 8e f7                           jsr chk_eol
+  465 A:f759  d0 a9                              bne @err
+  466 A:f75b  a9 10                              lda #$10             ; default: abs. Or in b = %100 into aaa100cc
+  467 A:f75d  85 65                              sta opb
+  468 A:f75f  d0 d4                              bne @chk23                ; only do it if type 2 or 3
 
-  394 A:f721  f0 20                              beq @err                ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
-  395 A:f723  b9 00 02                           lda in,y              ; back to input char
-  396 A:f726  c9 23                              cmp #'#'
-  397 A:f728  f0 a6                              beq asm_imm
-  398 A:f72a                                    ;
-  399 A:f72a                                    ;
-  400 A:f72a                                    ; now parse rest of address to determine address mode and get argument
-  401 A:f72a                                    ;
-  402 A:f72a                                    ; following options are possible (h = hex digit):
-  403 A:f72a                                    ; h{1.4}       absolute or zero             ; case 0: just 4 hex numbers   2 or 3 bytes
-  404 A:f72a                                    ; h{1.4},x|y   absolute or zero indexed     ; case 1: ends with ,x|y       2 or 3 bytes
-  405 A:f72a                                    ; (h{1,4})     indirect                     ; case 2: starts with (, ends with )  3 bytes
-  406 A:f72a                                    ; (h{1,2}),y   post-indexed indirect        ; case 3: starts with (, ends with ),y  2 bytes
-  407 A:f72a                                    ; (h{1,2},x)   pre-indexed indirect;       ; case 4: starts with (, ends with ,x)   2 bytes
-  408 A:f72a  c9 28                              cmp #'('
-  409 A:f72c  f0 23                              beq @indirect
-  410 A:f72e                                    ;
-  411 A:f72e                                    ; cases 0 and 1
-  412 A:f72e                                    ;
-  413 A:f72e  20 f4 f6                           jsr g_adr_l
-  414 A:f731  b9 00 02                           lda in,y
-  415 A:f734  20 cd f7                           jsr chk_eol
-  416 A:f737  d0 03                              bne @cont
-  417 A:f739  4c f8 f7                           jmp asm_direct                ; no more input -> case 0
-  418 A:f73c                           @cont     
-  418 A:f73c  20 10 f5                           jsr eatblank
-  419 A:f73f  c9 2c                              cmp #','             ; only , x|y possible now
-  420 A:f741  f0 03                              beq @reg_indexed                ; -> check reg next
-  421 A:f743                           @err      
-  421 A:f743  4c 1c f5                           jmp syntaxerr                ; syntax error for weverything else
-  422 A:f746                           @reg_indexed 
-  422 A:f746  20 0a f5                           jsr nextch
-  423 A:f749  20 d4 f7                           jsr chk_xy                ; check if valid reg
-  424 A:f74c  d0 f5                              bne @err                ; no, syntax error
-  425 A:f74e  4c 14 f8                           jmp asm_indexed                ; yes, handle hhhh,reg (case 1)
-  426 A:f751                                    ;
-  427 A:f751                                    ; cases 2-4
-  428 A:f751                           @indirect 
-  428 A:f751  20 f3 f6                           jsr g_adr                ; address comes after the brace in any case left..
-  429 A:f754  c9 2c                              cmp #','
-  430 A:f756  f0 06                              beq @preindexed                ; ',' can only be (hh,x)  -> case 4
-  431 A:f758  c9 29                              cmp #')'             ;
-  432 A:f75a  f0 21                              beq @ind_or_pi                ; ) can be indirect or indirect post-indexed (hhhh) or (hh),y
-  433 A:f75c  d0 e5                              bne @err                ; else err; we have to close the brace at least.
-  434 A:f75e                                    ;
-  435 A:f75e                                    ; case 4
-  436 A:f75e                                    ;
-  437 A:f75e                           @preindexed 
-  437 A:f75e  20 0a f5                           jsr nextch
-  438 A:f761  c9 58                              cmp #'X'
-  439 A:f763  d0 de                              bne @err
-  440 A:f765  20 0a f5                           jsr nextch
-  441 A:f768  c9 29                              cmp #')'
-  442 A:f76a  d0 d7                              bne @err
-  443 A:f76c  20 0a f5                           jsr nextch
-  444 A:f76f  20 cd f7                           jsr chk_eol
-  445 A:f772  d0 cf                              bne @err
-  446 A:f774                           @chk23    
-  446 A:f774  a5 54                              lda opmode
-  447 A:f776  c9 04                              cmp #$04             ; only works for types 2 % 3
-  448 A:f778  10 c9                              bpl @err
-  449 A:f77a  4c b1 f6                           jmp two_bytes                ; b = 0, no need to change opcode, opb already set for hh,Y
-  450 A:f77d                                    ;
-  451 A:f77d                                    ; cases 2-3
-  452 A:f77d                                    ;
-  453 A:f77d                           @ind_or_pi 
-  453 A:f77d  20 0a f5                           jsr nextch
-  454 A:f780  c9 2c                              cmp #','
-  455 A:f782  f0 07                              beq @indir_reg                ; (hh), -> case 3 reg test
-  456 A:f784  20 cd f7                           jsr chk_eol
-  457 A:f787  f0 17                              beq asm_indirect                ; ->  case 2
-  458 A:f789  d0 b8                              bne @err                ; something unexpected in the line
-  459 A:f78b                           @indir_reg 
-  459 A:f78b  20 0a f5                           jsr nextch
-  460 A:f78e  c9 59                              cmp #'Y'
-  461 A:f790  d0 b1                              bne @err
-  462 A:f792                                    ;
-  463 A:f792                                    ; case 3
-  464 A:f792                                    ;
-  465 A:f792  20 0a f5                           jsr nextch
-  466 A:f795  20 cd f7                           jsr chk_eol
-  467 A:f798  d0 a9                              bne @err
-  468 A:f79a  a9 10                              lda #$10             ; default: abs. Or in b = %100 into aaa100cc
-  469 A:f79c  85 47                              sta opb
-  470 A:f79e  d0 d4                              bne @chk23                ; only do it if type 2 or 3
+  470 A:f761                                    ; asm_indirect: this only happens with jmp
+  471 A:f761                                    ; x must be $1B
+  472 A:f761                           asm_indirect 
+  472 A:f761  a5 61                              lda opcode
+  473 A:f763  c9 4c                              cmp #$4c
+  474 A:f765  f0 03                              beq @check
+  475 A:f767  4c df f4                           jmp syntaxerr
+  476 A:f76a                           @check    
+  476 A:f76a  a9 20                              lda #$20             ;  Or in  %001.000.00 into 010.011.00
+  477 A:f76c  85 65                              sta opb
+  478 A:f76e  4c 77 f6                           jmp three_bytes
+  479 A:f771                                    ;
+  480 A:f771                                    ; wrap up the assembly:
+  481 A:f771                                    ; emit code bytes to target position,
+  482 A:f771                                    ; then borrow the system monitors list command
+  483 A:f771                                    ; to print out the redisassenbled line.
+  484 A:f771                                    ;
+  485 A:f771                                    ;
+  486 A:f771                           finish_asm 
+  486 A:f771  20 68 f6                           jsr p_opcode
+  487 A:f774  a4 66                              ldy cmdlen
+  488 A:f776                           @loop     
+  488 A:f776  b9 61 00                           lda opcode,y
+  489 A:f779  91 3a                              sta (pcl),y
+  490 A:f77b  88                                 dey 
+  491 A:f77c                           @short    
+  491 A:f77c  10 f8                              bpl @loop
+  492 A:f77e  a9 01                              lda #$01             ; disassemble just the one line
+  493 A:f780  20 32 fe                           jsr list2
+  494 A:f783  a5 3a                              lda pcl
+  495 A:f785  85 3c                              sta a1l
+  496 A:f787  a5 3b                              lda pch
+  497 A:f789  85 3d                              sta a1h
+  498 A:f78b  4c 17 f5                           jmp asmz
+  499 A:f78e                                    ;
+  500 A:f78e                                    ; check for end of line - eihter ENTER (set to 0x0a) or 0
+  501 A:f78e                                    ; Z set if reached eol
+  502 A:f78e                                    ; imput: current input char in a
+  503 A:f78e                                    ;
+  504 A:f78e                           chk_eol   
+  504 A:f78e  c9 00                              cmp #$00
+  505 A:f790  f0 02                              beq @fin
+  506 A:f792  c9 0a                              cmp #k_entr
+  507 A:f794                           @fin      
+  507 A:f794  60                                 rts 
 
-  472 A:f7a0                                    ; asm_indirect: this only happens with jmp
-  473 A:f7a0                                    ; x must be $1B
-  474 A:f7a0                           asm_indirect 
-  474 A:f7a0  a5 44                              lda opcode
-  475 A:f7a2  c9 4c                              cmp #$4c
-  476 A:f7a4  f0 03                              beq @check
-  477 A:f7a6  4c 1c f5                           jmp syntaxerr
-  478 A:f7a9                           @check    
-  478 A:f7a9  a9 20                              lda #$20             ;  Or in  %001.000.00 into 010.011.00
-  479 A:f7ab  85 47                              sta opb
-  480 A:f7ad  4c b5 f6                           jmp three_bytes
-  481 A:f7b0                                    ;
-  482 A:f7b0                                    ; wrap up the assembly:
-  483 A:f7b0                                    ; emit code bytes to target position,
-  484 A:f7b0                                    ; then borrow the system monitors list command
-  485 A:f7b0                                    ; to print out the redisassenbled line.
-  486 A:f7b0                                    ;
-  487 A:f7b0                                    ;
-  488 A:f7b0                           finish_asm 
-  488 A:f7b0  20 a6 f6                           jsr p_opcode
-  489 A:f7b3  a4 43                              ldy cmdlen
-  490 A:f7b5                           @loop     
-  490 A:f7b5  b9 44 00                           lda opcode,y
-  491 A:f7b8  91 3a                              sta (pcl),y
-  492 A:f7ba  88                                 dey 
-  493 A:f7bb                           @short    
-  493 A:f7bb  10 f8                              bpl @loop
-  494 A:f7bd  a9 01                              lda #$01             ; disassemble just the one line
-  495 A:f7bf  20 32 fe                           jsr list2
-  496 A:f7c2  a5 3a                              lda pcl
-  497 A:f7c4  85 3c                              sta a1l
-  498 A:f7c6  a5 3b                              lda pch
-  499 A:f7c8  85 3d                              sta a1h
-  500 A:f7ca  4c 55 f5                           jmp asmz
-  501 A:f7cd                                    ;
-  502 A:f7cd                                    ; check for end of line - eihter ENTER (set to 0x0a) or 0
-  503 A:f7cd                                    ; Z set if reached eol
-  504 A:f7cd                                    ; imput: current input char in a
-  505 A:f7cd                                    ;
-  506 A:f7cd                           chk_eol   
-  506 A:f7cd  c9 00                              cmp #$00
-  507 A:f7cf  f0 02                              beq @fin
-  508 A:f7d1  c9 0a                              cmp #k_entr
-  509 A:f7d3                           @fin      
-  509 A:f7d3  60                                 rts 
+  509 A:f795                           chk_xy    
+  509 A:f795  c9 58                              cmp #'X'
+  510 A:f797  f0 02                              beq @fin
+  511 A:f799  c9 59                              cmp #'Y'
+  512 A:f79b                           @fin      
+  512 A:f79b  60                                 rts 
+  513 A:f79c                                    ;
+  514 A:f79c                                    ; add zero page address
+  515 A:f79c                                    ; [x,x+1] + [y,y+1]
+  516 A:f79c                                    ; result in [auxl,auxh
+  517 A:f79c                           add16     
+  517 A:f79c  b5 00                              lda loc0,x
+  518 A:f79e  18                                 clc 
+  519 A:f79f  79 00 00                           adc loc0,y
+  520 A:f7a2  85 67                              sta calcl
+  521 A:f7a4  b5 01                              lda loc1,x
+  522 A:f7a6  79 01 00                           adc loc1,y
+  523 A:f7a9  85 68                              sta calch
+  524 A:f7ab  60                                 rts                    ;
 
-  511 A:f7d4                           chk_xy    
-  511 A:f7d4  c9 58                              cmp #'X'
-  512 A:f7d6  f0 02                              beq @fin
-  513 A:f7d8  c9 59                              cmp #'Y'
-  514 A:f7da                           @fin      
-  514 A:f7da  60                                 rts 
-  515 A:f7db                                    ;
-  516 A:f7db                                    ; get relative address from pc
-  517 A:f7db                                    ; and literal address in a1
-  518 A:f7db                                    ; pc now points at rel address byte.
-  519 A:f7db                                    ; address only convers -128 - +127,
-  520 A:f7db                                    ; if the distance is larger it is an error
-  521 A:f7db                                    ;
-  522 A:f7db                           get_rel_a 
-  522 A:f7db  38                                 sec                    ; set carry for following substraction
-  523 A:f7dc  a5 3a                              lda pcl                ;
-  524 A:f7de  69 01                              adc #$01             ; add 2 to be relative to pc+2
-  525 A:f7e0  e5 3e                              sbc a2l
-  526 A:f7e2  85 45                              sta adrl                ; store in low adr
-  527 A:f7e4  a5 3b                              lda pch
-  528 A:f7e6  e5 3f                              sbc a2h
-  529 A:f7e8  30 07                              bmi @chklow
-  530 A:f7ea  a5 45                              lda adrl
-  531 A:f7ec  30 07                              bmi @chkerr                ; pos > $7f
-  532 A:f7ee  4c b1 f6                 @chkok    jmp two_bytes             ; no opb variants for rel branches
-  533 A:f7f1  a5 45                    @chklow   lda adrl
-  534 A:f7f3  30 f9                              bmi @chkok                ; neg < $80
-  535 A:f7f5  4c 1c f5                 @chkerr   jmp syntaxerr             ; done, rel addr in adrl
-  536 A:f7f8                                    ;
-  537 A:f7f8                                    ; asm_direct: absolute or zero addr
-  538 A:f7f8                                    ; if adrh == 0 and operation allows zero mode,
-  539 A:f7f8                                    ; use that one. else go for absolute address (16bit)
-  540 A:f7f8                                    ; if op does not have that either, throw syntax error
-  541 A:f7f8                           asm_direct 
-  541 A:f7f8  a5 54                              lda opmode
-  542 A:f7fa  c9 01                              cmp #$01             ; relative branch; special treatment -> compute rel. addr. -> type 2 finished
-  543 A:f7fc  f0 dd                              beq get_rel_a
-  544 A:f7fe  b9 00 02                           lda in,y
-  545 A:f801  20 7e f8                           jsr chk_zero_abs                ; from here on, just examine types 3-b. use zero page where possible.
-  546 A:f804  90 07                              bcc @abs_b
-  547 A:f806  a9 04                              lda #$04             ; or in b = %001 into aaa001cc
-  548 A:f808  85 47                              sta opb
-  549 A:f80a  4c b1 f6                           jmp two_bytes
-  550 A:f80d                           @abs_b    
-  550 A:f80d  a9 0c                              lda #$0c             ; abs. Or in b = %011 into aaa011cc
-  551 A:f80f  85 47                              sta opb
-  552 A:f811  4c b5 f6                           jmp three_bytes
+  526 A:f7ac                                    ;
+  527 A:f7ac                                    ; substract zero page address
+  528 A:f7ac                                    ; [x,x+1] - [y,y+1]
+  529 A:f7ac                                    ; result in [auxl,auxh
+  530 A:f7ac                           sub16     
+  530 A:f7ac  b5 00                              lda loc0,x
+  531 A:f7ae  38                                 sec 
+  532 A:f7af  f9 00 00                           sbc loc0,y
+  533 A:f7b2  85 67                              sta calcl
+  534 A:f7b4  b5 01                              lda loc1,x
+  535 A:f7b6  f9 01 00                           sbc loc1,y
+  536 A:f7b9  85 68                              sta calch
+  537 A:f7bb  60                                 rts                    ;
 
-  554 A:f814                                    ;
-  555 A:f814                                    ; asm_indexed: select one of the indexed option.
-  556 A:f814                                    ; First examine if it is x or y,
-  557 A:f814                                    ; the abs or zero
-  558 A:f814                                    ; input: a - current in char
-  559 A:f814                           asm_indexed 
-  559 A:f814  c9 59                              cmp #'Y'
-  560 A:f816  f0 33                              beq @idx_y
-  561 A:f818  a5 54                              lda opmode
-  562 A:f81a  c9 05                              cmp #$05             ; types 2-4, 0 and 1 ignored
-  563 A:f81c  30 07                              bmi @has_idx_x
-  564 A:f81e  c9 0a                              cmp #$0a
-  565 A:f820  f0 03                              beq @has_idx_x
-  566 A:f822                           @err      
-  566 A:f822  4c 1c f5                           jmp syntaxerr
-  567 A:f825                           @has_idx_x 
-  567 A:f825  a5 46                              lda adrh                ; zero or absolute?
-  568 A:f827  d0 0f                              bne @abs_x                ; weed out stx/sty
-  569 A:f829                                    ;
-  570 A:f829                                    ; zpg,X
-  571 A:f829                                    ;
-  572 A:f829  e0 1e                              cpx #$1e             ; ldx hh,x no
-  573 A:f82b  f0 f5                              beq @err
-  574 A:f82d  e0 30                              cpx #$30             ; stx hh,x no
-  575 A:f82f  f0 f1                              beq @err
-  576 A:f831  a9 14                              lda #$14             ; default: abs. Or in b = %101 into aaa101cc
-  577 A:f833  85 47                              sta opb
-  578 A:f835  4c b1 f6                           jmp two_bytes
-  579 A:f838                                    ;
-  580 A:f838                                    ; abs,X
-  581 A:f838                           @abs_x    
-  581 A:f838  e0 1e                              cpx #$1e             ; ldx hhhh,x no
-  582 A:f83a  f0 e6                              beq @err
-  583 A:f83c  e0 30                              cpx #$30             ; stx hhhh,x no
-  584 A:f83e  f0 e2                              beq @err
-  585 A:f840  e0 31                              cpx #$31             ; sty hhhh,x no
-  586 A:f842  f0 de                              beq @err
-  587 A:f844  a9 34                              lda #$34             ; default: abs. Or in b = %111 into aaa111cc
-  588 A:f846  85 47                              sta opb
-  589 A:f848  4c b5 f6                           jmp three_bytes
-  590 A:f84b                           @idx_y    
-  590 A:f84b  e0 1f                              cpx #$1f             ; ldy hhh,y no
-  591 A:f84d  f0 d3                              beq @err
-  592 A:f84f  e0 31                              cpx #$31             ; sty hhh,y no
-  593 A:f851  f0 cf                              beq @err
-  594 A:f853  a5 46                              lda adrh
-  595 A:f855  d0 0d                              bne @abs_y
-  596 A:f857  a5 54                              lda opmode
-  597 A:f859  c9 0a                              cmp #$0a
-  598 A:f85b  30 c5                              bmi @err
-  599 A:f85d  a9 14                              lda #$14             ; abs. Or in b = %101 into aaa101cc
-  600 A:f85f  85 47                              sta opb
-  601 A:f861  4c b1 f6                           jmp two_bytes
-  602 A:f864                           @abs_y    
-  602 A:f864  a5 54                              lda opmode
-  603 A:f866  c9 04                              cmp #$04
-  604 A:f868  30 06                              bmi @abs_y_low
-  605 A:f86a  c9 0a                              cmp #$0a
-  606 A:f86c  f0 06                              beq @abs_y_ldx
-  607 A:f86e  d0 b2                              bne @err
-  608 A:f870                           @abs_y_low 
-  608 A:f870  a9 18                              lda #$18             ; default: abs. Or in b = %110 into aaa110cc
-  609 A:f872  d0 02                              bne @abs_y_out
-  610 A:f874                           @abs_y_ldx 
-  610 A:f874  a9 1c                              lda #$1c             ; default: abs. Or in b = %111 into aaa111cc
-  611 A:f876                           @abs_y_out 
-  611 A:f876  85 47                              sta opb
-  612 A:f878  4c b5 f6                           jmp three_bytes
+  539 A:f7bc                                    ;
+  540 A:f7bc                                    ; get relative address from pc
+  541 A:f7bc                                    ; and literal address in a1
+  542 A:f7bc                                    ; pc now points at rel address byte.
+  543 A:f7bc                                    ; address only convers -128 - +127,
+  544 A:f7bc                                    ; if the distance is larger it is an error
+  545 A:f7bc                                    ; TODO: optimize validity test
+  546 A:f7bc                                    ;
+  547 A:f7bc                           get_rel_a 
+  547 A:f7bc  86 46                              stx xreg
+  548 A:f7be  84 47                              sty yreg
+  549 A:f7c0  a2 3e                              ldx #a2l
+  550 A:f7c2  a0 3a                              ldy #pcl
+  551 A:f7c4  20 ac f7                           jsr sub16                ;  calc = target - pc
+  552 A:f7c7  a9 02                              lda #$02
+  553 A:f7c9  85 69                              sta tmpl
+  554 A:f7cb  a9 00                              lda #$00
+  555 A:f7cd  85 6a                              sta tmph
+  556 A:f7cf  a2 67                              ldx #calcl
+  557 A:f7d1  a0 69                              ldy #tmpl
+  558 A:f7d3  20 ac f7                           jsr sub16                ; substract 2 from result for jump relative to pc+2
+  559 A:f7d6  a6 46                              ldx xreg                ; restore x and y registers
+  560 A:f7d8  a4 47                              ldy yreg
+  561 A:f7da  a5 68                              lda calch
+  562 A:f7dc  c9 ff                              cmp #$ff
+  563 A:f7de  f0 0b                              beq @chk_neg
+  564 A:f7e0  c9 00                              cmp #$00
+  565 A:f7e2  d0 04                              bne @chkerr
+  566 A:f7e4  24 67                              bit calcl
+  567 A:f7e6  10 07                              bpl @chkok
+  568 A:f7e8                           @chkerr   
+  568 A:f7e8  4c df f4                           jmp syntaxerr
+  569 A:f7eb                           @chk_neg  
+  569 A:f7eb  24 67                              bit calcl
+  570 A:f7ed  10 f9                              bpl @chkerr
+  571 A:f7ef                           @chkok    
+  571 A:f7ef  a5 67                              lda calcl
+  572 A:f7f1  85 62                              sta adrl                ; done, rel addr in adrl
+  573 A:f7f3  4c 73 f6                           jmp two_bytes                ; no opb variants for rel branches
+  574 A:f7f6                                    ;
+  575 A:f7f6                                    ; asm_direct: absolute or zero addr
+  576 A:f7f6                                    ; if adrh == 0 and operation allows zero mode,
+  577 A:f7f6                                    ; use that one. else go for absolute address (16bit)
+  578 A:f7f6                                    ; if op does not have that either, throw syntax error
+  579 A:f7f6                           asm_direct 
+  579 A:f7f6  a5 64                              lda opmode
+  580 A:f7f8  c9 01                              cmp #$01             ; relative branch; special treatment -> compute rel. addr. -> type 2 finished
+  581 A:f7fa  f0 c0                              beq get_rel_a
+  582 A:f7fc  b9 00 02                           lda in,y
+  583 A:f7ff  20 7e f8                           jsr chk_zero_abs                ; from here on, just examine types 3-b. use zero page where possible.
+  584 A:f802  90 07                              bcc @abs_b
+  585 A:f804  a9 04                              lda #$04             ; or in b = %001 into aaa001cc
+  586 A:f806  85 65                              sta opb
+  587 A:f808  4c 73 f6                           jmp two_bytes
+  588 A:f80b                           @abs_b    
+  588 A:f80b  a9 0c                              lda #$0c             ; abs. Or in b = %011 into aaa011cc
+  589 A:f80d  85 65                              sta opb
+  590 A:f80f  4c 77 f6                           jmp three_bytes
 
-  614 A:f87b                           bar_ldx   
-  614 A:f87b                                    
+  592 A:f812                                    ;
+  593 A:f812                                    ; asm_indexed: select one of the indexed option.
+  594 A:f812                                    ; First examine if it is x or y,
+  595 A:f812                                    ; the abs or zero
+  596 A:f812                                    ; input: a - current in char
+  597 A:f812                           asm_indexed 
+  597 A:f812  a6 60                              ldx mnem
+  598 A:f814  c9 59                              cmp #'Y'
+  599 A:f816  f0 33                              beq @idx_y
+  600 A:f818  a5 64                              lda opmode
+  601 A:f81a  c9 05                              cmp #$05             ; types 2-4, 0 and 1 ignored
+  602 A:f81c  30 07                              bmi @has_idx_x
+  603 A:f81e  c9 0a                              cmp #$0a             ; types a and b , ldx/y and stx/y
+  604 A:f820  10 03                              bpl @has_idx_x
+  605 A:f822                           @err      
+  605 A:f822  4c df f4                           jmp syntaxerr
+  606 A:f825                           @has_idx_x 
+  606 A:f825  a5 63                              lda adrh                ; zero or absolute?
+  607 A:f827  d0 0f                              bne @abs_x                ; weed out stx/sty
+  608 A:f829                                    ;
+  609 A:f829                                    ; zpg,X
+  610 A:f829                                    ;
+  611 A:f829  e0 1e                              cpx #$1e             ; ldx hh,x no
+  612 A:f82b  f0 f5                              beq @err
+  613 A:f82d  e0 30                              cpx #$30             ; stx hh,x no
+  614 A:f82f  f0 f1                              beq @err
+  615 A:f831  a9 14                              lda #$14             ; default: abs. Or in b = %101 into aaa101cc
+  616 A:f833  85 65                              sta opb
+  617 A:f835  4c 73 f6                           jmp two_bytes
+  618 A:f838                                    ;
+  619 A:f838                                    ; abs,X
+  620 A:f838                           @abs_x    
+  620 A:f838  e0 1e                              cpx #$1e             ; ldx hhhh,x no
+  621 A:f83a  f0 e6                              beq @err
+  622 A:f83c  e0 30                              cpx #$30             ; stx hhhh,x no
+  623 A:f83e  f0 e2                              beq @err
+  624 A:f840  e0 31                              cpx #$31             ; sty hhhh,x no
+  625 A:f842  f0 de                              beq @err
+  626 A:f844  a9 1c                              lda #$1c             ; default: abs. Or in b = %111 into aaa111cc
+  627 A:f846  85 65                              sta opb
+  628 A:f848  4c 77 f6                           jmp three_bytes
+  629 A:f84b                           @idx_y    
+  629 A:f84b  e0 1f                              cpx #$1f             ; ldy hhh,y no
+  630 A:f84d  f0 d3                              beq @err
+  631 A:f84f  e0 31                              cpx #$31             ; sty hhh,y no
+  632 A:f851  f0 cf                              beq @err
+  633 A:f853  a5 63                              lda adrh
+  634 A:f855  d0 0d                              bne @abs_y
+  635 A:f857  a5 64                              lda opmode
+  636 A:f859  c9 0a                              cmp #$0a
+  637 A:f85b  30 c5                              bmi @err
+  638 A:f85d  a9 14                              lda #$14             ; abs. Or in b = %101 into aaa101cc
+  639 A:f85f  85 65                              sta opb
+  640 A:f861  4c 73 f6                           jmp two_bytes
+  641 A:f864                           @abs_y    
+  641 A:f864  a5 64                              lda opmode
+  642 A:f866  c9 04                              cmp #$04
+  643 A:f868  30 06                              bmi @abs_y_low
+  644 A:f86a  c9 0a                              cmp #$0a
+  645 A:f86c  f0 06                              beq @abs_y_ldx
+  646 A:f86e  d0 b2                              bne @err
+  647 A:f870                           @abs_y_low 
+  647 A:f870  a9 18                              lda #$18             ; default: abs. Or in b = %110 into aaa110cc
+  648 A:f872  d0 02                              bne @abs_y_out
+  649 A:f874                           @abs_y_ldx 
+  649 A:f874  a9 1c                              lda #$1c             ; default: abs. Or in b = %111 into aaa111cc
+  650 A:f876                           @abs_y_out 
+  650 A:f876  85 65                              sta opb
+  651 A:f878  4c 77 f6                           jmp three_bytes
 
-  616 A:f87b                                    ;
-  617 A:f87b                                    ; (hh),reg
-  618 A:f87b                                    ;
-  619 A:f87b                           indir_reg 
-  619 A:f87b  4c b0 f7                           jmp finish_asm
-  620 A:f87e                                    ;
-  621 A:f87e                                    ; check if mnemonic allows zero page address mode
-  622 A:f87e                                    ; input:
-  623 A:f87e                                    ;   x - opcode index
-  624 A:f87e                                    ;   a - opmode for index
-  625 A:f87e                                    ; return c=1 if mode available
-  626 A:f87e                           chk_zero_abs 
-  626 A:f87e  c9 08                              cmp #$08
-  627 A:f880  f0 10                              beq @ret0
-  628 A:f882  c9 09                              cmp #$09
-  629 A:f884  f0 0c                              beq @ret0
-  630 A:f886  a5 46                              lda adrh
-  631 A:f888  f0 0a                              beq @ret1
-  632 A:f88a                           @ldxy     
-  632 A:f88a  e0 1e                              cpx #$1e             ; ldx and ldy with direct address only work with zero page. throw error if adr out of zero
-  633 A:f88c  f0 08                              beq @err
-  634 A:f88e  e0 1f                              cpx #$1f
-  635 A:f890  f0 04                              beq @err
-  636 A:f892                           @ret0     
-  636 A:f892  18                                 clc 
-  637 A:f893  60                                 rts 
-  638 A:f894                           @ret1     
-  638 A:f894  38                                 sec 
-  639 A:f895  60                                 rts 
-  640 A:f896                           @err      
-  640 A:f896  4c 1c f5                           jmp syntaxerr
+  653 A:f87b                           bar_ldx   
+  653 A:f87b                                    
+
+  655 A:f87b                                    ;
+  656 A:f87b                                    ; (hh),reg
+  657 A:f87b                                    ;
+  658 A:f87b                           indir_reg 
+  658 A:f87b  4c 71 f7                           jmp finish_asm
+  659 A:f87e                                    ;
+  660 A:f87e                                    ; check if mnemonic allows zero page address mode
+  661 A:f87e                                    ; input:
+  662 A:f87e                                    ;   x - opcode index
+  663 A:f87e                                    ;   a - opmode for index
+  664 A:f87e                                    ; return c=1 if mode available
+  665 A:f87e                           chk_zero_abs 
+  665 A:f87e  c9 08                              cmp #$08
+  666 A:f880  f0 10                              beq @ret0
+  667 A:f882  c9 09                              cmp #$09
+  668 A:f884  f0 0c                              beq @ret0
+  669 A:f886  a5 63                              lda adrh
+  670 A:f888  f0 0a                              beq @ret1
+  671 A:f88a                           @ldxy     
+  671 A:f88a  e0 1e                              cpx #$1e             ; ldx and ldy with direct address only work with zero page. throw error if adr out of zero
+  672 A:f88c  f0 08                              beq @err
+  673 A:f88e  e0 1f                              cpx #$1f
+  674 A:f890  f0 04                              beq @err
+  675 A:f892                           @ret0     
+  675 A:f892  18                                 clc 
+  676 A:f893  60                                 rts 
+  677 A:f894                           @ret1     
+  677 A:f894  38                                 sec 
+  678 A:f895  60                                 rts 
+  679 A:f896                           @err      
+  679 A:f896  4c df f4                           jmp syntaxerr
 
 rom.s
 
@@ -2140,7 +2191,7 @@ rom.s
  1000 A:fef6                                    ; as bytes without complications.
  1001 A:fef6                                    ;
  1002 A:fef6                           read      
- 1002 A:fef6  a0 3b                              ldy #$3b             ; index for 0/1 test
+ 1002 A:fef6  a2 00                              ldx #$00             ; simulate sta (zpg) with 0 index
  1003 A:fef8                           rd3       
  1003 A:fef8  ad 20 c0                           lda tapeio                ; read a byte
  1004 A:fefb  81 3c                              sta (a1l,x)            ; store at (a1)
@@ -2359,7 +2410,7 @@ rom.s
  1198 A:ffc8                                    ; table must have msb first lsb second
  1199 A:ffc8                                    ;
  1200 A:ffc8                           subtbl    
- 1200 A:ffc8  f5 49                              .byt >asm_entry,<asm_entry          ; ! - Enter assembler
+ 1200 A:ffc8  f5 0b                              .byt >asm_entry,<asm_entry          ; ! - Enter assembler
  1201 A:ffca  f8 a6                              .byt >exit,<exit          ; Q - Quit emulator
  1202 A:ffcc  fe c3                              .byt >bascont,<bascont          ; CTL-C - exit moitor to installed language
  1203 A:ffce  fe da                              .byt >usr,<usr          ; CTL-Y - execute user command at vector %3F8

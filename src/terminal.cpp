@@ -132,7 +132,7 @@ namespace haiku6502 {
 
         if (tape_on == true && tape.is_open() && !tape_is_write) {
             if (!tape.eof()) {
-                tape >> result;
+                result = tape.get();
             } else {
                 close_tape();
             }
@@ -305,8 +305,7 @@ namespace haiku6502 {
 
     void Terminal::prepare_read() {
         if (!tape_is_write && !tape.is_open() && !tape_filepath.empty()) {
-            tape.open(tape_filepath, std::ios_base::in);
-            tape.seekg(5000);  // skip 4 sec worth of header
+            tape.open(tape_filepath, std::ios_base::in | std::ios_base::binary);
             tape_on = true;
         }
     }

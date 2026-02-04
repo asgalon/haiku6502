@@ -411,7 +411,7 @@ namespace haiku6502 {
     void Engine::op_adc(uint8_t param, int& ticks) {
         // see http://6502.org/tutorials/decimal_mode.html
         if (!is_bcd()) {
-            const uint8_t oper = param + carry_bit();
+            const uint16_t oper = param + carry_bit();
             uint16_t probe = a + oper;
             set_status_ov(probe, a, oper);
             set_status_flag(STATUS_CARRY, probe > 0x0FF);
@@ -703,14 +703,15 @@ namespace haiku6502 {
     }
 
     void Engine::op_sbc(AddressMode addr, uint8_t param, int &ticks) {
-        // see http://6502.org/tutorials/decimal_mode.html
         if (!is_bcd()) {
-            const uint8_t oper = param + not_carry_bit();
-            uint16_t probe = a - oper;
+            const uint16_t oper = (param ^ 0xFF) + carry_bit();
+            uint16_t probe = a + oper;
+            set_status_flag(STATUS_CARRY, (probe & 0xFF00) != 0);
             set_status_ov(probe, a, oper);
             a = probe & 0x0FF;
             set_status_nz(a);
         } else {
+            // see http://6502.org/tutorials/decimal_mode.html
             int16_t al =  (a & 0x0F) - (param & 0x0F) + carry_bit() - 1;
             if (al < 0) {
                 al = (al-0x06 & 0x0F) - 0x10;

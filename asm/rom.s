@@ -56,7 +56,7 @@
 lang:           jsr lang_init
 lang2:          jmp lang_cont
 lang_init:      rts
-lang_cont:      .dsb $1503,$00    ; filler up to F800
+lang_cont:      .dsb $14C6,$00    ; filler up to F800
 
                 .include "asm.s"
 
@@ -999,7 +999,7 @@ crmon:          jsr bli             ; handle CR as blank
                 ; This now just needs to read the content
                 ; as bytes without complications.
                 ;
-read:           ldy #$3B            ; index for 0/1 test
+read:           ldx #$00            ; simulate sta (zpg) with 0 index
 rd3:            lda tapeio          ; read a byte
                 sta (a1l,x)         ; store at (a1)
                 jsr nxta1           ; incr a1, compare to a2

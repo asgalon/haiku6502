@@ -38,8 +38,7 @@ syntaxerr:      jsr bell
                 jmp asmz
 
 setaddr:        jsr zmode           ; clear (reused) monitor mode, scan idx
-                jsr getnum
-                dey                 ; recover non-digit item
+                jsr getnum          ; leaves the eor'ed ':' in a and in,y pointing to next chat
                 rts
 hasaddr:        ldy #$4             ; look at first 5 chars, beginning with last
 @hadrlp:        lda in,y
@@ -99,14 +98,14 @@ asmz:           lda #'!'
                 ; get the mnemonic from input line
                 ;
                 ;
-                ; get coded mnemonic into a4
+                ; get coded mnemonic into tmp
                 ; ((menm0 & 0x1f) << 10) + ((menm1 & 0x1f) << 5) + (menm2 & 0x1f)
                 ; so the opcode forms a word with 13 bits used.
                 ; impossible mnemonics produce a syntax error, invalid mnemonics will produce an
                 ; unknown opcode
                 ;
 @procmnm:       and #$1F    ; ex.:  PHP                                            'P' = $50 -> $10
-                sta a4h     ;
+                sta tmph     ;
                 lda #$00
                 sta in      ; put a zero into first position to mark input buffer old news.
                 jsr nextch  ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
@@ -114,16 +113,16 @@ asmz:           lda #'!'
                 asl         ; $7C                                                        $20
                 asl         ; $F8                                                        $40
                 asl         ; $01F0 high bit-> carry                                     $80 + 0
-                rol a4h     ; $3FF0                                               $20    $80
+                rol tmph     ; $3FF0                                               $20    $80
                 asl         ; $03E0 high bit-> carry                                     $00 + 1
-                rol a4h     ; $7FE0                                               $41    $00
-                sta a4l     ; $E0 , five lower bits free                                 $00
+                rol tmph     ; $7FE0                                               $41    $00
+                sta tmpl     ; $E0 , five lower bits free                                 $00
                 jsr nextch  ; $1F                                                  'P' = $50
                 and #$1F    ;                                                            $10
-                ora a4l     ;                                                            $10
-                sta a4l     ;                                                     $41    $10
+                ora tmpl     ;                                                            $10
+                sta tmpl     ;                                                     $41    $10
                 ;
-                ; now we have the short form in a4.
+                ; now we have the short form in tmp.
                 ; go on to find the mnemonic in opcodex table
                 ; and tehn return this index to the opcode lookup tables
                 ldx #(opcodez-opcodex-1)+2
@@ -132,11 +131,11 @@ asmz:           lda #'!'
                 bpl @cont
                 jmp syntaxerr
 @cont:          lda opcodex,x     high
-                cmp a4h
+                cmp tmph
                 bne @firstfail
                 dex
                 lda opcodex,x     low
-                cmp a4l
+                cmp tmpl
                 bne @scndfail
                 txa
                 lsr         ; rest of the tables have bytes not words, so half it.
@@ -144,7 +143,7 @@ asmz:           lda #'!'
                 iny                 ; point to char after mnemonic
                 ;
                 ; at this point, we have the address set in a1-a3 and the
-                ; mnemonic code number in a4l.
+                ; mnemonic code number in mnem.
                 ; Now proceed to  evaluate address part.
                 ; Following modes are possible:
                 ; - None. Command does not take arguments, it is finished.
@@ -379,20 +378,20 @@ g_adr_l:        jsr eatblank  ; get rid of spaces and $
                 ;
                 ; Value is $?[\dA-Z]{1,2}
                 ; Address is [$?][\dA-Z]{1,4}
-eval_arg:       ldx mnem        ; load x with opcode index
-                lda opmodes,x   ; mode for x
-                sta opmode      ; for access without x reg
-                lda code_ac,x   ; bac opcode base for x
-                sta opcode      ; for access without x reg
+eval_arg:       ldx mnem            ; load x with opcode index
+                lda opmodes,x       ; mode for x
+                sta opmode          ; for access without x reg
+                lda code_ac,x       ; bac opcode base for x
+                sta opcode          ; for access without x reg
                 lda #$00
-                sta opb     ; clear opcode b
+                sta opb             ; clear opcode b
                 lda in,y
-                sta mode
-                jsr chk_eol      ; end of line
-                beq asm_simple  ; nothing there
-
-                beq @err        ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
-                lda in,y        ; back to input char
+                sta mode            ; set mode so getln does not copy a1 to a2, a3
+                jsr chk_eol         ; end of line
+                beq asm_simple      ; nothing there
+                lda opmode
+                beq @err            ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
+                lda in,y            ; back to input char
                 cmp #'#'
                 beq asm_imm
                 ;
@@ -411,7 +410,6 @@ eval_arg:       ldx mnem        ; load x with opcode index
                 ; cases 0 and 1
                 ;
                 jsr g_adr_l
-                lda in,y
                 jsr chk_eol
                 bne @cont
                 jmp asm_direct      ; no more input -> case 0
@@ -513,26 +511,66 @@ chk_xy:         cmp #'X'
                 cmp #'Y'
 @fin:           rts
                 ;
+                ; add zero page address
+                ; [x,x+1] + [y,y+1]
+                ; result in [auxl,auxh
+add16:          lda loc0,x
+                clc
+                adc loc0,y
+                sta calcl
+                lda loc1,x
+                adc loc1,y
+                sta calch
+                rts;
+
+                ;
+                ; substract zero page address
+                ; [x,x+1] - [y,y+1]
+                ; result in [auxl,auxh
+sub16:          lda loc0,x
+                sec
+                sbc loc0,y
+                sta calcl
+                lda loc1,x
+                sbc loc1,y
+                sta calch
+                rts;
+
+                ;
                 ; get relative address from pc
                 ; and literal address in a1
                 ; pc now points at rel address byte.
                 ; address only convers -128 - +127,
                 ; if the distance is larger it is an error
+                ; TODO: optimize validity test
                 ;
-get_rel_a:      sec                 ; set carry for following substraction
-                lda pcl             ;
-                adc #$01            ; add 2 to be relative to pc+2
-                sbc a2l
-                sta adrl            ; store in low adr
-                lda pch
-                sbc a2h
-                bmi @chklow
-                lda adrl
-                bmi @chkerr         ; pos > $7f
-@chkok          jmp two_bytes       ; no opb variants for rel branches
-@chklow         lda adrl
-                bmi @chkok          ; neg < $80
-@chkerr         jmp syntaxerr       ; done, rel addr in adrl
+get_rel_a:      stx xreg
+                sty yreg
+                ldx #a2l
+                ldy #pcl
+                jsr sub16           ;  calc = target - pc
+                lda #$02
+                sta tmpl
+                lda #$00
+                sta tmph
+                ldx #calcl
+                ldy #tmpl
+                jsr sub16           ; substract 2 from result for jump relative to pc+2
+                ldx xreg            ; restore x and y registers
+                ldy yreg
+                lda calch
+                cmp #$FF
+                beq @chk_neg
+                cmp #$00
+                bne @chkerr
+                bit calcl
+                bpl @chkok
+@chkerr:        jmp syntaxerr
+@chk_neg:       bit calcl
+                bpl @chkerr
+@chkok:         lda calcl
+                sta adrl            ; done, rel addr in adrl
+                jmp two_bytes       ; no opb variants for rel branches
                 ;
                 ; asm_direct: absolute or zero addr
                 ; if adrh == 0 and operation allows zero mode,
@@ -556,13 +594,14 @@ asm_direct:     lda opmode
                 ; First examine if it is x or y,
                 ; the abs or zero
                 ; input: a - current in char
-asm_indexed:    cmp #'Y'
+asm_indexed:    ldx mnem
+                cmp #'Y'
                 beq @idx_y
                 lda opmode
                 cmp #$05            ; types 2-4, 0 and 1 ignored
                 bmi @has_idx_x
-                cmp #$0a
-                beq @has_idx_x
+                cmp #$0a            ; types a and b , ldx/y and stx/y
+                bpl @has_idx_x
 @err:           jmp syntaxerr
 @has_idx_x:     lda adrh            ; zero or absolute?
                 bne @abs_x          ; weed out stx/sty
@@ -584,7 +623,7 @@ asm_indexed:    cmp #'Y'
                 beq @err
                 cpx #$31            ; sty hhhh,x no
                 beq @err
-                lda #$34            ; default: abs. Or in b = %111 into aaa111cc
+                lda #$1C            ; default: abs. Or in b = %111 into aaa111cc
                 sta opb
                 jmp three_bytes
 @idx_y:         cpx #$1F            ; ldy hhh,y no

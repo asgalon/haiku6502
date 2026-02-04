@@ -54,6 +54,238 @@ struct Fixture {
 
 BOOST_FIXTURE_TEST_SUITE(EngineTest, Fixture)
 
+BOOST_AUTO_TEST_CASE(AddWithCarry_Binary) {
+    haiku6502::CpuStatus status;
+    int ticks = 0;
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_adc(0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x00, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_ZERO, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_adc(0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x01, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0xFF, 0x00, ticks);
+    engine->op_adc(0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x00, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_ZERO, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x05, 0x00, ticks);
+    engine->op_adc(0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x06, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0xFE, 0x00, ticks);
+    engine->op_adc(0x7F, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x7D, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0xFE, 0x00, ticks);
+    engine->op_adc(0x8F, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x8D, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_NEGATIVE, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 0000+0001 = 0001
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_adc(0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x01, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_adc(0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x00, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_ZERO, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 3521+243A = 5956
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x21, 0x00, ticks);
+    engine->op_adc(0x3A, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x5B, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x35, 0x00, ticks);
+    engine->op_adc(0x24, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x59, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 3521-243A = 10E7
+    engine->op_clc();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x10, 0x00, ticks);
+    engine->op_adc(0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x10, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x03, 0x00, ticks);
+    engine->op_adc(0x03, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x06, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+}
+
+BOOST_AUTO_TEST_CASE(SubtractWithCarry_Binary) {
+    haiku6502::CpuStatus status;
+    int ticks = 0;
+
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x00, status.a);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_CARRY, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_ZERO, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+     engine->op_sec();
+   engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0xFF, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_NEGATIVE, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x05, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x04, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0xFE, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x7F, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x7F, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_OVERFLOW, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 0000-0001 = FFFF
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x01, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0xFF, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_NEGATIVE, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x00, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0xFF, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_NEGATIVE, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 3521-243A = 10E7
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x21, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x3A, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0xE7, status.a);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_NEGATIVE, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x35, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x24, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x10, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    // 16 bit 3521-243A = 10E7
+    engine->op_sec();
+    engine->op_lda(haiku6502::IMMEDIATE, 0x10, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x00, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x10, status.a);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_CARRY, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0x03, 0x00, ticks);
+    engine->op_sbc(haiku6502::IMMEDIATE, 0x03, ticks);
+    engine->get_state(status);
+    BOOST_CHECK_EQUAL(0x00, status.a);
+    BOOST_CHECK_EQUAL(0x01, status.p & haiku6502::STATUS_CARRY);
+    BOOST_CHECK_EQUAL(haiku6502::STATUS_ZERO, status.p & haiku6502::STATUS_ZERO);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_NEGATIVE);
+    BOOST_CHECK_EQUAL(0x00, status.p & haiku6502::STATUS_OVERFLOW);
+
+}
+
 BOOST_AUTO_TEST_CASE(AddressModeImmediate) {
 
     BOOST_CHECK_EQUAL(0xea, engine->get_byte(0xD000));
@@ -71,13 +303,14 @@ BOOST_AUTO_TEST_CASE(AddressModeImmediate) {
 
 BOOST_AUTO_TEST_CASE(check_bcd_mode) {
     haiku6502::CpuStatus status;
+    int ticks = 0;
 
     load_bce_test();
 
     engine->reset();
 
     // call test method
-    engine->op_jmp(haiku6502::ABSOLUTE, 0x11, 0x08);
+    engine->op_jmp(haiku6502::ABSOLUTE, 0x11, 0x08, ticks);
 
     int countdown = 0x1000000;
     // run until reaching DONE
@@ -154,7 +387,6 @@ BOOST_AUTO_TEST_CASE(operation) {
 
     step(status); // jsr $f800
     BOOST_CHECK_EQUAL(0xF800, status.pc);
-    BOOST_CHECK_EQUAL(0xFE, status.s);
     BOOST_CHECK_EQUAL(0xf8, get_byte(0x1FF));
     BOOST_CHECK_EQUAL(0x1e, get_byte(0x1FE));
 
@@ -193,7 +425,7 @@ BOOST_AUTO_TEST_CASE(operation) {
 
     step(status); // rts
     BOOST_CHECK_EQUAL(0xF81E, status.pc);
-    BOOST_CHECK_EQUAL(0, status.s);
+    BOOST_CHECK_EQUAL(0xFF, status.s);
 
     // Compare instruction results
     //
