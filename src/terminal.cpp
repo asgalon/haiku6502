@@ -19,9 +19,10 @@ namespace haiku6502 {
     using namespace std;
 
     Terminal::Terminal(const engine_setup& setup) : tape_filepath(setup.tape_file),
-            stdio_mode(setup.console_mode), debug(setup.debug) {
+            stdio_mode(setup.console_mode), debug(setup.debug), stdio_line(""), stdio_prompt('>') {
 
-        setlocale(LC_ALL, "");
+        setlocale(LC_ALL, "");  // uses locale from environment
+
         if (!stdio_mode) {
             initscr();
             check_err(cbreak());
@@ -118,22 +119,36 @@ namespace haiku6502 {
     }
 
     //
-    // Simulates an ongoing tape write
-    // the output channel has only two levels, 0 and 255.
-    // so this produces a square wave with different lengths
-    // for 0s and 1s. While the tape operation is ongoing,
-    // this function writes one byte of the current state
-    // to the tape file. This tape file can then be stored as an audio file.
-    // With the right sampling rate, this should work with real hardware...
-    // Well, this is probably the silliest emulator feature I ever wrote :)
+    // operations to perform after each clock tick at cpu frequency.
+    // for example, when doing output to sound device.
+    //
     void Terminal::post_tick() {
+    }
+
+    uint8_t Terminal::tape_read() {
+        uint8_t result = 0;
+
+        prepare_read();
+
+        if (tape_on == true && tape.is_open() && !tape_is_write) {
+            if (!tape.eof()) {
+                tape >> result;
+            } else {
+                close_tape();
+            }
+        }
+
+        return result;
+    }
+
+    void Terminal::tape_write(uint8_t value) {
         if (!tape_filepath.empty() && tape_on) {
             if (tape_is_write) {
                 if (!tape.is_open()) {
                     tape.open(tape_filepath, std::ios_base::out);
                 }
                 if (tape.is_open()) {
-                    tape << tapevalue;
+                    tape << value;
                 }
             } else if (tape.is_open()) {
                 if (!tape.eof()) {
@@ -166,9 +181,8 @@ namespace haiku6502 {
     constexpr uint8_t terml     = 0x19; // stdio read line
     constexpr uint8_t termp     = 0x1A; // stdio prompt
     constexpr uint8_t termmd    = 0x1F; // terminal mode; 0 - ncurses, 1 - stdio
-    constexpr uint8_t tapeout   = 0x20; // tape out
-    constexpr uint8_t tapein    = 0x21; // tape on
-    constexpr uint8_t tapecls   = 0x22; // tape out
+    constexpr uint8_t tapeio   = 0x20; // tape in/out
+    constexpr uint8_t tapecls   = 0x21; // tape close
 
     //
     //
@@ -250,7 +264,10 @@ namespace haiku6502 {
             // terminal mode
             if (stdio_mode) {
                 if (lineptr == -1) {
-                    strncpy(stdio_line, readline(&stdio_prompt), 256);
+                    char *line = readline(&stdio_prompt);
+                    if (line != nullptr) {
+                        strncpy(stdio_line, line, 256);
+                    }
                     lineptr = 0;
                 }
                 if (lineptr != -1) {
@@ -272,31 +289,12 @@ namespace haiku6502 {
             // 0xC030 Speaker
             return true;
         }
-        if (io_address == tapein) {
+        if (io_address == tapeio) {
             // read tape byte
-            prepare_read();
-
-            if (tape_on == true && tape.is_open() && !tape_is_write) {
-                if (!tape.eof()) {
-                    tape >> result;
-                } else {
-                    close_tape();
-                }
-            }
-
+            result = tape_read();
             return true;
         }
 
-        if (io_address == tapeout) {
-            // toggle tape byte
-            if (!tape_on && !tape_filepath.empty()) {
-                tape_on = true;
-                tape_is_write = true;
-            }
-            tapevalue = ~tapevalue;
-
-            return true;
-        }
         if (io_address == tapecls) {
             // read tape byte
             close_tape();
@@ -390,6 +388,16 @@ namespace haiku6502 {
         }
         if (io_address == termp) {
             stdio_prompt = value;
+            return true;
+        }
+        if (io_address == tapeio) {
+            // toggle tape byte
+            if (!tape_on && !tape_filepath.empty()) {
+                tape_on = true;
+                tape_is_write = true;
+            }
+            tape_write(value);
+
             return true;
         }
 

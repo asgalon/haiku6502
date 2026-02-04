@@ -11,11 +11,12 @@ namespace haiku6502 {
     struct engine_setup {
         std::string source;
         std::string out;
-        std::string rom;
+        std::string rom = "./data/standard.rom";
         std::string ram;
-        uint16_t ram_load_address;
-        uint16_t ram_start_address;
-        std::string tape_file;
+        uint16_t ram_load_address = 0x1000;
+        uint16_t ram_start_address = 0x1000;
+        std::string tape_file = "./tape.data";
+
         bool console_mode { false };
 
         bool debug { false };

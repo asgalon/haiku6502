@@ -17,9 +17,7 @@
 ; - removed screen address calculations, no longer needed with sane terminal cursor coordinates that
 ;   are no longer aligned with cathode ray tube electronic beam scan sequence.
 ; - Bell just sends a CTL-G to terminal
-; - Tape in/out goes to a tape file. with the right sampling rate, it should be possible to read in data tapes.
-;   not much use though, since the rom routine addresses are now no longer compatible.
-;   TODO: Should be changed to just write the content to some output file, would make much more sense.
+; - Tape in/out write/reads the memory directly to the tape file, without square wave frequency modulated encoding.
 ; - The screen size is taken from the terminal dimensions. Size is no longer restricted to 1KB text pages.
 ; - Lo-Res and Hi-Res graphics modes are gone for now since they don't work too well with the standard ncurses based
 ;   terminal peripheral. A graphics terminal peripheral could be added, though.
@@ -48,7 +46,7 @@
 ; On Reset, the program counter is loaded from 0xFFFC and 0xFFFD. all addresses with least
 ; significant (lsb,low) byte first.
 ;
-; TODO Fix remaining bugs, cleanup code
+; TODO Fix remaining bugs, cleanup code.
 ;
 
                 .include "symbols.inc"
@@ -58,7 +56,7 @@
 lang:           jsr lang_init
 lang2:          jmp lang_cont
 lang_init:      rts
-lang_cont:      .dsb $14B2,$00    ; filler up to F800
+lang_cont:      .dsb $1503,$00    ; filler up to F800
 
                 .include "asm.s"
 
@@ -614,57 +612,26 @@ wait3:          sbc #$01
                 sbc #$01
                 bne wait2           ; busy, busy, busy waiting
                 rts
+                ;
+                ; increment source and target addresses a1 and a4
+                ; until source reaches a2
+                ; sets carry when a1 >= a2
+                ;
 nxta4:          inc a4l             ; incr 2-byte a4
                 bne nxta1           ;  and a1
                 inc a4h
+                ; reuse nxta1 for nxta4...
+                ;
+                ;  increment a1 until it reached a2
+                ;
 nxta1:          lda a1l             ; incr 2-byte a1
-                cmp a2l
+                cmp a2l             ;    set carry if a1l >= a2l
                 lda a1h             ;   and compare to a2
-                sbc a2h
-                inc a1l             ;  carry set if >=
+                sbc a2h             ;  carry set if a1 >= a2
+                inc a1l
                 bne rts4b
                 inc a1h
-rts4b:          rts
-headr:          ldy #$4B            ; write or skip A * 256 'long 1'
-                jsr zerdly          ;   half cycles
-                bne headr           ;     (650 usec each)
-                adc #$fe
-                bcs headr           ; then a 'short 0'
-                ldy #$21            ;    (400 usec)
-wrbit:          jsr zerdly          ; write two half cycles
-                iny                 ;   of 250 usec ('0')
-                iny                 ;   or 500 usec ('0')
-zerdly:         dey                 ; it means 'zero delay'
-                bne zerdly
-                bcc wrtape          ; y is count for
-                ldy #$32            ;   timing loop
-onedly:         dey                 ; 'ones delay'
-                bne onedly
-wrtape:         pha
-                ldy tpdir
-                lda tapeout,y         ; y=0 - tape out, y=1 - tape in
-                pla
-                ldy #$2C
-                dex
-                rts
-rdbyte:         ldx #$08            ; 8 bits to read
-rdbyt2:         pha                 ; read two transitions
-                jsr rd2bit          ;   (find edge)
-                pla
-                rol                 ; next bit
-                ldy #$3A            ; count for samples
-                dex
-                bne rdbyt2
-                rts
-rd2bit:         jsr rdbit
-rdbit:          dey                 ; decr y until
-                lda tapein          ;   tape transition
-                eor lastin
-                bpl rdbit
-                eor lastin
-                sta lastin
-                cpy #$80            ; set carry on y register
-                rts
+rts4b:          rts                 ; return carry bit
 charout:        ldy cv              ; cursor y index to y register
                 sty termcy          ; set terminal cursor y
                 ldy ch              ; cursor h index to y register
@@ -1011,29 +978,14 @@ usr:            jmp usradr          ; to usr subroutine at usradr
                 ; Without cassette I/O ports writing square waves no longer
                 ; makes sense.
                 ;
-write:          lda #$00           ; set header to WRITE
-                sta tpdir
-                lda #$40
-                jsr headr           ; write 10-sec header
-                ldy #$27
-wr1:            ldx #$00
-                eor(a1l,x)
-                pha
-                lda (a1l,x)
-                jsr wrbyte
+write:          ldx #$00    ; stays zero, a1 is incremented each step. There is no lda(a1) instr.
+@wr1:           lda (a1l,x)
+                sta tapeio
                 jsr nxta1
-                ldy #$1D
-                pla
-                bcc wr1
-                ldy #$22
-                jsr wrbyte
-                lda tapecls         ; close tape
-                beq bell            ; sound bell and return
-wrbyte:         ldx #$10
-wrbyt2:         asl
-                jsr wrbit
-                bne wrbyt2
-                rts
+                bcc @wr1
+                lda tapecls         ; close tape file
+                jmp bell            ; sound bell and return
+
                 ;
                 ; execute command line
                 ;
@@ -1042,36 +994,19 @@ crmon:          jsr bli             ; handle CR as blank
                 pla                 ; and return to mon
                 bne monz
                 ;
-                ; read memory area from tape IN
+                ; read memory area from tape file
                 ;
-                ; first synchronize timing with the header block,
-                ; Then read bytes and check checksum
-                ; 1s and 0s have different lengths, so number and frequency 
-                ; of machine cycles is important for executing this
+                ; This now just needs to read the content
+                ; as bytes without complications.
                 ;
-read:           lda #$01            ; set header to READ
-                sta tpdir
-                jsr rd2bit          ; find tapein edge
-                lda #$16
-                jsr headr           ; delay 3.5s
-                sta chksum          ; init checksum = $FF
-                jsr rd2bit          ; find tapein edge
-rd2:            ldy #$24            ; look for sync bit
-                jsr rdbit           ; (short 0)
-                bcs rd2             ; loop until found
-                jsr rdbit           ; skip second sync h-cycle
-                ldy #$3B            ; index for 0/1 test
-rd3:            jsr rdbyte          ; read a byte
+read:           ldy #$3B            ; index for 0/1 test
+rd3:            lda tapeio          ; read a byte
                 sta (a1l,x)         ; store at (a1)
-                eor chksum
-                sta chksum          ; update running checksum
                 jsr nxta1           ; incr a1, compare to a2
-                ldy #$35            ; compensate 0/1 index
                 bcc rd3             ; loop until done
-                jsr rdbyte          ; read chksum byte
                 ldy tapecls         ; close tape
-                cmp chksum
-                beq bell            ; good, sound bell and return
+                jmp bell            ; good, sound bell and return
+
                 ;
                 ; print "ERR" and beep
                 ;

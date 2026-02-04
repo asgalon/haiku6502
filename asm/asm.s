@@ -39,6 +39,7 @@ syntaxerr:      jsr bell
 
 setaddr:        jsr zmode           ; clear (reused) monitor mode, scan idx
                 jsr getnum
+                dey                 ; recover non-digit item
                 rts
 hasaddr:        ldy #$4             ; look at first 5 chars, beginning with last
 @hadrlp:        lda in,y
@@ -62,12 +63,20 @@ asm_entry:      cld ; who knows where we came from... bcd mode tends to confuse 
                 ;
                 tsx
                 stx spnt
+                lda a1l
+                sta pcl
+                lda a1h
+                sta pch
                 ;
                 ; main assembler loop
                 ;
 asmz:           lda #'!'
                 sta prompt          ; set prompt to '!'
-                jsr getlnz          ; get line
+                jsr crout
+                ldy a1h             ; print CR,A1 in hex
+                ldx a1l
+                jsr prntyx          ; output cr and address
+                jsr getlnv
                 jsr zmode
                 jsr hasaddr         ; see if line has address label "%x:"
                 ldx #$01
@@ -77,6 +86,9 @@ asmz:           lda #'!'
                 bpl @setpcl
 
                 jsr eatblank        ; skip whitespace
+                cmp #k_entr         ; empty line, return to prompt
+                beq asmz
+
                 ;
                 ; on '*' return to monitor.
                 ;
@@ -95,6 +107,8 @@ asmz:           lda #'!'
                 ;
 @procmnm:       and #$1F    ; ex.:  PHP                                            'P' = $50 -> $10
                 sta a4h     ;
+                lda #$00
+                sta in      ; put a zero into first position to mark input buffer old news.
                 jsr nextch  ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
                 asl         ; $3E                                                        $90
                 asl         ; $7C                                                        $20
@@ -115,8 +129,9 @@ asmz:           lda #'!'
                 ldx #(opcodez-opcodex-1)+2
 @firstfail:     dex
 @scndfail:      dex
-                bmi syntaxerr
-                lda opcodex,x     high
+                bpl @cont
+                jmp syntaxerr
+@cont:          lda opcodex,x     high
                 cmp a4h
                 bne @firstfail
                 dex
@@ -124,8 +139,8 @@ asmz:           lda #'!'
                 cmp a4l
                 bne @scndfail
                 txa
-                lsr         ; rest of the tables have bytes not words, so half.
-                sta a4l
+                lsr         ; rest of the tables have bytes not words, so half it.
+                sta mnem
                 iny                 ; point to char after mnemonic
                 ;
                 ; at this point, we have the address set in a1-a3 and the
@@ -248,38 +263,38 @@ code_ac:
                 .byte $58          ; 'CLI'
                 .byte $B8          ; 'CLV'    - 10
                 .byte $61          ; 'CMP'
-                .byte $70          ; 'CPX'
-                .byte $60          ; 'CPY'
-                .byte $62          ; 'DEC'
+                .byte $E0          ; 'CPX'
+                .byte $C0          ; 'CPY'
+                .byte $C2          ; 'DEC'
                 .byte $CA          ; 'DEX'
                 .byte $88          ; 'DEY'
-                .byte $21          ; 'EOR'
-                .byte $72          ; 'INC'    - 18
+                .byte $41          ; 'EOR'
+                .byte $E2          ; 'INC'    - 18
                 .byte $E8          ; 'INX'
                 .byte $C8          ; 'INY'
                 .byte $4C          ; 'JMP'
                 .byte $20          ; 'JSR'
-                .byte $51          ; 'LDA'
-                .byte $52          ; 'LDX'
-                .byte $50          ; 'LDY'
-                .byte $22          ; 'LSR'    - 20
+                .byte $A1          ; 'LDA'
+                .byte $A2          ; 'LDX'
+                .byte $A0          ; 'LDY'
+                .byte $42          ; 'LSR'    - 20
                 .byte $EA          ; 'NOP'
                 .byte $01          ; 'ORA'
                 .byte $48          ; 'PHA'
                 .byte $08          ; 'PHP'
                 .byte $68          ; 'PLA'
                 .byte $28          ; 'PLP'
-                .byte $12          ; 'ROL'
-                .byte $32          ; 'ROR'    - 28
+                .byte $22          ; 'ROL'
+                .byte $62          ; 'ROR'    - 28
                 .byte $40          ; 'RTI'
                 .byte $60          ; 'RTS'
-                .byte $71          ; 'SBC'
+                .byte $E1          ; 'SBC'
                 .byte $38          ; 'SEC'
                 .byte $F8          ; 'SED'
                 .byte $78          ; 'SEI'
-                .byte $41          ; 'STA'
-                .byte $42          ; 'STX'    - 30
-                .byte $40          ; 'STY'
+                .byte $81          ; 'STA'
+                .byte $82          ; 'STX'    - 30
+                .byte $80          ; 'STY'
                 .byte $AA          ; 'TAX'
                 .byte $A8          ; 'TAY'
                 .byte $BA          ; 'TSX'
@@ -290,41 +305,36 @@ code_az:
 
                 ;
                 ; print code
-                ; input:
-                ;   a - operation mode
-                ;   opb - opcode 'b' mode bits to 'or' in
-p_opcode:       lda code_ac,x
+                ;
+p_opcode:       lda opcode
                 ora opb
                 sta opcode
-                jmp finish_asm
+                rts
 
                 ;
                 ; set instruction length
-                ; 1, 2 or 3 bytes
+                ; 0, 1 or 2 additional bytes
+                ; modifies x
                 ;
-one_byte:       lda #$01
+one_byte:       ldx #$00
+                beq setcmdlen ;always jump
+two_bytes:      ldx #$01
                 bne setcmdlen ;always jump
-two_bytes:      lda #$02
-                bne setcmdlen ;always jump
-three_bytes:    lda #$03
-setcmdlen:      sta cmdlen
-
+three_bytes:    ldx #$02
+setcmdlen:      stx cmdlen
                 jmp finish_asm  ; done, ready to emit code
 
-asm_simple:     lda opmodes,x
+asm_simple:     lda opmode
                 cmp #$02        ; type 0 and 1 do not need address mode specification, use code_a directl
                 bpl @chk_shft
-                jsr p_opcode
                 jmp one_byte
 @chk_shft:      cmp #$04        ; deal with accu mode shift operations
                 bne loc_err
                 lda #$08        ; b = %010 -> aaa010cc
-                jsr p_opcode
+                sta opb
                 jmp one_byte
 
-                ; jsr getnum
-                ; jsr get_rel_a
-asm_imm:        lda opmodes,x
+asm_imm:        lda opmode
                 cmp #$02        ; type 2
                 beq asm_imm_ct
                 cmp #$05        ; type 5
@@ -333,27 +343,27 @@ asm_imm:        lda opmodes,x
                 beq asm_imm_ct
 loc_err:        jmp syntaxerr
 asm_imm_ct:     jsr g_adr
-                ldx a4l
-                lda code_ac,x
-                ldx #$00
+                lda opcode
                 and #$03        ; isolate 'c' bits
-                cmp #$03        ; c=3 has b = %010 for imm, others b=000
+                cmp #$01        ; c=3 has b = %010 for imm, others b=000
                 bne @zerob
-                ldx #$08        ; when c= %11 immediate is placed at b=%010
-@zerob:         stx opb
-                jsr p_opcode    ; fill in complete opcode
+                lda #$08        ; when c= %11 immediate is placed at b=%010
+@zerob:         sta opb
                 jmp two_bytes
-
                 ;
                 ; get the address
                 ; if byte size is demanded, only the lower byte is used.
+                ; return the character after the numbers in a
                 ;
-g_adr:          jsr eatblank  ; get rid of spaces and $
+g_adr:          iny
+g_adr_l:        jsr eatblank  ; get rid of spaces and $
                 jsr getnum
+                dey
                 lda a2l
                 sta adrl
                 lda a2h
                 sta adrh
+                lda in,y
                 rts
 
                 ; So after the mnemonic, there can be three options:
@@ -369,39 +379,44 @@ g_adr:          jsr eatblank  ; get rid of spaces and $
                 ;
                 ; Value is $?[\dA-Z]{1,2}
                 ; Address is [$?][\dA-Z]{1,4}
-eval_arg:       ldx a4l     ; load x with opcode index
+eval_arg:       ldx mnem        ; load x with opcode index
+                lda opmodes,x   ; mode for x
+                sta opmode      ; for access without x reg
+                lda code_ac,x   ; bac opcode base for x
+                sta opcode      ; for access without x reg
                 lda #$00
                 sta opb     ; clear opcode b
                 lda in,y
                 sta mode
                 jsr chk_eol      ; end of line
                 beq asm_simple  ; nothing there
-                lda opmodes,x
+
                 beq @err        ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
                 lda in,y        ; back to input char
-                cmp '#'
+                cmp #'#'
                 beq asm_imm
                 ;
                 ;
                 ; now parse rest of address to determine address mode and get argument
                 ;
                 ; following options are possible (h = hex digit):
-                ; h{1.4}       absolute or zero             ; case 0: just 4 hex numbers
-                ; h{1.4},x|y   absolute or zero indexed     ; case 1: ends with ,x|y
-                ; (h{1,4})     indirect                     ; case 2: starts with (, ends with )
-                ; (h{1,2}),y   post-indexed indirect        ; case 3: starts with (, ends with ),y
-                ; (h{1,2},x)   pre-indexed indirect;       ; case 4: starts with (, ends with ,x)
-                cmp '('
+                ; h{1.4}       absolute or zero             ; case 0: just 4 hex numbers   2 or 3 bytes
+                ; h{1.4},x|y   absolute or zero indexed     ; case 1: ends with ,x|y       2 or 3 bytes
+                ; (h{1,4})     indirect                     ; case 2: starts with (, ends with )  3 bytes
+                ; (h{1,2}),y   post-indexed indirect        ; case 3: starts with (, ends with ),y  2 bytes
+                ; (h{1,2},x)   pre-indexed indirect;       ; case 4: starts with (, ends with ,x)   2 bytes
+                cmp #'('
                 beq @indirect
                 ;
                 ; cases 0 and 1
                 ;
-                jsr g_adr
+                jsr g_adr_l
+                lda in,y
                 jsr chk_eol
                 bne @cont
                 jmp asm_direct      ; no more input -> case 0
 @cont:          jsr eatblank
-                cmp ','             ; only , x|y possible now
+                cmp #','             ; only , x|y possible now
                 beq @reg_indexed    ; -> check reg next
 @err:           jmp syntaxerr       ; syntax error for weverything else
 @reg_indexed:   jsr nextch
@@ -411,9 +426,9 @@ eval_arg:       ldx a4l     ; load x with opcode index
                 ;
                 ; cases 2-4
 @indirect:      jsr g_adr           ; address comes after the brace in any case left..
-                cmp ','
+                cmp #','
                 beq @preindexed     ; ',' can only be (hh,x)  -> case 4
-                cmp ')'             ;
+                cmp #')'            ;
                 beq @ind_or_pi      ; ) can be indirect or indirect post-indexed (hhhh) or (hh),y
                 bne @err            ; else err; we have to close the brace at least.
                 ;
@@ -425,23 +440,24 @@ eval_arg:       ldx a4l     ; load x with opcode index
                 jsr nextch
                 cmp #')'
                 bne @err
+                jsr nextch
                 jsr chk_eol
                 bne @err
-                lda opmodes,x
-@chk23:         cmp #$40                ; only works for tpes 2 % 3
-                bmi @err
-                jmp finish_asm          ; b = 0, no need to change opcode
+@chk23:         lda opmode
+                cmp #$04                ; only works for types 2 % 3
+                bpl @err
+                jmp two_bytes          ; b = 0, no need to change opcode, opb already set for hh,Y
                 ;
                 ; cases 2-3
                 ;
 @ind_or_pi:     jsr nextch
-                cmp ','
+                cmp #','
                 beq @indir_reg       ; (hh), -> case 3 reg test
                 jsr chk_eol
                 beq asm_indirect    ; ->  case 2
                 bne @err       ; something unexpected in the line
 @indir_reg:     jsr nextch
-                cmp 'Y'
+                cmp #'Y'
                 bne @err
                 ;
                 ; case 3
@@ -450,33 +466,43 @@ eval_arg:       ldx a4l     ; load x with opcode index
                 jsr chk_eol
                 bne @err
                 lda #$10            ; default: abs. Or in b = %100 into aaa100cc
+                sta opb
                 bne @chk23          ; only do it if type 2 or 3
 
                 ; asm_indirect: this only happens with jmp
                 ; x must be $1B
-asm_indirect:   cpx #$1B
+asm_indirect:   lda opcode
+                cmp #$4C
                 beq @check
                 jmp syntaxerr
 @check:         lda #$20        ;  Or in  %001.000.00 into 010.011.00
-                ora opb
-                jmp finish_asm
+                sta opb
+                jmp three_bytes
                 ;
                 ; wrap up the assembly:
                 ; emit code bytes to target position,
                 ; then borrow the system monitors list command
                 ; to print out the redisassenbled line.
                 ;
-finish_asm:     ldy cmdlen
-@loop:          dey             ; start y = cmdlen -1
-                lda opcode,y
-                sta (a2l),y
+                ;
+finish_asm:     jsr p_opcode
+                ldy cmdlen
+@loop:          lda opcode,y
+                sta (pcl),y
+                dey
 @short:         bpl @loop
                 lda #$01  ; disassemble just the one line
                 jsr list2
+                lda pcl
+                sta a1l
+                lda pch
+                sta a1h
                 jmp asmz
                 ;
                 ; check for end of line - eihter ENTER (set to 0x0a) or 0
                 ; Z set if reached eol
+                ; imput: current input char in a
+                ;
 chk_eol:        cmp #$00
                 beq @fin
                 cmp #k_entr
@@ -496,14 +522,14 @@ chk_xy:         cmp #'X'
 get_rel_a:      sec                 ; set carry for following substraction
                 lda pcl             ;
                 adc #$01            ; add 2 to be relative to pc+2
-                sbc a1l
+                sbc a2l
                 sta adrl            ; store in low adr
                 lda pch
-                sbc a1h
+                sbc a2h
                 bmi @chklow
                 lda adrl
-                bmi @chkerr       ; pos > $7f
-@chkok          rts
+                bmi @chkerr         ; pos > $7f
+@chkok          jmp two_bytes       ; no opb variants for rel branches
 @chklow         lda adrl
                 bmi @chkok          ; neg < $80
 @chkerr         jmp syntaxerr       ; done, rel addr in adrl
@@ -512,16 +538,18 @@ get_rel_a:      sec                 ; set carry for following substraction
                 ; if adrh == 0 and operation allows zero mode,
                 ; use that one. else go for absolute address (16bit)
                 ; if op does not have that either, throw syntax error
-asm_direct:     ldx a4l
-                lda opmodes,x
+asm_direct:     lda opmode
                 cmp #$01            ; relative branch; special treatment -> compute rel. addr. -> type 2 finished
                 beq get_rel_a
+                lda in,y
                 jsr chk_zero_abs    ; from here on, just examine types 3-b. use zero page where possible.
-                lda #$0C            ; default: abs. Or in b = %011 into aaa011cc
                 bcc @abs_b
                 lda #$04            ; or in b = %001 into aaa001cc
-@abs_b:         ora opb
-                jmp finish_asm
+                sta opb
+                jmp two_bytes
+@abs_b:         lda #$0C            ; abs. Or in b = %011 into aaa011cc
+                sta opb
+                jmp three_bytes
 
                 ;
                 ; asm_indexed: select one of the indexed option.
@@ -530,8 +558,7 @@ asm_direct:     ldx a4l
                 ; input: a - current in char
 asm_indexed:    cmp #'Y'
                 beq @idx_y
-                ldx a4l
-                lda opmodes,x
+                lda opmode
                 cmp #$05            ; types 2-4, 0 and 1 ignored
                 bmi @has_idx_x
                 cmp #$0a
@@ -547,8 +574,8 @@ asm_indexed:    cmp #'Y'
                 cpx #$30            ; stx hh,x no
                 beq @err
                 lda #$14            ; default: abs. Or in b = %101 into aaa101cc
-@wrapup:        ora opb
-                jmp finish_asm
+                sta opb
+                jmp two_bytes
                 ;
                 ; abs,X
 @abs_x:         cpx #$1E            ; ldx hhhh,x no
@@ -558,28 +585,31 @@ asm_indexed:    cmp #'Y'
                 cpx #$31            ; sty hhhh,x no
                 beq @err
                 lda #$34            ; default: abs. Or in b = %111 into aaa111cc
-                bne @wrapup
+                sta opb
+                jmp three_bytes
 @idx_y:         cpx #$1F            ; ldy hhh,y no
                 beq @err
                 cpx #$31            ; sty hhh,y no
                 beq @err
                 lda adrh
                 bne @abs_y
-                lda opmodes,x
+                lda opmode
                 cmp #$0a
                 bmi @err
-                lda #$14            ; default: abs. Or in b = %101 into aaa101cc
-                bne @wrapup
-@abs_y:         lda opmodes,x
+                lda #$14            ; abs. Or in b = %101 into aaa101cc
+                sta opb
+                jmp two_bytes
+@abs_y:         lda opmode
                 cmp #$04
                 bmi @abs_y_low
                 cmp #$0a
                 beq @abs_y_ldx
                 bne @err
 @abs_y_low:     lda #$18            ; default: abs. Or in b = %110 into aaa110cc
-                bne @wrapup
+                bne @abs_y_out
 @abs_y_ldx:     lda #$1C            ; default: abs. Or in b = %111 into aaa111cc
-                bne @wrapup
+@abs_y_out:     sta opb
+                jmp three_bytes
 
 bar_ldx:
 

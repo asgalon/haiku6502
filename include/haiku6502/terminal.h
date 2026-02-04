@@ -31,7 +31,6 @@ namespace haiku6502 {
 
         std::string tape_filepath;
         std::fstream tape = std::fstream();
-        uint8_t tapevalue = 0;
 
         bool stdio_mode = false;
         char stdio_line[256];
@@ -62,6 +61,11 @@ namespace haiku6502 {
 
         void pre_cycle() override;
         void post_tick() override;
+
+        uint8_t tape_read();
+
+        void tape_write(uint8_t value);
+
         void post_cycle() override;
 
         void key_map(int key);
