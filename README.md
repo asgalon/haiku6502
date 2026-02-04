@@ -1,6 +1,6 @@
 # Haiku6502
-#### Video Demo:  <URL>
-#### Description
+#### Video Demo:  https://youtu.be/lLq8R0Fv4B4
+#### Description:
 This is an emulator for an early 1980ies type home computer based on the 6502 CPU. 
 It borrows much of the design from the Apple ][, but I made a number of 
 simplifications and modifications. The purpose is not to emulate a specific machine,
