@@ -55,15 +55,15 @@ There is no networking device right now, but one could be attached to some I/O a
 
 #### Built-In I/O
 
-|        | 0                       | 1 | 2 | 3 | 4          | 5          | 6          | 7 | 8 | 9 | A | B | C | D | E | F |
-|--------|-------------------------|--|--|--|------------|------------|------------|--|--|--|--|--|--|--|--|--|
-| 0xC000 | Keyboard Data Input LSB | | | MSB |
-| 0xC010 |                         |
-| 0xC020 |                         |
+|        | 0                       | 1          | 2        | 3 | 4          | 5          | 6          | 7          | 8 | 9 | A | B | C | D | E | F           |
+|--------|-------------------------|------------|----------|--|------------|------------|------------|------------|---|---|---|---|--|---|---|-------------|
+| 0xC000 | Keyboard Data Input LSB | Kbd Strobe |          |  |            |            |            |            |   |   |   |   |  |   |   | Random Byte |
+| 0xC010 | Terminal Y cursor       | X cursor   | char out | Control char | Esc arg1 | Esc arg2 | Win H | Win W | stdio read char | stdio readline | prompt char | | | | mode 0 - ncurses, 1 - stdio |
+| 0xC020 | Tape I/O                | Tape close file |
 | 0xC030 | Speaker Output          |
 | 0xC040 |                         |
 | 0xC050 |                         |
-| 0xC060 | Audio Input             | Button 1 | Button 2 | Button 3 | Joystick 0 | joystick 1 | Joystick 2 | Joystick 3 |
+| 0xC060 | Audio Input             | Button 1   | Button 2 | Button 3 | Joystick 0 | joystick 1 | Joystick 2 | Joystick 3 |
 | 0xC070 | Game Controller Out     |
 | 0xC080 | Peripheral Slot #0      |
 | 0xC090 | Peripheral Slot #1      |
