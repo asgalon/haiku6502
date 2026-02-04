@@ -1,0 +1,17 @@
+;
+; opmode groups
+;
+;                                       |Impl|Imm|Abs |Zero|z_x |z_y |a_x |a_y |Rel |ix_ir|ir_ix|Ind
+; type 0: implied/accu, no arguments    | *  |   |    |    |    |    |    |    |    |     |     |
+; type 1: relative                      |    |   |(*) |    |    |    |    |    | <- |     |     |
+; type 2: full in (like adc)            |    | * | *  | *  | *  |    | *  | *  |    | *   | *   |
+; type 3: full out (without implied)    |    |   | *  | *  | *  |    | *  | *  |    | *   | *   |
+; type 4: shifting                      | *  |   | *  | *  | *  |    | *  |    |    |     |     |
+; type 5: cpx                           |    | * | *  | *  |    |    |    |    |    |     |     |
+; type 6: bit                           |    |   | *  | *  |    |    |    |    |    |     |     |
+; type 7: dec                           |    |   | *  | *  | *  |    | *  |    |    |     |     |
+; type 8: jmp                           |    |   | *  |    |    |    |    |    |    |     |     | *
+; type 9: jsr                           |    |   | *  |    |    |    |    |    |    |     |     |
+; type a: ldx/ldy changing index reg    |    | * |    | *  | y  | x  | y  | x  |    |     |     |
+; type b: stx/sty changing index reg    |    |   | *  | *  | y  | x  |    |    |    |     |     |
+;

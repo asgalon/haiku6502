@@ -20,6 +20,8 @@ Optional features, depending on effort:
  - add color support (skipped)
  - add further virtual peripherals such as printer interface, graphics card or simple networking. (skipped)
  - get the instruction machine cycle count right for every variation. This is prepared, but not completed.
+ - Set up program installation
+ - Test build on Linux
 
 ## The constraints
 There is 48KB of RAM, of which 47KB are free to use, 12KB of ROM, of which the standard
