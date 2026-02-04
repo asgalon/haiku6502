@@ -41,13 +41,11 @@ namespace haiku6502 {
                 win_w = 255;
             }
             mvaddstr(1,0, "Haiku6502");
-            mvaddstr(2,0, "v0.8b");
-            mvaddstr(3,0, "1979/03/03");
+            mvaddstr(2,0, "V0.8b - ncurses");
             refresh();
         } else {
             cout << "Haiku6502" << endl;
-            cout << "v0.8b" << endl;
-            cout << "1979/03/03" << endl;
+            cout << "V0.8b - stdio" << endl;
         }
     }
 

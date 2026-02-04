@@ -67,10 +67,16 @@ namespace haiku6502 {
         }
     }
 
+    //
+    // Add the terminal component
+    //
     void Engine::register_terminal(Terminal *t) {
         terminal = t;
     }
 
+    //
+    // Register further I/O peripherals in one of the slots
+    //
     void Engine::register_peripheral(int slot, Peripheral *peripheral) {
         // replace whatever had been put there
         remove_peripheral(slots[slot]);
@@ -78,6 +84,9 @@ namespace haiku6502 {
         peripheral->init(this);
     }
 
+    //
+    // Remove a peripheral
+    //
     void Engine::remove_peripheral(Peripheral * &slot) {
         if (slot != nullptr) {
             try {
@@ -90,14 +99,23 @@ namespace haiku6502 {
         }
     }
 
+    //
+    // Min entry point
+    //
     void Engine::run() {
         this->execute();
     }
 
+    //
+    // quit the engine
+    //
     void Engine::quit() {
         shutdown = true;
     }
 
+    //
+    // Execute main cpu loop
+    //
     void Engine::execute() {
         pc = indirect(RESET_VECTOR);
         while (!shutdown) {
