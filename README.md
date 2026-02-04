@@ -6,7 +6,7 @@ It borrows much of the design from the Apple ][, but I made a number of
 simplifications and modifications. The purpose is not to emulate a specific machine,
 but to provide an environment to write programs under a similarly strict set of 
 constraints like a japanese haiku poem. IT is really astonishing how much can be done with 
-a KB of assembler code.
+a single KB of assembler code.
 
 ## The Goal
 The goal for completing the project was to have the emulator running in a virtual terminal window,
@@ -59,4 +59,96 @@ original hardware.
 ## The Emulator
 The emulator is written in C++ in a CMake project structure. Unit tests are done with Boost Test library.
 
+### The System Monitor ROM
+This one is based on the old system monitor that preceded the Autostart ROM in the Apple II computer. 
+Its contents are listed in the reference manual, so I typed this into a file, corrected all reading 
+and spelling errors, analysed it, and then modified it to suit the specifications of this emulator.
+Functionality mainly as described in that referenc emanual.
 
+    300
+
+shows the content at address 300
+
+    300.320
+
+shows the content of bytes 300 to 320
+
+    300<400.420M
+
+copies bytes 400-420 to location 300-320
+
+    300.3FFW
+
+writes bytes 300-3ff to the tape file in the current directory
+
+    300.3FFR
+
+reads the tape file to 300-3FF
+
+    300G
+
+starts the subroutine located at 300
+
+    300: 12 34 56 78 9A BC
+
+writes the given bytes into the location starting with 300
+
+New:
+
+    Q
+
+Terminates the emulator program
+
+    !
+
+starts the mini assembler,
+
+    300!
+
+starts the mini assembler and sets the input point to address 300
+
+
+The assembler shows the prompt '!' instead of '*'
+
+    +
+
+goes back to the system monitor
+
+### Command line options
+
+- -c  starts the emulator in command line mode (ncurses is the default)
+- -r <romfile> loads a 12KB ROM file into D000-FFFF. It must fill the space and have the 6502 reset and irq vectors at FFFA-FFFF
+- -t <tapefile> sets the name of the tapefile, default is tape.data
+- -d for some debug output
+- -m <ramfile>  Load RAM content
+- -l <addr>          ... at this address
+
+
+## Files
+- src and include/haiku6502: C++ source directories
+  - src/main.cpp    Application Main entry and command line interface
+  - include/haiku6502/setup.h configuration filled from command line args
+  - cpu.h/cpp   Details of inner CPU, registers, structs, enums
+  - engine.h/cpp The main emulator engine
+  - device.h Basic device interface for terminal and i/o peripherals
+  - peripheral.h Interface for I/O peripherals
+  - slot0_peripheral.h Interface for Memory extension peripherals
+  - memory.h/cpp Definitions for memory structure
+  - terminal.h/cpp The screen/keyboard device with ncurses screen layout variant and simple stdio command line interface
+  - test/test.cpp  Unit tests
+- asm: Assembler sources
+  - asm/rom.s   System monitor ROM, written in xa assembler, based on Apple II Ref. manual monitor listing
+  - asm/asm.s   Mini-Assembler, writen in xa assembler
+  - symbols.inc Symbols used in rom.s and asm.s
+  - unit_test.rom.s  ROM for unit test
+  - am_testrom.sh shell script to assemble unit test rom
+  - asm_rom.sh shell script to assemble standard rom
+  - calc_opval.py utility script to compute compressed mnemonic codes for lookup
+  - opcodes_compressed.s result of calc_opval.py
+  - check_bcs_mode.s copied test script for binary coded decimal arithmetics
+- data
+  - check_bcd_mode_0800.ram  loadable program to check BCD arithmetics
+  - standard.rom  Standard ROM file, F4C6-FFFF used
+  - unit_test.rom unit test roms
+- CMakeLists.txt CMake configurations
+- cmake/FindReadline.cmake  CMake setup for standard GNU readline library

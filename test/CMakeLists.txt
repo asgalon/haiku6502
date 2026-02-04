@@ -1,6 +1,6 @@
 find_package (Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
 add_definitions (-DBOOST_TEST_DYN_LINK)
-add_executable (Test test.cpp ../data/test.rom)
+add_executable (Test test.cpp)
 
 target_link_libraries (Test
         haiku6502lib
