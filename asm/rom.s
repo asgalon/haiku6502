@@ -5,6 +5,7 @@
 ; This code is only for academic purposes.
 ; This file is compatible with xa assembler and is not relocatable.
 ; Care has to be taken to keep the "go" jump table addresses area on page 0xFE or else it will cease to work this way.
+; (Disregard the last sentence, changed it to word size address table to simplify adding commands.)
 ; There are a few nifty tricks in the original assembler code to save a few bytes here and there that probably
 ; would not have been done this way were there more than 12KB address space available for ROM.
 ;
