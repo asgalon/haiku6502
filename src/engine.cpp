@@ -118,6 +118,13 @@ namespace haiku6502 {
     //
     void Engine::execute() {
         pc = indirect(RESET_VECTOR);
+
+        if (terminal == nullptr) {
+            cerr << "No terminal I/O set up, bailing out." << endl;
+            shutdown = true;
+        }
+        irq_request = false;
+
         while (!shutdown) {
             if (debug) {
                 //char str[16];
@@ -125,18 +132,15 @@ namespace haiku6502 {
                 //printf("pc: 0x%4hx  a: 0x%02hhx  x: 0x%02hhx  y: 0x%02hhx \n", pc, a, x, y);
                 //mvaddstr(2, 0, str);
             }
-            if (terminal != nullptr) {
-                terminal->pre_cycle();
-            }
+
+            terminal->pre_cycle();
 
             int op_cycles = cycle();
 
             for (int i = 0; i < op_cycles; i++) {
                 nanosleep(&req, nullptr);
 
-                if (terminal != nullptr) {
-                    terminal->post_tick();  //  repeated each clock tick, 2-7 per instruction
-                }
+                terminal->post_tick();  //  repeated each clock tick, 2-7 per instruction
             }
 
             terminal->post_cycle();  // before or after interrupt handling?
@@ -144,7 +148,7 @@ namespace haiku6502 {
             if (nmi_request) {
                 nmi_request = false;
                 pc = indirect(NMI_VECTOR);
-            } else if (irq_request) {
+            } else if ((p & STATUS_INTERRUPT_DISABLE) == 0 && irq_request) {
                 irq_request = false;
                 pc = indirect(IRQ_VECTOR);
             }

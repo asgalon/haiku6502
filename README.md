@@ -26,7 +26,7 @@ Optional features, depending on effort:
 ## The constraints
 There is 48KB of RAM, of which 47KB are free to use, 12KB of ROM, of which the standard
 system ROM takes up the top 2KB. The ROM file can be loaded at startup. The only immediately
-available programmoing environment is a primitive system monitor to manipulate memory
+available programming environment is a primitive system monitor to manipulate memory
 areas in hexadecimal bytes, the mini assembler, and the disassembler. The screen size in ncurses mode 
 is the size of the virtual terminal. the emulator has only ASCII characters below 0x80 to simplify 
 handling a bit.
