@@ -480,7 +480,7 @@ mul3:           lda xtndl+2,x       ; add multiplicant (aux)
                 inx
                 bne mul3
 mul4:           ldx #$03
-mul5:           ror acl,x           ; orig DFB #$76, #$50 ?!? maybe a bug in their assembler software
+mul5:           ror acl,x           ; orig DFB #$76, #$50 ?!? This is probably why Woz wanted undocumented ROR to be made official...
                 dex
                 bpl mul5
                 dey
