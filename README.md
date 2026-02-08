@@ -37,8 +37,9 @@ There are two built-in versions of the user interface: An ncurses-based virtual 
 and a standard streams interface using stdin and stdout. This way, the emulator can be used
 in a pipe. I based the machine on the Apple II layout, but removed the memory-mapped text 
 and graphics displays. I also rearranged the I/O area a bit for convenience. I left in the 
-tape interface, though, which can save and restore memory blocks by writing out square 
-waves in a data file, which admittedly is very, very silly indeed. The header alone produces about 4MB 
+tape interface, though, which could save and restore memory blocks by writing out square 
+waves in a data file which produced 4MB of data only for the sync header, so I changed that 
+to simple binary data I/O to a tape file. The header alone produces about 4MB 
 of monotone uncompressed data. I also changed the pseudo ASCII-characters to normal ASCII characters.
 'A' is now printed as 0x41 again instead of 0xC1.
 
