@@ -110,7 +110,7 @@ starts the mini assembler,
 starts the mini assembler and sets the input point to address 300
 
 
-The assembler shows the prompt '!' instead of '*'
+The assembler shows the prompt '<addr>!' instead of '*', with the current input address before the prompt char.
 
     *
 
