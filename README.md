@@ -65,7 +65,7 @@ The emulator is written in C++ in a CMake project structure. Unit tests are done
 This one is based on the old system monitor that preceded the Autostart ROM in the Apple II computer. 
 Its contents are listed in the reference manual, so I typed this into a file, corrected all reading 
 and spelling errors, analysed it, and then modified it to suit the specifications of this emulator.
-Functionality mainly as described in that referenc emanual.
+Functionality mainly as described in that reference manual.
 
     300
 
@@ -112,7 +112,7 @@ starts the mini assembler and sets the input point to address 300
 
 The assembler shows the prompt '!' instead of '*'
 
-    +
+    *
 
 goes back to the system monitor
 
