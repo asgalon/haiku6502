@@ -5,8 +5,9 @@ This is an emulator for an early 1980ies type home computer based on the 6502 CP
 It borrows much of the design from the Apple ][, but I made a number of 
 simplifications and modifications. The purpose is not to emulate a specific machine,
 but to provide an environment to write programs under a similarly strict set of 
-constraints like a japanese haiku poem. IT is really astonishing how much can be done with 
-a single KB of assembler code.
+constraints like a japanese haiku poem. It is really astonishing how much can be done with 
+a single KB of assembler code. This was a project done for the HarvardX cs50 course final project 
+to clean up the certificate situation there a bit, and becuase it was fun.
 
 ## The Goal
 The goal for completing the project was to have the emulator running in a virtual terminal window,
@@ -20,8 +21,8 @@ Optional features, depending on effort:
  - add color support (skipped)
  - add further virtual peripherals such as printer interface, graphics card or simple networking. (skipped)
  - get the instruction machine cycle count right for every variation. This is prepared, but not completed.
- - Set up program installation
- - Test build on Linux
+ - Set up program installation (didn't have time yet)
+ - Test build on Linux (not tested yet)
 
 ## The constraints
 There is 48KB of RAM, of which 47KB are free to use, 12KB of ROM, of which the standard
