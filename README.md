@@ -47,7 +47,7 @@ of monotone uncompressed data. I also changed the pseudo ASCII-characters to nor
 I used the printout of the system monitor ROM in the 1979 Apple II Reference Manual as a starting point,
 to speed up the process a little. The source is a printout of the assembler source code made on a 9 needle 
 dot matrix printer in low quality, so it needed some heavy cleanup. Bugfixing assembler code targeted for 
-a slightly different is fun, especially when at the same time debugging the CPU emulator code.
+a slightly different machine is fun, especially when at the same time debugging the CPU emulator code.
 I used the xa open source assembler to produce the new ROM code. ca65 is more capable, but this one is easier 
 for non relocatable code.
 At the en, the resulting ROM is still about the same size but no longer compatible with the 
