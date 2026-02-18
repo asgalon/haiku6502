@@ -1,17 +1,14 @@
-#include <cstdio>
-#include <cstring>
 #include <iostream>
 #include <unistd.h>
 
 #include "../include/haiku6502/setup.h"
 #include "haiku6502/engine.h"
-#include "haiku6502/slot0_peripheral.h"
 #include "haiku6502/terminal.h"
 
 using namespace std;
 
 static void usage(const char *progname) {
-    cout << "Usage: " << progname << " [-c] [-d] -r <romfile.rom> [-m <ramfile.ram>]  [-l <load address>] -t <tape.data>";
+    cout << "Usage: " << progname << " [-c] [-d] -r <romfile.rom> [-m <ramfile.ram>]  [-l <load address>] -t <tape.data> [-w]";
     // cout << " [-i <sourcefile>] [-o <outputfile>]";
     cout << endl;
     cout << "   -c            Console mode, use standard terminal streams directly" << endl;
@@ -20,6 +17,7 @@ static void usage(const char *progname) {
     cout << "   -m <ramfile>  Load RAM content" << endl;
     cout << "   -l <addr>          ... at this address" << endl;
     cout << "   -t <tapefile> Use this file as virtual casette tape (very silly, uses 4MB just for the sync header)" << endl;
+    cout << "   -w            Run in W65C02 mode" << endl;
     // cout << "   -i <source>   Load assembler source file (not implemented yet)" << endl;
     // cout << "   -o <objname>  Save object file (not implemented yet)" << endl;
 
@@ -35,7 +33,7 @@ int main(const int argc, char *const argv[]) {
     haiku6502::engine_setup setup{};
 
     int ch;
-    while ((ch = getopt(argc, argv, "cdi:l:o:r:t:")) != -1) {
+    while ((ch = getopt(argc, argv, "cdi:l:o:r:t:w")) != -1) {
         switch (ch) {
             case 'c':
                 setup.console_mode = true;
@@ -60,9 +58,13 @@ int main(const int argc, char *const argv[]) {
             case 't':
                 setup.tape_file = std::string(optarg);
                 break;
+            case 'w':
+                setup.mode = haiku6502::P65C02;
+                break;
             case '?':
             default:
                 usage(argv[0]);
+                return 0;
         }
     }
 

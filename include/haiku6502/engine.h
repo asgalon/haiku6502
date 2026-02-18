@@ -18,6 +18,14 @@ namespace haiku6502 {
 
     protected:
         //
+        // Processor mode
+        //
+        ProcessorMode cpu_type { P6502 };
+
+        bool phi2 { false };
+        bool rdy { true };
+
+        //
         // location of current cycle instruction
         //
         uint16_t cursor;
@@ -189,12 +197,20 @@ namespace haiku6502 {
         void op_adc(uint8_t param, int &ticks);
         void op_and(uint8_t param, int &ticks);
         void op_asl(AddressMode addr, uint8_t arg1, uint8_t arg2);
+
+        void op_bbr(uint8_t bit, uint8_t arg1, uint8_t arg2, int &ticks);
+
+        void op_bbs(uint8_t bit, uint8_t arg1, uint8_t arg2, int &ticks);
+
         void op_bcc(uint8_t arg, int &ticks);
         void op_bcs(uint8_t arg, int &ticks);
         void op_beq(uint8_t arg, int &ticks);
         void op_bit(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_bmi(uint8_t arg, int &ticks);
         void op_bne(uint8_t arg, int &ticks);
+
+        void op_bra(uint8_t arg, int &ticks);
+
         void op_bpl(uint8_t arg, int &ticks);
         void op_brk();
         void op_bvc(uint8_t arg, int &ticks);
@@ -224,7 +240,19 @@ namespace haiku6502 {
         void op_pha();
         void op_php();
         void op_pla();
+
+        void op_phx();
+
+        void op_phy();
+
         void op_plp();
+
+        void op_plx();
+
+        void op_ply();
+
+        void op_rmb(uint8_t bit, uint8_t arg);
+
         void op_rol(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_ror(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_rti();
@@ -233,16 +261,31 @@ namespace haiku6502 {
         void op_sec();
         void op_sed();
         void op_sei();
+
+        void op_smb(uint8_t bit, uint8_t arg);
+
         void op_sta(AddressMode addr, uint8_t arg1, uint8_t arg2);
+
+        void op_stp();
+
         void op_stx(AddressMode addr, uint8_t arg1, uint8_t arg2);
         void op_sty(AddressMode addr, uint8_t arg1, uint8_t arg2);
+
+        void op_stz(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks);
+
         void op_tax();
         void op_tay();
+
+        void op_trb(AddressMode addr, uint8_t arg1, uint8_t arg2);
+
+        void op_tsb(AddressMode addr, uint8_t arg1, uint8_t arg2);
+
         void op_tsx();
         void op_txa();
         void op_txs();
         void op_tya();
 
+        void op_wai();
     };
 }
 

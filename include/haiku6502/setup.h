@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "cpu.h"
+
 namespace haiku6502 {
     struct engine_setup {
         std::string source;
@@ -16,6 +18,7 @@ namespace haiku6502 {
         uint16_t ram_load_address = 0x1000;
         uint16_t ram_start_address = 0x1000;
         std::string tape_file = "./tape.data";
+        ProcessorMode mode = P6502;
 
         bool console_mode { false };
 

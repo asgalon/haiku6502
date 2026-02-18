@@ -69,7 +69,50 @@ namespace haiku6502 {
         TSX,
         TXA,
         TXS,
-        TYA
+        TYA,
+        // W65C02 instructions
+        BBR0,
+        BBR1,
+        BBR2,
+        BBR3,
+        BBR4,
+        BBR5,
+        BBR6,
+        BBR7,
+        BBS0,
+        BBS1,
+        BBS2,
+        BBS3,
+        BBS4,
+        BBS5,
+        BBS6,
+        BBS7,
+        BRA,
+        PHX,
+        PHY,
+        PLX,
+        PLY,
+        RMB0,
+        RMB1,
+        RMB2,
+        RMB3,
+        RMB4,
+        RMB5,
+        RMB6,
+        RMB7,
+        SMB0,
+        SMB1,
+        SMB2,
+        SMB3,
+        SMB4,
+        SMB5,
+        SMB6,
+        SMB7,
+        STP,
+        STZ,
+        TRB,
+        TSB,
+        WAI
     };
 
     enum AddressMode {
@@ -85,7 +128,10 @@ namespace haiku6502 {
         INDEXED_INDIRECT_X,
         INDIRECT_INDEXED_Y,
         ABSOLUTE_INDIRECT,
-        RELATIVE
+        RELATIVE,
+        ZERO_RELATIVE,
+        ZERO_INDIRECT,
+        ABS_INDEXED_INDIRECT_X
     };
 
     enum StatusFlag {
@@ -115,14 +161,21 @@ namespace haiku6502 {
         uint8_t p { STATUS_IGNORE };
     };
 
+
+    enum ProcessorMode {
+        P6502 = 0,
+        P65C02 = 1
+    };
+
     struct Instruction {
         OpCode op;
         AddressMode addr;
         uint8_t length;
         uint8_t cycles;
+        ProcessorMode mode;
 
-        Instruction(const OpCode _o, const AddressMode _a, const uint8_t l, const uint8_t t)
-            : op(_o), addr(_a), length(l), cycles(t) {}
+        Instruction(const OpCode _o, const AddressMode _a, const uint8_t l, const uint8_t t, const ProcessorMode m=P6502)
+            : op(_o), addr(_a), length(l), cycles(t), mode(m) {}
     };
 
     extern Instruction operations[256];
