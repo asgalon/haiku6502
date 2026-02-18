@@ -123,6 +123,7 @@ goes back to the system monitor
 - -d for some debug output
 - -m <ramfile>  Load RAM content
 - -l <addr>          ... at this address
+- -w  switch to W65C02 mode with additional instructions and address modes.
 
 
 ## Files
