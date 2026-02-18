@@ -14,7 +14,8 @@ namespace haiku6502 {
 
     Engine::Engine(const engine_setup& setup) {
         debug = setup.debug;
-
+        cpu_type = setup.mode;
+        
         // 48 KB RAM
         ram = new uint8_t[0xC000];
         // 4 KB I/O Addresses at 0xC000-0xCFFF inbetween...
@@ -208,6 +209,118 @@ namespace haiku6502 {
             case ASL:
                 op_asl(i.addr, arg1, arg2);
                 break;
+            case BBR0:
+                if (cpu_type == P65C02) {
+                    op_bbr(0, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR1:
+                if (cpu_type == P65C02) {
+                    op_bbr(1, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR2:
+                if (cpu_type == P65C02) {
+                    op_bbr(2, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR3:
+                if (cpu_type == P65C02) {
+                    op_bbr(3, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR4:
+                if (cpu_type == P65C02) {
+                    op_bbr(4, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR5:
+                if (cpu_type == P65C02) {
+                    op_bbr(5, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR6:
+                if (cpu_type == P65C02) {
+                    op_bbr(6, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBR7:
+                if (cpu_type == P65C02) {
+                    op_bbr(7, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS0:
+                if (cpu_type == P65C02) {
+                    op_bbs(0, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS1:
+                if (cpu_type == P65C02) {
+                    op_bbs(1, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS2:
+                if (cpu_type == P65C02) {
+                    op_bbs(2, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS3:
+                if (cpu_type == P65C02) {
+                    op_bbs(3, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS4:
+                if (cpu_type == P65C02) {
+                    op_bbs(4, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS5:
+                if (cpu_type == P65C02) {
+                    op_bbs(5, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS6:
+                if (cpu_type == P65C02) {
+                    op_bbs(6, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
+            case BBS7:
+                if (cpu_type == P65C02) {
+                    op_bbs(7, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
             case BCC:
                 op_bcc(arg1, ticks);
                 break;
@@ -228,6 +341,13 @@ namespace haiku6502 {
                 break;
             case BPL:
                 op_bpl(arg1, ticks);
+                break;
+            case BRA:
+                if (cpu_type == P65C02) {
+                    op_bra(arg1, ticks);
+                } else {
+                    op_nop();
+                }
                 break;
             case BRK:
                 op_brk();
@@ -310,11 +430,95 @@ namespace haiku6502 {
             case PHP:
                 op_php();
                 break;
+            case PHX:
+                if (cpu_type == P65C02) {
+                    op_phx();
+                } else {
+                    op_nop();
+                }
+                break;
+            case PHY:
+                if (cpu_type == P65C02) {
+                    op_phy();
+                } else {
+                    op_nop();
+                }
+                break;
             case PLA:
                 op_pla();
                 break;
             case PLP:
                 op_plp();
+                break;
+            case PLX:
+                if (cpu_type == P65C02) {
+                    op_plx();
+                } else {
+                    op_nop();
+                }
+                break;
+            case PLY:
+                if (cpu_type == P65C02) {
+                    op_ply();
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB0:
+                if (cpu_type == P65C02) {
+                    op_rmb(0, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB1:
+                if (cpu_type == P65C02) {
+                    op_rmb(1, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB2:
+                if (cpu_type == P65C02) {
+                    op_rmb(2, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB3:
+                if (cpu_type == P65C02) {
+                    op_rmb(3, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB4:
+                if (cpu_type == P65C02) {
+                    op_rmb(4, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB5:
+                if (cpu_type == P65C02) {
+                    op_rmb(5, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB6:
+                if (cpu_type == P65C02) {
+                    op_rmb(6, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case RMB7:
+                if (cpu_type == P65C02) {
+                    op_rmb(7, arg1);
+                } else {
+                    op_nop();
+                }
                 break;
             case ROL:
                 op_rol(i.addr, arg1, arg2);
@@ -340,8 +544,71 @@ namespace haiku6502 {
             case SEI:
                 op_sei();
                 break;
+            case SMB0:
+                if (cpu_type == P65C02) {
+                    op_smb(0, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB1:
+                if (cpu_type == P65C02) {
+                    op_smb(1, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB2:
+                if (cpu_type == P65C02) {
+                    op_smb(2, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB3:
+                if (cpu_type == P65C02) {
+                    op_smb(3, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB4:
+                if (cpu_type == P65C02) {
+                    op_smb(4, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB5:
+                if (cpu_type == P65C02) {
+                    op_smb(5, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB6:
+                if (cpu_type == P65C02) {
+                    op_smb(6, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
+            case SMB7:
+                if (cpu_type == P65C02) {
+                    op_smb(7, arg1);
+                } else {
+                    op_nop();
+                }
+                break;
             case STA:
                 op_sta(i.addr, arg1, arg2);
+                break;
+            case STP:
+                if (cpu_type == P65C02) {
+                    op_stp();
+                } else {
+                    op_nop();
+                }
                 break;
             case STX:
                 op_stx(i.addr, arg1, arg2);
@@ -349,11 +616,32 @@ namespace haiku6502 {
             case STY:
                 op_sty(i.addr, arg1, arg2);
                 break;
+            case STZ:
+                if (cpu_type == P65C02) {
+                    op_stz(i.addr, arg1, arg2, ticks);
+                } else {
+                    op_nop();
+                }
+                break;
             case TAX:
                 op_tax();
                 break;
             case TAY:
                 op_tay();
+                break;
+            case TRB:
+                if (cpu_type == P65C02) {
+                    op_trb(i.addr, arg1, arg2);
+                } else {
+                    op_nop();
+                }
+                break;
+            case TSB:
+                if (cpu_type == P65C02) {
+                    op_tsb(i.addr, arg1, arg2);
+                } else {
+                    op_nop();
+                }
                 break;
             case TSX:
                 op_tsx();
@@ -367,6 +655,14 @@ namespace haiku6502 {
             case TYA:
                 op_tya();
                 break;
+            case WAI:
+                if (cpu_type == P65C02) {
+                    op_wai();
+                } else {
+                    op_nop();
+                }
+                break;
+
             default:
                 ;
         }
@@ -409,7 +705,8 @@ namespace haiku6502 {
                 param = get_byte(address(arg1, arg2) + y);
             }
                 break;
-            case INDEXED_INDIRECT_X: {
+            case INDEXED_INDIRECT_X:
+            case ABS_INDEXED_INDIRECT_X: {
                 param = get_byte(indirect(address(arg1, arg2) + x));
             }
                 break;
@@ -423,6 +720,10 @@ namespace haiku6502 {
                 break;
             case RELATIVE:
                 param = pc + arg1;
+                break;
+            case ZERO_INDIRECT: {
+                param = get_byte(indirect(address(arg1, arg2)));
+            }
                 break;
             default:
                 ;
@@ -473,6 +774,24 @@ namespace haiku6502 {
         write_result(addr, arg1, arg2, oper);
     }
 
+    void Engine::op_bbr(uint8_t bit, uint8_t arg1, uint8_t arg2, int& ticks) {
+        uint8_t zp = get_param(ZERO, arg1, arg2);
+
+        if ((zp & 1 << bit) == 0) {
+            pc = pc + relative(arg2);
+            ticks++;           
+        }
+    }
+    
+    void Engine::op_bbs(uint8_t bit, uint8_t arg1, uint8_t arg2, int& ticks) {
+        uint8_t zp = get_param(ZERO, arg1, arg2);
+
+        if ((zp & 1 << bit) != 0) {
+            pc = pc + relative(arg2);
+            ticks++;           
+        }
+    }
+    
     void Engine::op_bcc(uint8_t arg, int& ticks) {
         if (!carry()) {
             pc = pc + relative(arg);
@@ -515,6 +834,10 @@ namespace haiku6502 {
         }
     }
 
+    void Engine::op_bra(uint8_t arg, int& ticks) {
+        pc = pc + relative(arg);
+    }
+    
     void Engine::op_brk() {
         set_status_flag(STATUS_BREAK, true);
         push_stackw(pc);
@@ -677,6 +1000,14 @@ namespace haiku6502 {
         push_stack(p);
     }
 
+    void Engine::op_phx() {
+        push_stack(x);
+    }
+
+    void Engine::op_phy() {
+        push_stack(y);
+    }
+
     void Engine::op_pla() {
         a = pull_stack();
         set_status_nz(a);
@@ -686,6 +1017,22 @@ namespace haiku6502 {
         p = pull_stack() & ~STATUS_BREAK;
     }
 
+    void Engine::op_plx() {
+        x = pull_stack();
+        set_status_nz(x);
+    }
+
+    void Engine::op_ply() {
+        y = pull_stack();
+        set_status_nz(y);
+    }
+
+    void Engine::op_rmb(uint8_t bit, uint8_t arg) {
+        uint8_t oper = get_param(ZERO, arg, 0);
+        oper &= ~(1 << bit);
+        write_result(ZERO, arg, 0, oper);
+    }
+    
     void Engine::op_rol(AddressMode addr, uint8_t arg1, uint8_t arg2) {
         uint8_t oper = get_param(addr, arg1, arg2);
 
@@ -761,8 +1108,18 @@ namespace haiku6502 {
         set_status_flag(STATUS_INTERRUPT_DISABLE, true);
     }
 
+    void Engine::op_smb(uint8_t bit, uint8_t arg) {
+        uint8_t oper = get_param(ZERO, arg, 0);
+        oper |= 1 << bit;
+        write_result(ZERO, arg, 0, oper);
+    }
+    
     void Engine::op_sta(AddressMode addr, uint8_t arg1, uint8_t arg2) {
         write_result(addr, arg1, arg2, a);
+    }
+
+    void Engine::op_stp() {
+        phi2 = true;
     }
 
     void Engine::op_stx(AddressMode addr, uint8_t arg1, uint8_t arg2) {
@@ -771,6 +1128,10 @@ namespace haiku6502 {
 
     void Engine::op_sty(AddressMode addr, uint8_t arg1, uint8_t arg2) {
         write_result(addr, arg1, arg2, y);
+    }
+
+    void Engine::op_stz(AddressMode addr, uint8_t arg1, uint8_t arg2, int& ticks) {
+        write_result(addr, arg1, arg2, 0);
     }
 
     void Engine::op_tax() {
@@ -783,6 +1144,20 @@ namespace haiku6502 {
         y = a;
 
         set_status_nz(y);
+    }
+
+    void Engine::op_trb(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+        uint8_t oper = get_param(addr, arg1, arg2);
+        set_status_flag(STATUS_ZERO, (a & oper) == 0);
+        oper &= ~a;
+        write_result(addr, arg1, arg2, oper);
+    }
+
+    void Engine::op_tsb(AddressMode addr, uint8_t arg1, uint8_t arg2) {
+        uint8_t oper = get_param(addr, arg1, arg2);
+        set_status_flag(STATUS_ZERO, (a & oper) == 0);
+        oper |= a;
+        write_result(addr, arg1, arg2, oper);
     }
 
     void Engine::op_tsx() {
@@ -806,6 +1181,10 @@ namespace haiku6502 {
         a = y;
 
         set_status_nz(a);
+    }
+
+    void Engine::op_wai() {
+        rdy = false;
     }
 
     void Engine::write_result(AddressMode addr, uint8_t arg1, uint8_t arg2, uint8_t byte) {
@@ -836,6 +1215,9 @@ namespace haiku6502 {
                 break;
             case INDIRECT_INDEXED_Y:
                 set_byte(indirect(address(arg1, arg2)) + y, byte);
+                break;
+            case ZERO_INDIRECT:
+                set_byte(indirect(address(arg1, arg2)), byte);
                 break;
             default:
                 ;

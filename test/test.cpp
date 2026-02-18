@@ -486,5 +486,89 @@ BOOST_AUTO_TEST_CASE(operation) {
 
 }
 
+//
+// Raw operation tests for W65C02 operations.
+//
+// PC is not adjusted for step
+// CPU type is not checked
+// operation is executed raw.
+//
+BOOST_AUTO_TEST_CASE(P65C02_Ops) {
+    haiku6502::CpuStatus status;
+    int ticks = 0;
+
+    engine->op_clc();
+    engine->op_cld();
+    engine->op_jmp(haiku6502::ABSOLUTE, 0x00, 0x08, ticks); // set pc to $800
+
+    engine->set_byte(0x10, 0xA5); // zp$10 = %1010 0101
+
+    engine->op_bbr(0, 0x10, 0x10, ticks);
+
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0800, status.pc); // pc not moved in op if condition not met
+
+    engine->op_bbr(1, 0x10, 0x20, ticks);
+
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0820, status.pc);  // pc = pc + rel without advance for op itself inside op
+
+    engine->op_bbs(0, 0x10, 0xE0, ticks);
+
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0800, status.pc);
+
+    engine->op_bbs(1, 0x10, 0x1D, ticks);
+
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0800, status.pc);
+
+    engine->op_bra(0x20, ticks);
+
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0820, status.pc);
+
+    engine->op_rmb(7, 0x10);
+
+    BOOST_CHECK_EQUAL(0x025, engine->get_byte(0x10));
+
+    engine->op_smb(4, 0x10);
+
+    BOOST_CHECK_EQUAL(0x035, engine->get_byte(0x10));
+
+    engine->op_stz(haiku6502::ZERO, 0x10, 0, ticks);
+
+    BOOST_CHECK_EQUAL(0, engine->get_byte(0x10));
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0xa5, 0, ticks);
+    engine->set_byte(0x10, 0x0F);
+
+    engine->op_trb(haiku6502::ZERO,  0x10, 0);
+
+    // A AND M = 0xa5 & 0x0F = 0x05 -> Z = 0
+    // M = NOT A AND M = 0x5A & 0x0F = 0x0A
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0x0a, engine->get_byte(0x10));
+    BOOST_CHECK_EQUAL(0, status.p & haiku6502::STATUS_ZERO);
+
+    engine->op_lda(haiku6502::IMMEDIATE, 0xa5, 0, ticks);
+    engine->set_byte(0x10, 0x0F);
+
+    engine->op_tsb(haiku6502::ZERO,  0x10, 0);
+
+    // A AND M = 0xa5 & 0x0F = 0x05 -> Z = 0
+    // M = A OR M = 0xA5 | 0x0F = 0xAF
+    engine->get_state(status);
+
+    BOOST_CHECK_EQUAL(0xAF, engine->get_byte(0x10));
+    BOOST_CHECK_EQUAL(0, status.p & haiku6502::STATUS_ZERO);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
