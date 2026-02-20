@@ -6,7 +6,6 @@
 #define HAIKU6502_ENGINE_H
 
 #include <haiku6502/cpu.h>
-#include <haiku6502/memory.h>
 
 #include "peripheral.h"
 #include "setup.h"
@@ -113,9 +112,10 @@ namespace haiku6502 {
             if ((arg & 0x80) == 0) {
                 return arg;
             }
-            // Two's complement for negative values
-            // Well, would be easier in hardware...
-            int16_t neg = 0xFFFFFF00;
+            // Two's complement for negative values.
+            // argument is unsigned byte, result is signed short
+            // Well, would be easier to follow in hardware...
+            int16_t neg = -128;
             neg |= arg;
 
             return neg;
@@ -138,7 +138,7 @@ namespace haiku6502 {
             debug = to;
         }
 
-        uint16_t get_cursor() {
+        uint16_t get_cursor() const {
             return cursor;
         }
 
@@ -188,11 +188,6 @@ namespace haiku6502 {
             state.x = x;
             state.y = y;
         }
-
-                // Hard reset. map in hard reset vectors and set pc to 0
-        void hard_reset();
-        // soft reset. set pc to 0
-        void soft_reset();
 
         void op_adc(uint8_t param, int &ticks);
         void op_and(uint8_t param, int &ticks);

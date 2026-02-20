@@ -9,12 +9,14 @@ add_library(haiku6502lib
         terminal.cpp
         ../include/haiku6502/terminal.h
         slot0_peripheral.cpp
-        ../include/haiku6502/device.h)
+        ../include/haiku6502/device.h
+        ../include/haiku6502/errors.h)
 
 add_executable(haiku6502 main.cpp
         ../include/haiku6502/peripheral.h
         ../include/haiku6502/slot0_peripheral.h
-        ../include/haiku6502/device.h)
+        ../include/haiku6502/device.h
+        ../include/haiku6502/errors.h)
 
 set(CMAKE_INCLUDE_PATH, ../include)
 set(INCLUDE_DIRECTORIES ../include)

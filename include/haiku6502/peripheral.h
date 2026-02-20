@@ -10,10 +10,6 @@
 #include "device.h"
 
 namespace haiku6502 {
-    namespace Error {
-        struct peripheral_error {};
-    }
-
     class Engine;
 
     /*

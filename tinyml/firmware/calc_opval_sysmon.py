@@ -90,7 +90,7 @@ mappings = [
         "BIT, ---, ---, ---, ---, ---, ---, ---"
 ]
 
-with open("mnemonics_compressed.s", "w") as f:
+with open("cc65/mnemonics_compressed.s", "w") as f:
         f.write(".export _mnemcomp\n\n")
         f.write(".segment \"RODATA\"\n\n")
         for i, mnem in enumerate(opcodes):
@@ -109,7 +109,7 @@ with open("mnemonics_compressed.s", "w") as f:
 #                         print("$00, ", end='', flush=True)
 #         print("\n")
 
-with open("sysmon_mnemonics_compressed.s", "w") as f:
+with open("cc65/sysmon_mnemonics_compressed.s", "w") as f:
         f.write(".export _mneml, _mneml_d, _mnemr\n\n")
         f.write(".segment \"RODATA\"\n\n")
 

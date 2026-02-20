@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 4.1)
 project(haiku6502 CXX)
 
 ## Set C++ standard/compile-time options
-add_library(haiku6502_options INTERFACE)
+add_library(haiku6502_options INTERFACE
+        include/haiku6502/errors.h)
 target_compile_features(haiku6502_options INTERFACE cxx_std_17)
 
 # Add the src to the build
@@ -10,6 +11,7 @@ add_subdirectory(src)
 
 add_subdirectory(test)
 add_subdirectory(include/haiku6502)
+add_subdirectory(tinyml)
 
 enable_testing()
 add_test(NAME EngineTest COMMAND Test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/data)
@@ -40,4 +42,4 @@ target_include_directories(haiku6502 PUBLIC ${CURSES_INCLUDE_DIR} ./include )
 target_include_directories(haiku6502lib PUBLIC ${CURSES_INCLUDE_DIR} ./include)
 target_link_libraries(haiku6502 PRIVATE Curses::Curses readline)
 target_link_libraries(Test Curses::Curses readline)
-
+target_link_libraries(haiku6502_tinyml PRIVATE haiku6502lib haiku6502_options Curses::Curses readline)

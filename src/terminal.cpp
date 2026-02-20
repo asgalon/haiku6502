@@ -8,12 +8,11 @@
 #include <ncurses.h>
 #include <iostream>
 
-#include "haiku6502/peripheral.h"
-
 #include <haiku6502/setup.h>
 
 #include <readline/readline.h>
-#include <readline/history.h>
+
+#include "haiku6502/errors.h"
 
 namespace haiku6502 {
     using namespace std;
@@ -58,7 +57,7 @@ namespace haiku6502 {
 
     void Terminal::check_err(int err) {
         if (err != OK) {
-            throw new Error::peripheral_error();
+            throw Error(Error::PERIPHERAL_ERROR);
         }
     }
 

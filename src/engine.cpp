@@ -4,15 +4,30 @@
 
 #include <haiku6502/engine.h>
 
+#include <sys/stat.h>
 #include <fstream>
 #include <iostream>
 #include <ncurses.h>
 #include <unistd.h>
 
-namespace haiku6502 {
-    using namespace std;
+#include "haiku6502/errors.h"
 
-    Engine::Engine(const engine_setup& setup) {
+namespace haiku6502 {
+    static void load_file(unsigned char *dst, size_t items, FILE *f) {
+        uint16_t rest = items;
+
+        while (rest > 0) {
+            const size_t r = fread(dst + items - rest, 1, rest, f);
+
+            if (r < items && ferror(f) != 0) {
+                fclose(f);
+                throw Error(Error::IO_ERROR);
+            }
+            rest = items - r;
+        }
+    }
+
+    Engine::Engine(const engine_setup& setup) : cursor(0), terminal(nullptr), req() {
         debug = setup.debug;
         cpu_type = setup.mode;
         
@@ -26,23 +41,40 @@ namespace haiku6502 {
         req.tv_sec = 0;
         req.tv_nsec = 800;
 
-        // read the rom from file. should be exactly 0x3000 = 12KB = 12288 bytes long
-        // longer files will be truncated, shorter files will probably not set the three
+        // read the rom from file. should be equal or less than 0x3000 = 12KB = 12288 bytes long
+        // longer files will be truncated, shorter files will be moved up to align the three
         // important interrupt and reset vectors at 0xFFFA-0xFFFF
-        ifstream rom_stream(setup.rom, ios::in|ios::binary); // binary in, go to end
+        struct stat filestat {};
+
+        if (stat(setup.rom.c_str(), &filestat) == 1) {
+            perror(nullptr);
+            throw Error(Error::BAD_FILE);
+        }
 
         if (debug) {
             char dir[PATH_MAX];
 
             getwd(dir);
 
-            cout << dir << '\n';
+            std::cout << dir << '\n';
         }
 
-        if (rom_stream.is_open()) {
-            rom_stream.read(reinterpret_cast<istream::char_type *>(rom), 0x3000); // read file into rom area up to 0x3000 chars
+        if (filestat.st_size > 0x3000
+            || (filestat.st_mode & S_IFREG)  == 0
+            || (filestat.st_mode &  S_IRUSR) == 0) {
+            throw Error(Error::BAD_FILE);
+        }
 
-            rom_stream.close();
+        int start_addr = 0x3000 - filestat.st_size;
+
+        FILE *rom_file = fopen(setup.rom.c_str(), "rb");
+
+        if (rom_file != nullptr) {
+            load_file(&rom[start_addr], filestat.st_size, rom_file);
+
+            fclose(rom_file);
+        } else {
+            throw Error(Error::BAD_FILE);
         }
     }
 
@@ -58,13 +90,16 @@ namespace haiku6502 {
 
     void Engine::load_ram(uint16_t addr, uint16_t len, const char *filepath) const {
         if (addr < 0xC000 && addr + len < 0xC00) {
-            std::ifstream in_stream(filepath, std::ios::in| std::ios::binary); // binary in, go to end
+            FILE *ram_file = fopen(filepath, "rb");
 
-            if (in_stream.is_open()) {
-                in_stream.read(reinterpret_cast<istream::char_type *>(&ram[addr]), len); // read file into rom area up to len chars
+            if (ram_file != nullptr) {
+                load_file(&ram[addr], len, ram_file);
 
-                in_stream.close();
+                fclose(ram_file);
+            } else {
+                throw Error(Error::BAD_FILE);
             }
+
         }
     }
 
@@ -92,7 +127,7 @@ namespace haiku6502 {
         if (slot != nullptr) {
             try {
                 slot->close();
-            } catch (Error::peripheral_error e) {
+            } catch (Error e) {
                 // just ignore for now
             }
             delete slot;
@@ -121,7 +156,7 @@ namespace haiku6502 {
         pc = indirect(RESET_VECTOR);
 
         if (terminal == nullptr) {
-            cerr << "No terminal I/O set up, bailing out." << endl;
+            std::cerr << "No terminal I/O set up, bailing out." << std::endl;
             shutdown = true;
         }
         irq_request = false;
@@ -941,10 +976,15 @@ namespace haiku6502 {
     }
 
     void Engine::op_jmp(AddressMode addr, uint8_t arg1, uint8_t arg2, int &ticks) {
-        if (addr == ABSOLUTE_INDIRECT) {
-            pc = indirect(address(arg1, arg2));
-        } else {
-            pc = address(arg1, arg2);
+        switch (addr) {
+            case ABS_INDEXED_INDIRECT_X:
+                pc = indirect(address(arg1, arg2) + x);
+                break;
+            case ABSOLUTE_INDIRECT:
+                pc = indirect(address(arg1, arg2));
+                break;
+            default:
+                pc = address(arg1, arg2);
         }
     }
 
