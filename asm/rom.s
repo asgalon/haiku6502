@@ -176,7 +176,7 @@ prntop:         lda (pcl),y
                 jsr prbyte
                 ldx #$01            ; print 2 blanks
 prntbl:         jsr prbl2
-                cpy length          ; print inst (1-3 bytes)
+                cpy length          ; print inst (1-3 bytes) -> carry set if beyonf
                 iny                 ; in a 12 char field
                 bcc prntop
                 ldx #$03            ; char count for mnemonic print

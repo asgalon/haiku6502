@@ -169,7 +169,7 @@ namespace haiku6502 {
         Instruction(SMB0, ZERO, 2, 5, P65C02),
 
         Instruction(DEY, IMPLIED, 1, 2),
-        Instruction(NOP, IMPLIED, 1, 2),
+        Instruction(BIT, IMMEDIATE, 2, 2, P65C02),
         Instruction(TXA, IMPLIED, 1, 2),
         Instruction(NOP, IMPLIED, 1, 2),
         Instruction(STY, ABSOLUTE, 3, 4),

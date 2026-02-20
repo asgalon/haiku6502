@@ -263,8 +263,7 @@ getfmt:         tax
                 lsr                 ; 0000 00xx
                 ora #$44            ; index $44 - $47
                 rts
-@case_b:        lda opcode
-                and #$E4            ; mask for case b
+@case_b:        and #$E4            ; mask for case b
                 cmp #$04            ; 000x y100
                 bne @p6502          ; continue with standard opcode sets
                 lda opcode
@@ -274,16 +273,16 @@ getfmt:         tax
                 lsr
                 ora #$48
                 rts
-@p6502:
-@mnndx1:        lsr
-                bcc @mnndx3         ; form index into mnemonic tble
+@p6502:         lda opcode
+mnndx1:         lsr
+                bcc mnndx3         ; form index into mnemonic tble
                 lsr
 @mnndx2:        lsr
                 ora #$20
                 dey
                 bne @mnndx2
                 iny
-@mnndx3:         dey
+@mnndx3:        dey
                 bne @mnndx1
                 rts
                 ;
@@ -308,7 +307,8 @@ prcbit:         lda opcode          ; for 65C02 bitwise operations, isolate the 
 @cont7:         rts
 
 instdsp:        jsr insds1          ; gen fmt, len bytes
-                sta opcode          ; save opcode
+                pha                 ; save mnemonic table index (not opcode
+                ldy #$00            ; clear y
 @prntop:        lda (pcl),y
                 jsr prbyte
                 ldx #$01            ; print 2 blanks

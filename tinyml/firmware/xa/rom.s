@@ -56,7 +56,7 @@
 
                 .include "asm.s"
 
-                .dsb $19, $EA
+                ; .dsb $02, $EA
                 ;
                 ; print zero terminated string
                 ; max 255 chars.
@@ -113,7 +113,7 @@ setcol:         and #$0F            ; sets color = 17*A mod 16
                 sta color
                 rts
 selnibl:        bcc rtmaskz         ; if even, use low nibble else use high nibble (was scrn2)
-                lsr
+selhigh:        lsr
                 lsr
                 lsr                 ; shift high nibble into low nibble
                 lsr
@@ -223,21 +223,22 @@ getfmt:         tax
 @mnndxc2:       cpx #$07
                 bne case_a          ; no match, continue with case c
 @case_f:        ldx #$40            ; base for index
-                bit #$08            ; A and $08 == ?0
+                bit #$08            ; A and $08 == 0?
                 beq @ttopbit        ; yes, base $40, else base $42
-                ora #$02            ; XYYY 1111 -> BBR, BBS at $42,$43
-@ttopbit:       bit #$80            ; XYYY 0111 -> RMB, SMB at $40,$41
-                beq @case_f_r       ; 0YYY 0111 -> RMB at $40, 0YYY 1111 -> BBR at $42
-                ora #$01            ; 1YYY 0111 -> SMB at $41, 1YYY 1111 -> BBS at $43
-@case_f_r:      rts
+                inx                 ; XYYY 1111 -> BBR, BBS at $42,$43
+                inx
+@ttopbit:       asl                 ; XYYY 0111 -> RMB, SMB at $40,$41 X -> C
+                txa                 ; 0YYY 0111 -> RMB at $40, 0YYY 1111 -> BBR at $42
+                adc #$00            ; 1YYY 0111 -> SMB at $41, 1YYY 1111 -> BBS at $43
+                rts
 case_a:         cpx #$04            ; 0XYY 0100
                 bne @case_e
                 ldx #$4A
-                .byte $F6,opcode, @mnbit-@mnpc  ; bbr6 opcode,@mnbit
-@mnpc:          ldx #$4B
+                bbr #6,opcode,@mnbit  ; bbr6 opcode,@mnbit
+                ldx #$4B
 @mnbit:         txa
                 rts
-@case_e:        cmp #$CB
+@case_e:        cmp #$CB            ; 0%1100 1011 WAI, 0%1101 1011 STO
                 bne @not_wai
                 lda #$4C
                 rts
@@ -251,21 +252,15 @@ case_a:         cpx #$04            ; 0XYY 0100
                 cpx #$9A            ; mask matches case C?
                 bne @case_b
                 and #$60
-                lsr                 ; 0xx0 0000
-                lsr
-                lsr                 ;    ->
-                lsr
-                lsr                 ; 0000 00xx
+                lsr                 ; 0xx0 0000    ->
+                jsr selhigh         ; 0000 00xx
                 ora #$44            ; index $44 - $47
                 rts
 @case_b:        and #$E4            ; mask for case b
                 cmp #$04            ; 000x y100
                 bne @p6502          ; continue with standard opcode sets
                 lda opcode
-                lsr
-                lsr
-                lsr
-                lsr
+                jsr selhigh
                 ora #$48
                 rts
 @p6502:         lda opcode
@@ -283,29 +278,24 @@ mnndx3:         dey
                 ;
                 ; print bit index for 65c02 bitwise operation mnemonics
                 ;
-prcbit:         lda opcode          ; for 65C02 bitwise operations, isolate the bit index
-                and #$07            ; only if opcode ends with .111
-                cmp #$07
-                clc                 ; default - carry clear
-                bne @cont7
-                lda opcode
+prcbit:         lda monauxl         ; for 65C02 bitwise operations, isolate the bit index
+                beq @prbit
+                eor #$FF
+                beq @prbit
+                jmp prblnk          ; print 3 blanks and return from there
+@prbit:         lda opcode
                 and #$70
-                lsr
-                lsr
-                lsr
-                lsr
-                ora #$30
-                jsr cout
+                jsr selhigh
+                jsr prhexz
                 ldx #$02
-                jsr prbl2           ; print two blanks
-                sec                 ; set carry
-@cont7:         rts
+                jmp prbl2           ; print two blanks and return from there
 
 instdsp:        jsr insds1          ; gen fmt, len bytes
-                pha                 ; save mnemonic table index (not opcode
+                pha                 ; save mnemonic table index (not opcode)
+                ldy #$00            ; clear y
 @prntop:        lda (pcl),y
                 jsr prbyte
-                ldx #$01            ; print 2 blanks
+                ldx #$01            ; print 1 blank
 @prntbl:        jsr prbl2
                 cpy length          ; print inst (1-3 bytes)
                 iny                 ; in a 12 char field (65C02 bit ops mnemonics are 4 chars long)
@@ -314,7 +304,11 @@ instdsp:        jsr insds1          ; gen fmt, len bytes
                 cpy #$04
                 bcc @prntbl
                 pla                 ; recover mnemonic index
-                tay
+                tay                 ; use as mnemonic index
+                lsr                 ; $40-$41 -> $20,$42-$43 -> $21, for BBR BBS special address mode
+                sec
+                sbc #$21            ; BBR/BBS
+                sta monauxl         ; monaucl == 0 if BBR/BBS, not zero else
                 lda mneml,y
                 sta lmnem           ; fetch 3 char mnemonic
                 lda mnemr,y         ;   (packed in 2 bytes, only chars A-Z
@@ -331,9 +325,20 @@ prnm2:          asl rmnem           ; shift 5 bits of
                 dex
                 bne prmn1
                 jsr prcbit          ; print bit op index, carry set if 2 blanks output
-                bcs @twoblnks
-                jsr prblnk          ; output 3 blanks
-@twoblnks:      ldy length
+                lda monauxl
+                bne @normaladr
+                lda #'$'             ; BBR/BBS addr: $<byte1>,rel(byte2);
+                jsr cout
+                ldy #$01
+                lda (pcl),y         ; get arg byte 1
+                jsr prbyte
+                lda #','             ; BBR/BBS addr: $<byte1>,rel(byte2);
+                jsr cout
+                sty length          ; now length = 1, rel address mode, but pc has to increase.
+                jsr pcadj2
+                sta pcl
+                sty pch
+@normaladr:     ldy length
                 ldx #$06            ; count for 6 format bits
 pradr1:         cpx #$03
                 beq pradr5          ; if x=3 then addr
@@ -374,13 +379,13 @@ prbl3:          jsr cout            ; output a blank
                 rts
 pcadj:          sec                 ; 0=1-byte, 1=2-byte,
 pcadj2:         lda length          ;   2=3-byte
-pcadj3:         ldy pch
-                tax                 ; test displacement sign
-                bpl pcadj4          ;   (for rel branch)
-                dey
-pcadj4:         adc pcl
+pcadj3:         ldy pch             ;                                y = pch
+                tax                 ; test displacement sign         x = length
+                bpl pcadj4          ;   (for rel branch)      1- pl
+                dey                 ;                         y 1->0
+pcadj4:         adc pcl             ;                         pcl + A + C
                 bcc rts2            ; pcl+LENGTH(or Displc.)+1 to A
-                iny                 ;   carry inot y (pch)
+                iny                 ;   if carry increase y (pch)
 rts2:           rts
 ;
 ; fmt1
@@ -422,10 +427,10 @@ fmt2:           .byte $00       ; 0 - ERR
                 .byte $86       ; A - ABS,Y
                 .byte $4A       ; B - (ABS)
                 .byte $85       ; C - ZPAG,Y
-                .byte $9D       ; D - RELATIVE
+                .byte $9D       ; D - RELATIVE or ZP,REL
                 .byte $49       ; E - (Z-PAGE)      ; 65C02  ( - $40, 2 bytes - $01, ) - $04
                 .byte $5A       ; F - (ABS,X)       ; 65C02  ( - $40, 3 bytes - $02, , - $10 ) - $04
-                .byte $92       ;10 - ZERO,REL      ; 65C02  BBx:     3 bytes - $02, $ - $80, , - $10
+                .byte $9D       ;10 - ZERO,REL      ; 65C02  BBx:     same as rel for format
 char1:          .byte ',', ')', ',', '#', '(', '$'  ; 1st comma X - $10, 2nd comma Y $04
 char2:          .byte 'Y',0,"X$$",0
                 .include "sysmon_mnemonics_compressed.s"
@@ -493,8 +498,8 @@ pcinc2:         sta pch
 pcinc3:         lda length          ; update pc by LEN
                 jsr pcadj3
                 sty pch
-                clc                 ; short unconditional jump
-                bcc newpcl          ;  CLC BCC #rel
+                clc                 ; short unconditional jump wtih C as bool param
+                bra newpcl          ;  CLC BCC #rel
 xjsr:           clc
                 jsr pcadj2          ; update pc and push
                 tax                 ;   onto stack for
@@ -879,11 +884,11 @@ cout:           jmp (cswl)          ; vector to user output routine
                 ;
                 ; Standard cswl character out routine
                 ;
-cout1:          sty ysav1           ; save the y register
+cout1:          phy                 ; save the y register
                 pha                 ; save A
                 jsr vidout          ; output a as ascii
                 pla                 ; restore A
-                ldy ysav1           ; restore y and return
+                ply                 ; restore y and return
                 rts
                 ;
                 ; on blank / return, execute preceding command
@@ -985,8 +990,7 @@ setiflg:        sty invflg
                 ; Terminal mode in $C01F is 0 when in screen mode,
                 ; and 1 when in stdio mode
                 ;
-termsw:
-                rts
+
                 ;
                 ; set input port to standard keyboard
                 ;
@@ -1208,8 +1212,9 @@ nxtbs2:         inx                 ;   repeat once for l,h pair
                 ;   y - pointer to next char
                 ;   (a2) - number found or 0x0000
                 ;
-getnum:         stz a2h             ;  clear A2
-                stz a2l
+getnum:         ldx #$00
+                stx a2h             ;  clear A2
+                stx a2l
 nxtchr:         lda in,y            ; get char
                 iny
                 eor #$30            ; $30 0 -> $00; $39 9 -> $09; $41 A -> $71; $20 -> $10...
