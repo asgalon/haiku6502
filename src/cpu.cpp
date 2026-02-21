@@ -37,7 +37,7 @@ namespace haiku6502 {
 
         Instruction(CLC, IMPLIED, 1, 2),
         Instruction(ORA, ABSOLUTE_Y, 3, 4),
-        Instruction(INC, IMPLIED, 1, 2, P65C02),
+        Instruction(INC, ACCU, 1, 2, P65C02),
         Instruction(NOP, IMPLIED, 1, 2),
         Instruction(TRB, ABSOLUTE, 3, 6, P65C02),
         Instruction(ORA, ABSOLUTE_X, 3, 4),
@@ -75,7 +75,7 @@ namespace haiku6502 {
 
         Instruction(SEC, IMPLIED, 1, 2),
         Instruction(AND, ABSOLUTE_Y, 3, 4),
-        Instruction(DEC, IMPLIED, 1, 2, P65C02),
+        Instruction(DEC, ACCU, 1, 2, P65C02),
         Instruction(NOP, IMPLIED, 1, 2),
         Instruction(NOP, IMPLIED, 1, 2),
         Instruction(AND, ABSOLUTE_X, 3, 4),

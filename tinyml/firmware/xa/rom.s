@@ -54,7 +54,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1FB, $EA
+                .dsb $1DD, $EA
                 .include "asm.s"
 
                 ;
@@ -132,12 +132,12 @@ insds2:         tay
                 ; now cc is 01 or 11, 11
                 ;
                 ror                 ; bit 1 test, acc now 10aa abbb, c high bit in carry flag
-                bcc @insc1          ; xxxxxx11 -> RMB SMB, BBR BBS on 65C02
-                ror                 ; trest low b bit in carry. 0 -> RMB/SMB, 1 -> BBR,BBS
-                lda #$02            ; fmt2 index for RMB SMB -> ZERO
-                bcc getfmt
-                lda #$10            ; fmt2 index for BBR BBS -> $10 zpg,rel
+                bcc @insc1          ; xxxxxx11 -> RMB SMB, WAI, STP, BBR BBS on 65C02
+                and #03             ; test low bb bits. 1 -> RMB/SMB, 2-> WAI,STP, 3 -> BBR,BBS
+                tax
+                lda @fmt_xtra,x     ; fmt2 index for 0-N/A, 1-RMB SMB->ZERO 2-WAI,STP->IMPLIED, 3-BBR BBS->$10 zpg,rel
                 bra getfmt
+@fmt_xtra:      .byte $00,$02,$00,$10
 @insc1:         and #$87            ; mask bits c000 0bbb
 ieven:          lsr                 ; lsb into carry for l/r test (b low bit), acc = 0100 00bb (odd) or 00aa abbb
                                     ; so fmt1 index goes from 0x00 to 0x43 = dez. 67
@@ -165,7 +165,7 @@ getfmt:         tax
                 ;
                 ; 1)  1xxx1010 => 0010 1xxx  (C)   8 mnemonics
                 ; 2)  xxxyyy01 => 0011 1xxx  (E)   8 mnemonics
-                ; 3)  xxxyyy10 => 0011 0xxx  (D)   8 mnemonics
+                ; 3)  xxxyyy10 => 0011 0xxx  (D)   8 mnemonics   where lower yy != 00 unless apart from A2
                 ; 4)  xxxyy100 => 0010 0xxx  (B)   8 mnemonics
                 ; 5)  xxxxx000 => 000x xxxx  (A)  32 mnemonics
                 ;
@@ -208,6 +208,7 @@ getfmt:         tax
                 ; (d) 1000 1001 BIT #    0001 1.010 10.10 100.0         -> $4E (last one)
                 ; (e) 110X 1011 WAI, STP                                -> $4C - $4D
                 ; (f) XYYY X111 RMB, SMB, BBR, BBS   -> 0x0100 00XX     -> $40 - $43
+                ; (g) XXX1 0010 -> same as case E
                 ;
                 ; we have indices >= 0100 0000 = $40 free.
                 ;
@@ -218,13 +219,24 @@ getfmt:         tax
                 bne @mnndxc1
                 lda #<(mneml_d-mneml)  ; one mnemonic, last one.
                 rts
-@mnndxc1:       and #$0F            ; mask lower nibble
+@mnndxc1:       and #$1F            ; test case g first
+                cmp #$12            ; odd hi rows in lo column 2
+                bne @cont8          ;
+                lda opcode          ; teanslate into type E index: xxxyyy10 -> 0011 1xxx
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                ora #$38
+                rts
+@cont8:         and #$0F            ; mask lower nibble
                 tax
                 lda opcode          ; restore opcode in a
                 cpx #$0F            ; compare mask with 0F or 07 for 65C01 instructions
                 beq @case_f
 @mnndxc2:       cpx #$07
-                bne case_a          ; no match, continue with case c
+                bne @case_b         ; no match, continue with case b
 @case_f:        ldx #$40            ; base for index
                 bit #$08            ; A and $08 == 0?
                 beq @ttopbit        ; yes, base $40, else base $42
@@ -234,14 +246,22 @@ getfmt:         tax
                 txa                 ; 0YYY 0111 -> RMB at $40, 0YYY 1111 -> BBR at $42
                 adc #$00            ; 1YYY 0111 -> SMB at $41, 1YYY 1111 -> BBS at $43
                 rts
-case_a:         cpx #$04            ; 0XYY 0100
+@case_b:        and #$E4            ; mask for case b
+                cmp #$04            ; 000x y100
+                bne @case_a
+                lda opcode
+                jsr selhigh
+                ora #$48
+                rts
+@case_a:        cpx #$04            ; 0XYY 0100
                 bne @case_e
                 ldx #$4A
                 bbr #6,opcode,@mnbit  ; bbr6 opcode,@mnbit
                 ldx #$4B
 @mnbit:         txa
                 rts
-@case_e:        cmp #$CB            ; 0%1100 1011 WAI, 0%1101 1011 STO
+@case_e:        lda opcode
+                cmp #$CB            ; 0%1100 1011 WAI, 0%1101 1011 STO
                 bne @not_wai
                 lda #$4C
                 rts
@@ -253,19 +273,13 @@ case_a:         cpx #$04            ; 0XYY 0100
                 tax
                 lda opcode          ; restore opcode
                 cpx #$9A            ; mask matches case C?
-                bne @case_b
+                bne @p6502          ; continue with standard opcode sets
                 and #$60
                 lsr                 ; 0xx0 0000    ->
                 jsr selhigh         ; 0000 00xx
                 ora #$44            ; index $44 - $47
                 rts
-@case_b:        and #$E4            ; mask for case b
-                cmp #$04            ; 000x y100
-                bne @p6502          ; continue with standard opcode sets
-                lda opcode
-                jsr selhigh
-                ora #$48
-                rts
+
 @p6502:         lda opcode
 mnndx1:         lsr
                 bcc mnndx3         ; form index into mnemonic tble
@@ -330,17 +344,20 @@ prnm2:          asl rmnem           ; shift 5 bits of
                 jsr prcbit          ; print bit op index, carry set if 2 blanks output
                 lda monauxl
                 bne @normaladr
-                lda #'$'             ; BBR/BBS addr: $<byte1>,rel(byte2);
+                lda #'$'             ; BBR/BBS addr: $<byte1>,$<rel(byte2)>
                 jsr cout
                 ldy #$01
                 lda (pcl),y         ; get arg byte 1
                 jsr prbyte
-                lda #','             ; BBR/BBS addr: $<byte1>,rel(byte2);
+                lda #','             ; BBR/BBS addr: $<byte1>,
                 jsr cout
-                sty length          ; now length = 1, rel address mode, but pc has to increase.
-                jsr pcadj2
-                sta pcl
-                sty pch
+                lda #'$'             ; BBR/BBS addr: $<byte1>,$
+                jsr cout
+                ldy #$02
+                lda (pcl),y
+                inc                 ; adjust for pc
+                inc
+                jmp reladr
 @normaladr:     ldy length
                 ldx #$06            ; count for 6 format bits
 pradr1:         cpx #$03
@@ -359,7 +376,7 @@ pradr4:         dey
                 bmi pradr2
                 jsr prbyte
 pradr5:         lda format
-                cmp #$E8            ; handle relative address mode
+                cmp #$E8            ; handle relative address mode (format $9D after 3 asls)
                 lda (pcl),y         ;  special (print target, not offset)
                 bcc pradr4
 reladr:         jsr pcadj3

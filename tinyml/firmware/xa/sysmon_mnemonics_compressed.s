@@ -10,6 +10,7 @@ mneml:         .byte $14,$82,$14,$1b,$54,$83,$13,$99     ; BRK, PHP, BPL, CLC, J
                .byte $4b,$21,$82,$83                     ; INC, DEC, PHY, PLY
                .byte $a4,$a4                             ; TSB, TRB
                .byte $12,$9d                             ; BIT, STZ
+               .byte $b8,$9d                             ; WAI, STP
 mneml_d:       .byte $12                                 ; BIT
 
 mnemr:         .byte $96,$20,$18,$06,$e4,$20,$52,$46     ; BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC
@@ -24,4 +25,5 @@ mnemr:         .byte $96,$20,$18,$06,$e4,$20,$52,$46     ; BRK, PHP, BPL, CLC, J
                .byte $86,$46,$32,$32                     ; INC, DEC, PHY, PLY
                .byte $c4,$84                             ; TSB, TRB
                .byte $68,$34                             ; BIT, STZ
+               .byte $52,$20                             ; WAI, STP
                .byte $68                                 ; BIT
