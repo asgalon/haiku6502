@@ -52,11 +52,11 @@
 
                 .include "symbols.inc"
 
-                .org    $F400       ; ROM start address
+                .org    $F200       ; ROM start address
 
+                .dsb $200, $EA
                 .include "asm.s"
 
-                ; .dsb $02, $EA
                 ;
                 ; print zero terminated string
                 ; max 255 chars.
@@ -430,7 +430,7 @@ fmt2:           .byte $00       ; 0 - ERR
                 .byte $9D       ; D - RELATIVE or ZP,REL
                 .byte $49       ; E - (Z-PAGE)      ; 65C02  ( - $40, 2 bytes - $01, ) - $04
                 .byte $5A       ; F - (ABS,X)       ; 65C02  ( - $40, 3 bytes - $02, , - $10 ) - $04
-                .byte $9D       ;10 - ZERO,REL      ; 65C02  BBx:     same as rel for format
+                .byte $9E       ;10 - ZERO,REL      ; 65C02  BBx:  3 bytes - $02,    rel for format
 char1:          .byte ',', ')', ',', '#', '(', '$'  ; 1st comma X - $10, 2nd comma Y $04
 char2:          .byte 'Y',0,"X$$",0
                 .include "sysmon_mnemonics_compressed.s"
