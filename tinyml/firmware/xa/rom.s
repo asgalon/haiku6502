@@ -54,7 +54,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1DD, $EA
+                .dsb $1BF, $EA
                 .include "asm.s"
 
                 ;
@@ -471,20 +471,28 @@ xqinit:         lda initbl-1,x      ; init xeq (execute) area
                 lda (pcl,x)         ; user opcode byte
                 beq xbrk            ; special if BRK
                 ldy length          ; LEN from disassembly
+                stz monauxl         ; prepare flag for 65C02 stuff
                 cmp #$20
                 beq xjsr            ; handle jsr, rts, jmp,
                 cmp #$60            ;   jmp (), rti special
                 beq xrts
                 cmp #$4C
-                beq xjmp
+                beq xjmp            ; when Z is 1, C is 0
                 cmp #$6C
-                beq xjmpat
+                beq xjmpat          ; when Z is 1, C is 0
+                cmp #$7C            ; 65C02 JMP (abs,x)
+                beq xjmpatx         ; when Z is 1, C is 0
                 cmp #$40
                 beq xrti
-                and #$1F            ; TODO comment
-                eor #$14
-                cmp #$04            ; copy user instruction to xeq area
+                cmp #$80            ; BRA rel
+                beq xq2
+                and #$1F            ; aaabbbcc -> ...bbbcc
+                eor #$14            ; 000bbbcc eor 00011000 -> 000!b!bbcc
+                cmp #$04            ; copy user instruction to xeq area -> expected ... 1 0000 -> Relative branches
                 beq xq2             ;   with trailing nops
+                and $0F             ; test for BBR/BBS
+                cmp #$07            ; hi bit exored away, was $FF
+                beq xq2             ; TODO: not really, have to figure out what to do here with the zp,rel
 xq1:            lda (pcl),y         ; change rel branch
 xq2:            sta xqtnz,y         ;   disp to 4 for
                 dey                 ;   jmp to branch or
@@ -528,14 +536,21 @@ xjsr:           clc
                 txa
                 pha
                 ldy #$02
+xjmpatx:        smb #0,monauxl        ; monauxl = 0x01
 xjmp:           clc
-xjmpat:         lda (pcl),Y
+xjmpat:         lda (pcl),y
                 tax                 ; load pc for jump,
                 dey                 ;   (JMP) simulate
                 lda (pcl),y
                 stx pch
 newpcl:         sta pcl
-                bcs xjmp
+                bbr #0,monauxl,@no_x   ; add x only if bit0 set
+                rmb #0,monauxl         ; reset xjmpatx flag
+                clc
+                lda xreg
+                jsr pcadj3          ; add x offset
+                sec                 ; carry set for ind loop
+@no_x:          bcs xjmp
 rtnjmp:         lda rtnh
                 pha
                 lda rtnl
