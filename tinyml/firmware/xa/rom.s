@@ -4,10 +4,12 @@
 ; Annotated and modified emulator ROM using orig_monitor_rom.s as a template.
 ; This code is only for academic purposes.
 ; This file is compatible with xa assembler and is not relocatable.
-; Care has to be taken to keep the "go" jump table addresses area on page 0xFE or else it will cease to work this way.
-; (Disregard the last sentence, changed it to word size address table to simplify adding commands.)
+; Monitor command jump table changed to full word vectors for now, changes did not fit within FE page.
 ; There are a few nifty tricks in the original assembler code to save a few bytes here and there that probably
-; would not have been done this way were there more than 12KB address space available for ROM.
+; would not have been done this way were there more than 12KB address space available for ROM. Brilliant, but difficult to maintain.
+; This rom incorporates 65C02 instructions into the system monitor and mini-assembler (TODO), which makes it a lot larger. For other applications,
+; a stirpped down ROM version is needed to maximize application storage. With this one, probably the whole top 4K are full at the end unless
+; it can be optimized a lot.
 ;
 ; The following modifications have been made:
 ;
