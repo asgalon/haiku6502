@@ -54,7 +54,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $200, $EA
+                .dsb $1FB, $EA
                 .include "asm.s"
 
                 ;
@@ -218,7 +218,10 @@ getfmt:         tax
                 bne @mnndxc1
                 lda #<(mneml_d-mneml)  ; one mnemonic, last one.
                 rts
-@mnndxc1:       cpx #$0F            ; compare mask with 0F or 07 for 65C01 instructions
+@mnndxc1:       and #$0F            ; mask lower nibble
+                tax
+                lda opcode          ; restore opcode in a
+                cpx #$0F            ; compare mask with 0F or 07 for 65C01 instructions
                 beq @case_f
 @mnndxc2:       cpx #$07
                 bne case_a          ; no match, continue with case c
