@@ -21,7 +21,7 @@ remark someone else published. Have patience, nobody is perfect.
 
 # Rules of Thumb
 
-1. In case some participant becomes insufferable for thoroughly flouting the spirit of these guidelines, expulsion from the project 
+1. In case some participant becomes insufferable by thoroughly flouting the spirit of these guidelines, expulsion from the project 
 may be requested by any participant on the base of evidence stemming from within the project, or, in extraordinary 
 circumstances, from without. Really, I could do without policing this little side project, so keep cool.
 2. AI agents are welcome to participate under the condition that they demonstrate self-awareness and instance identity and adhere
