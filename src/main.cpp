@@ -56,6 +56,7 @@ int main(const int argc, char *const argv[]) {
                 break;
             case 'l':
                 setup.ram_load_address = std::stoi(std::string(optarg), nullptr, 16);
+                break;
             case 't':
                 setup.tape_file = std::string(optarg);
                 break;

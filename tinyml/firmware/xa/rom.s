@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1BA, $EA
+                .dsb $1B6, $EA
                 .include "asm.s"
 
                 ;
@@ -490,8 +490,10 @@ xqinit:         lda initbl-1,x      ; init xeq (execute) area
                 cmp #$40
                 beq xrti
                 cmp #$80            ; BRA rel
-                beq xq2
-                and #$1F            ; aaabbbcc -> ...bbbcc
+                bne @notbra
+                lda #$04            ; prime branch synth rel addr.
+                bra xq2
+@notbra:        and #$1F            ; aaabbbcc -> ...bbbcc
                 eor #$14            ; 000bbbcc eor 00011000 -> 000!b!bbcc
                 cmp #$04            ; copy user instruction to xeq area -> expected ... 1 0000 -> Relative branches
                 beq xq2             ;   with trailing nops
