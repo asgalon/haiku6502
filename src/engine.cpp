@@ -56,7 +56,7 @@ namespace haiku6502 {
 
             getwd(dir);
 
-            std::cout << dir << '\n';
+            std::cout << "cwd: " << dir << '\n';
         }
 
         if (filestat.st_size > 0x3000
@@ -75,6 +75,25 @@ namespace haiku6502 {
             fclose(rom_file);
         } else {
             throw Error(Error::BAD_FILE);
+        }
+
+        if (!setup.ram.empty()) {
+            if (debug) {
+                std::cout << "Loading file " << setup.ram << " at address " << std::hex << setup.ram_load_address << '\n';
+            }
+            struct stat ramfilestat {};
+            if (stat(setup.ram.c_str(), &ramfilestat) == 1) {
+                perror(nullptr);
+                throw Error(Error::BAD_FILE);
+            }
+
+            if (ramfilestat.st_size > 0xC000
+                || (ramfilestat.st_mode & S_IFREG)  == 0
+                || (ramfilestat.st_mode &  S_IRUSR) == 0) {
+                throw Error(Error::BAD_FILE);
+            }
+
+            load_ram(setup.ram_load_address, ramfilestat.st_size, setup.ram.c_str());
         }
     }
 

@@ -3,6 +3,7 @@
 
 #include "../include/haiku6502/setup.h"
 #include "haiku6502/engine.h"
+#include "haiku6502/errors.h"
 #include "haiku6502/terminal.h"
 
 using namespace std;
@@ -13,7 +14,7 @@ static void usage(const char *progname) {
     cout << endl;
     cout << "   -c            Console mode, use standard terminal streams directly" << endl;
     cout << "   -d            Debug output" << endl;
-    cout << "   -r <romfile>  Load 12KB ROM file at 0xD000 through 0xFFFF" << endl;
+    cout << "   -r <romfile>  Load ROM file <= 12KB to >= 0xD000 through 0xFFFF (fixed vectors end)" << endl;
     cout << "   -m <ramfile>  Load RAM content" << endl;
     cout << "   -l <addr>          ... at this address" << endl;
     cout << "   -t <tapefile> Use this file as virtual casette tape (very silly, uses 4MB just for the sync header)" << endl;
@@ -33,7 +34,7 @@ int main(const int argc, char *const argv[]) {
     haiku6502::engine_setup setup{};
 
     int ch;
-    while ((ch = getopt(argc, argv, "cdi:l:o:r:t:w")) != -1) {
+    while ((ch = getopt(argc, argv, "cdi:l:m:o:r:t:w")) != -1) {
         switch (ch) {
             case 'c':
                 setup.console_mode = true;
@@ -54,7 +55,7 @@ int main(const int argc, char *const argv[]) {
                 setup.ram = std::string(optarg);
                 break;
             case 'l':
-                setup.ram_load_address = std::stoi(std::string(optarg));
+                setup.ram_load_address = std::stoi(std::string(optarg), nullptr, 16);
             case 't':
                 setup.tape_file = std::string(optarg);
                 break;
@@ -73,11 +74,14 @@ int main(const int argc, char *const argv[]) {
         return 1;
     }
 
-    haiku6502::Engine engine(setup);
+    try {
+        haiku6502::Engine engine(setup);
 
-    engine.register_terminal(new haiku6502::Terminal(setup));
+        engine.register_terminal(new haiku6502::Terminal(setup));
 
-    engine.run();
-
+        engine.run();
+    } catch (haiku6502::Error& e) {
+        cerr << "Error: " << e.type << endl;
+    }
     return 0;
 }

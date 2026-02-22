@@ -34,7 +34,7 @@ int main(const int argc, char *const argv[]) {
     haiku6502::engine_setup setup{};
 
     int ch;
-    while ((ch = getopt(argc, argv, "cdi:l:o:r:t:w")) != -1) {
+    while ((ch = getopt(argc, argv, "cdi:l:m:o:r:t:w")) != -1) {
         switch (ch) {
             case 'c':
                 setup.console_mode = true;
@@ -55,7 +55,7 @@ int main(const int argc, char *const argv[]) {
                 setup.ram = std::string(optarg);
                 break;
             case 'l':
-                setup.ram_load_address = std::stoi(std::string(optarg));
+                setup.ram_load_address = std::stoi(std::string(optarg), nullptr, 16);
             case 't':
                 setup.tape_file = std::string(optarg);
                 break;
@@ -80,7 +80,7 @@ int main(const int argc, char *const argv[]) {
         engine.register_terminal(new haiku6502::Terminal(setup));
 
         engine.run();
-    } catch (haiku6502::Error e) {
+    } catch (haiku6502::Error& e) {
         cerr << "Error: " << e.type << endl;
     }
     return 0;

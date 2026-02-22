@@ -42,8 +42,8 @@
 ; 0x0400-0xBFFF free RAM
 ; 0xC000-0xCFFF I/O
 ; 0xD000-0xFFFF ROM; thereof
-;               0xD000 - 0xF500 Reserved for language modules
-;               0xF4BF - 0xF800 Mini-Assembler (asm.s)
+;               0xD000 - 0xF000 Reserved for language modules
+;               0xF000 - 0xF800 Mini-Assembler (asm.s)
 ;               0xF800 - 0xFFFF System Monitor ROM
 ;               0xFFFA - 0xFFFF Hardwired 6502 NMI, Reset and IRQ vectors, have to be kept at fixed addresses.
 ; On Reset, the program counter is loaded from 0xFFFC and 0xFFFD. all addresses with least
@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1BF, $EA
+                .dsb $1BA, $EA
                 .include "asm.s"
 
                 ;
@@ -458,16 +458,19 @@ char2:          .byte 'Y',0,"X$$",0
                 .include "sysmon_mnemonics_compressed.s"
 ;
 ; monitor stepping
-; this is nice... it emulates itself to execute a program stepwise
+; The instruction under the pointer is copied to loctions 3d-45 with two jump directions behind.
+; first one is when no branch happens, second one is for active branch condition. branch rel address is always saved
+; and rewritten to pc+3. So one instruction is executed from $3D, then the registers printed out, user pc adjusted, and
+; return to monitor prompt.
 ;
 step:           jsr instdsp         ; disassemble one instruction
                 pla                 ;   at (pcl,h)
                 sta rtnl            ; adjust to user
                 pla                 ;   stack, save
                 sta rtnh            ;   return address
-                ldx #$08
+                ldx #$09
 xqinit:         lda initbl-1,x      ; init xeq (execute) area
-                sta xqt,x
+                sta xqt-1,x
                 dex
                 bne xqinit
                 lda (pcl,x)         ; user opcode byte
@@ -492,11 +495,14 @@ xqinit:         lda initbl-1,x      ; init xeq (execute) area
                 eor #$14            ; 000bbbcc eor 00011000 -> 000!b!bbcc
                 cmp #$04            ; copy user instruction to xeq area -> expected ... 1 0000 -> Relative branches
                 beq xq2             ;   with trailing nops
-                and $0F             ; test for BBR/BBS
-                cmp #$07            ; hi bit exored away, was $FF
+                and #$0F            ; test for BBR/BBS
+                eor #$0F                ; align with bit 4
+                cmp #$04            ; 4 bit exored away, was $FF, resulting in 0%0000 1011
                 beq xq2             ; TODO: not really, have to figure out what to do here with the zp,rel
 xq1:            lda (pcl),y         ; change rel branch
-xq2:            sta xqtnz,y         ;   disp to 4 for
+                inc
+xq2:            dec
+                sta xqtnz,y         ;   disp to 4 for
                 dey                 ;   jmp to branch or
                 bpl xq1             ;   nbranch from xeq
                 jsr restore         ; restore user reg contents
@@ -575,17 +581,20 @@ rdsp1:          lda #' '
                 bmi rdsp1
                 rts
 branch:         clc                 ; branch taken,
-                ldy #$01            ;  add LEN+2 to pc
+                ldy length         ;  add length to pc (01 for normal branches, 02 for zp,rel
                 lda (pcl),y
                 jsr pcadj3
                 sta pcl
                 tya
                 sec
-                bcs pcinc2
+                bra pcinc2
 nbranch:        jsr save            ; normal return after
                 sec                 ;   xeq user of
-                bcs pcinc3          ; go update pc
+                bra pcinc3          ; go update pc
+                ; template for step instruction
+                ; initblx for zp,rel format
 initbl:         nop
+                nop
                 nop                 ; dummy fill for
                 jmp nbranch         ;   xeq area
                 jmp branch
