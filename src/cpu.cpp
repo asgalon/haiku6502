@@ -191,9 +191,9 @@ namespace haiku6502 {
         Instruction(STA, ABSOLUTE_Y, 3, 5),
         Instruction(TXS, IMPLIED, 1, 2),
         Instruction(NOP, IMPLIED, 1, 2),
-        Instruction(STZ, ABSOLUTE, 2, 4, P65C02),
+        Instruction(STZ, ABSOLUTE, 3, 4, P65C02),
         Instruction(STA, ABSOLUTE_X, 3, 5),
-        Instruction(STZ, ABSOLUTE_X, 2, 4, P65C02),
+        Instruction(STZ, ABSOLUTE_X, 3, 4, P65C02),
         Instruction(BBS1, ZERO_RELATIVE, 3, 5, P65C02),
 
         // 0xA0

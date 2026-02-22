@@ -4,9 +4,8 @@
 ; Assembles single instruction at the program cursor into machine code.
 ; Following the syntax documented in the Apple II Reference manual
 ;
-; xa assembler seems to have some obscure problems with block markers, so everything
-; is on top level. I tried with block proc and (, but tht produced sntax errors far, far away
-; Solution would be to use a different assembler. but they all have their quirks.
+; Working with xa assembler
+; Todo Fix 65C02 opcodes
 ;
 nextch:         iny
                 lda in,y
@@ -106,8 +105,7 @@ asmz:           lda #'!'
                 ;
 @procmnm:       and #$1F    ; ex.:  PHP                                            'P' = $50 -> $10
                 sta tmph     ;
-                lda #$00
-                sta in      ; put a zero into first position to mark input buffer old news.
+                stz in      ; put a zero into first position to mark input buffer old news.
                 jsr nextch  ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
                 asl         ; $3E                                                        $90
                 asl         ; $7C                                                        $20
@@ -125,16 +123,16 @@ asmz:           lda #'!'
                 ; now we have the short form in tmp.
                 ; go on to find the mnemonic in opcodex table
                 ; and tehn return this index to the opcode lookup tables
-                ldx #(opcodez-opcodex-1)+2
+                ldx #(opcodez-opcodex-1)+3
 @firstfail:     dex
 @scndfail:      dex
-                bpl @cont
+                bne @cont
                 jmp syntaxerr
-@cont:          lda opcodex,x     high
+@cont:          lda opcodex-1,x     high
                 cmp tmph
                 bne @firstfail
                 dex
-                lda opcodex,x     low
+                lda opcodex-1,x     low
                 cmp tmpl
                 bne @scndfail
                 txa
@@ -150,11 +148,30 @@ asmz:           lda #'!'
                 ; - Immediate:  #Value
                 ; - Adr/Rel:    Address
                 ; - Indexed:    Address,X|Y
+                ; - Zero,rel:   Address,Adress
                 ; - indirect:   (Address)
                 ; - indir. indxd (Address),Y
                 ; - indexed ind. (Address,X)
+                ldx #$03
+@bitnlp:        cmp @bitn_mnems,x
+                bne @bitnct
+                pha
+                jsr nextch
+                cmp #$30
+                bcs @bitnct
+                cmp #$38
+                bcc @bitnct
+                and #$07
+                asl
+                asl
+                asl
+                asl
+                sta opb           ; save bit number as hogh nibble for integration into opcode
+@bitnct:        dex
+                bpl @bitnlp
                 jsr eatblank
                 jmp eval_arg
+@bitn_mnems:    .byte $03,$04,$2E,$37   ; RMB,SMB,BBR and BBS are followed by single digit bit number
 ;
 ; opcode char mappings
 ;
@@ -181,77 +198,43 @@ opcodez:
 ; type d: rmb/smb                       |    |   |    | *  |    |    |    |    |    |     |     |   |   |       |    |
 ; type e: trb/tsb                       |    |   | *  | *  |    |    |    |    |    |     |     |   |   |       |    |
 ;
+; 4 bits per mnem index, low first high second
 opmodes:
-                .byte $02          ; 'ADC'    - 00
-                .byte $02          ; 'AND'
-                .byte $04          ; 'ASL'
-                .byte $0C          ; 'BBR'
-                .byte $0C          ; 'BBS'
-                .byte $01          ; 'BCC'
-                .byte $01          ; 'BCS'
-                .byte $01          ; 'BEQ'
-                .byte $06          ; 'BIT'
-                .byte $01          ; 'BMI'
-                .byte $01          ; 'BNE'    - 08
-                .byte $01          ; 'BPL'
-                .byte $01          ; 'BRA'
-                .byte $00          ; 'BRK'
-                .byte $01          ; 'BVC'
-                .byte $01          ; 'BVS'
-                .byte $00          ; 'CLC'
-                .byte $00          ; 'CLD'
-                .byte $00          ; 'CLI'
-                .byte $00          ; 'CLV'    - 10
-                .byte $02          ; 'CMP'
-                .byte $05          ; 'CPX'
-                .byte $05          ; 'CPY'
-                .byte $07          ; 'DEC'
-                .byte $00          ; 'DEX'
-                .byte $00          ; 'DEY'
-                .byte $02          ; 'EOR'
-                .byte $07          ; 'INC'    - 18
-                .byte $00          ; 'INX'
-                .byte $00          ; 'INY'
-                .byte $08          ; 'JMP'
-                .byte $09          ; 'JSR'
-                .byte $02          ; 'LDA'
-                .byte $0a          ; 'LDX'
-                .byte $0a          ; 'LDY'
-                .byte $04          ; 'LSR'    - 20
-                .byte $00          ; 'NOP'
-                .byte $02          ; 'ORA'
-                .byte $00          ; 'PHA'
-                .byte $00          ; 'PHP'
-                .byte $00          ; 'PHX'
-                .byte $00          ; 'PHY'
-                .byte $00          ; 'PLA'
-                .byte $00          ; 'PLP'
-                .byte $00          ; 'PLX'
-                .byte $00          ; 'PLY'
-                .byte $0D          ; 'RMB'
-                .byte $04          ; 'ROL'
-                .byte $04          ; 'ROR'    - 28
-                .byte $00          ; 'RTI'
-                .byte $00          ; 'RTS'
-                .byte $02          ; 'SBC'
-                .byte $00          ; 'SEC'
-                .byte $00          ; 'SED'
-                .byte $00          ; 'SEI'
-                .byte $0D          ; 'SMB'
-                .byte $03          ; 'STA'
-                .byte $00          ; 'STP'
-                .byte $0b          ; 'STX'    - 30
-                .byte $0b          ; 'STY'
-                .byte $0b          ; 'STZ'
-                .byte $00          ; 'TAX'
-                .byte $00          ; 'TAY'
-                .byte $0E          ; 'TRB'
-                .byte $0E          ; 'TSB'
-                .byte $00          ; 'TSX'
-                .byte $00          ; 'TXA'
-                .byte $00          ; 'TXS'
-                .byte $00          ; 'TYA'    - 37
-                .byte $00          ; 'WAI'
+                .byte $22          ; 'ADC' - 'AND'   - 00   - 00
+                .byte $C4          ; 'ASL' - 'BBR'
+                .byte $1C          ; 'BBS' - 'BCC'
+                .byte $11          ; 'BCS' - 'BEQ'
+                .byte $16          ; 'BIT' - 'BMI'   - 08   - 04
+                .byte $11          ; 'BNE' - 'BPL'
+                .byte $01          ; 'BRA' - 'BRK'
+                .byte $11          ; 'BVC' - 'BVS'
+                .byte $00          ; 'CLC' - 'CLD'   - 10   - 08
+                .byte $00          ; 'CLI' - 'CLV'
+                .byte $52          ; 'CMP' - 'CPX'
+                .byte $75          ; 'CPY' - 'DEC'
+                .byte $00          ; 'DEX' - 'DEY'   - 18   - 0c
+                .byte $72          ; 'EOR' - 'INC'
+                .byte $00          ; 'INX' - 'INY'
+                .byte $98          ; 'JMP' - 'JSR'
+                .byte $a2          ; 'LDA' - 'LDX'   - 20   - 10
+                .byte $4a          ; 'LDY' - 'LSR'
+                .byte $20          ; 'NOP' - 'ORA'
+                .byte $00          ; 'PHA' - 'PHP'
+                .byte $00          ; 'PHX' - 'PHY'   - 28   - 14
+                .byte $00          ; 'PLA' - 'PLP'
+                .byte $00          ; 'PLX' - 'PLY'
+                .byte $4D          ; 'RMB' - 'ROL'   - 2E
+                .byte $04          ; 'ROR' - 'RTI'   - 30
+                .byte $20          ; 'RTS' - 'SBC'
+                .byte $00          ; 'SEC' - 'SED'
+                .byte $D0          ; 'SEI' - 'SMB'    - 37
+                .byte $03          ; 'STA' - 'STP'    - 38
+                .byte $bb          ; 'STX' - 'STY'
+                .byte $0b          ; 'STZ' - 'TAX'
+                .byte $E0          ; 'TAY' - 'TRB'
+                .byte $0E          ; 'TSB' - 'TSX'    - 40
+                .byte $00          ; 'TXA' - 'TXS'
+                .byte $00          ; 'TYA' - 'WAI'    - 45
 opmodez:
                 ;
                 ;   This is the basic opcodes with bits %aaabbbcc
@@ -269,39 +252,39 @@ code_ac:
                 .byte $90          ; 'BCC'
                 .byte $B0          ; 'BCS'
                 .byte $F0          ; 'BEQ'
-                .byte $06          ; 'BIT'
+                .byte $06          ; 'BIT'    - 08
                 .byte $30          ; 'BMI'
-                .byte $D0          ; 'BNE'    - 08
+                .byte $D0          ; 'BNE'
                 .byte $10          ; 'BPL'
                 .byte $80          ; 'BRA'
                 .byte $00          ; 'BRK'
                 .byte $50          ; 'BVC'
                 .byte $70          ; 'BVS'
-                .byte $18          ; 'CLC'
+                .byte $18          ; 'CLC'    - 10
                 .byte $D8          ; 'CLD'
                 .byte $58          ; 'CLI'
-                .byte $B8          ; 'CLV'    - 10
+                .byte $B8          ; 'CLV'
                 .byte $61          ; 'CMP'
                 .byte $E0          ; 'CPX'
                 .byte $C0          ; 'CPY'
                 .byte $C2          ; 'DEC'
-                .byte $CA          ; 'DEX'
+                .byte $CA          ; 'DEX'    - 18
                 .byte $88          ; 'DEY'
                 .byte $41          ; 'EOR'
-                .byte $E2          ; 'INC'    - 18
+                .byte $E2          ; 'INC'
                 .byte $E8          ; 'INX'
                 .byte $C8          ; 'INY'
                 .byte $4C          ; 'JMP'
                 .byte $20          ; 'JSR'
-                .byte $A1          ; 'LDA'
+                .byte $A1          ; 'LDA'    - 20
                 .byte $A2          ; 'LDX'
                 .byte $A0          ; 'LDY'
-                .byte $42          ; 'LSR'    - 20
+                .byte $42          ; 'LSR'
                 .byte $EA          ; 'NOP'
                 .byte $01          ; 'ORA'
                 .byte $48          ; 'PHA'
                 .byte $08          ; 'PHP'
-                .byte $DA          ; 'PHX'
+                .byte $DA          ; 'PHX'    - 28
                 .byte $5A          ; 'PHY'
                 .byte $68          ; 'PLA'
                 .byte $28          ; 'PLP'
@@ -309,7 +292,7 @@ code_ac:
                 .byte $7A          ; 'PLY'
                 .byte $07          ; 'RMB'
                 .byte $22          ; 'ROL'
-                .byte $62          ; 'ROR'    - 28
+                .byte $62          ; 'ROR'    - 30
                 .byte $40          ; 'RTI'
                 .byte $60          ; 'RTS'
                 .byte $E1          ; 'SBC'
@@ -317,20 +300,20 @@ code_ac:
                 .byte $F8          ; 'SED'
                 .byte $78          ; 'SEI'
                 .byte $87          ; 'SMB'
-                .byte $81          ; 'STA'
+                .byte $81          ; 'STA'    - 38
                 .byte $DB          ; 'STP'
-                .byte $82          ; 'STX'    - 30
+                .byte $82          ; 'STX'
                 .byte $80          ; 'STY'
-                .byte $00          ; 'STZ' - difficult
+                .byte $00          ; 'STZ'
                 .byte $AA          ; 'TAX'
                 .byte $A8          ; 'TAY'
                 .byte $14          ; 'TRB'
-                .byte $04          ; 'TSB'
+                .byte $04          ; 'TSB'    - 40
                 .byte $BA          ; 'TSX'
                 .byte $8A          ; 'TXA'
                 .byte $9A          ; 'TXS'
-                .byte $98          ; 'TYA'    - 37
-                .byte $CB          ; 'WAI'
+                .byte $98          ; 'TYA'
+                .byte $CB          ; 'WAI'    - 45
 code_az:
 
                 ;
@@ -395,7 +378,16 @@ g_adr_l:        jsr eatblank  ; get rid of spaces and $
                 sta adrh
                 lda in,y
                 rts
-
+g_adr_r:        iny
+                jsr eatblank  ; get rid of spaces and $
+                jsr getnum
+                dey
+                lda a2l
+                sta a1l
+                lda a2h
+                sta a1h
+                lda in,y
+                rts
                 ; So after the mnemonic, there can be three options:
                 ; - #
                 ; - (
@@ -410,32 +402,42 @@ g_adr_l:        jsr eatblank  ; get rid of spaces and $
                 ; Value is $?[\dA-Z]{1,2}
                 ; Address is [$?][\dA-Z]{1,4}
 eval_arg:       ldx mnem            ; load x with opcode index
-                lda opmodes,x       ; mode for x
-                sta opmode          ; for access without x reg
                 lda code_ac,x       ; bac opcode base for x
                 sta opcode          ; for access without x reg
-                lda #$00
+                txa
+                lsr
+                tax                 ; opmodes nibble select in carry
+                lda opmodes,x       ; mode for x
+                jsr selnibl
+                sta opmode          ; for access without x reg
+                sta mode            ; set mode so getln does not copy a1 to a2, a3
+                and #$07
+                cmp #$07            ; test for RMB SMB BBR BBS
+                beq @to_addr_part   ; yes, opcode and high bitno in opb already have all parts
+@opcont:        lda #$00
                 sta opb             ; clear opcode b
                 lda in,y
-                sta mode            ; set mode so getln does not copy a1 to a2, a3
+                sta mode
                 jsr chk_eol         ; end of line
-                beq asm_simple      ; nothing there
-                lda opmode
+                bne @opc2
+                jmp asm_simple      ; nothing there
+@opc2:          lda opmode
                 beq @err            ; type 0 does not have any arguments.  Eliminate type 0 from further considerations.
-                lda in,y            ; back to input char
+@to_addr_part:  lda in,y            ; back to input char
                 cmp #'#'
-                beq asm_imm
+                bne @opc3
+                jmp asm_imm
                 ;
                 ;
                 ; now parse rest of address to determine address mode and get argument
                 ;
                 ; following options are possible (h = hex digit):
-                ; h{1.4}       absolute or zero             ; case 0: just 4 hex numbers   2 or 3 bytes
-                ; h{1.4},x|y   absolute or zero indexed     ; case 1: ends with ,x|y       2 or 3 bytes
-                ; (h{1,4})     indirect                     ; case 2: starts with (, ends with )  3 bytes
-                ; (h{1,2}),y   post-indexed indirect        ; case 3: starts with (, ends with ),y  2 bytes
-                ; (h{1,2},x)   pre-indexed indirect;       ; case 4: starts with (, ends with ,x)   2 bytes
-                cmp #'('
+                ; h{1.4}              absolute or zero             ; case 0: just 4 hex numbers   2 or 3 bytes
+                ; h{1.4},x|y|h{1,4}   absolute or zero indexed     ; case 1: ends with ,x|y|addr  2 or 3 bytes
+                ; (h{1,4})            indirect                     ; case 2: starts with (, ends with )  3 bytes
+                ; (h{1,2}),y          post-indexed indirect        ; case 3: starts with (, ends with ),y  2 bytes
+                ; (h{1,2},x)          pre-indexed indirect;       ; case 4: starts with (, ends with ,x)   2 bytes
+@opc3:          cmp #'('
                 beq @indirect
                 ;
                 ; cases 0 and 1
@@ -450,8 +452,15 @@ eval_arg:       ldx mnem            ; load x with opcode index
 @err:           jmp syntaxerr       ; syntax error for weverything else
 @reg_indexed:   jsr nextch
                 jsr chk_xy          ; check if valid reg
-                bne @err             ; no, syntax error
+                bne @zp_rel         ; no, must be zp,rel
                 jmp asm_indexed     ; yes, handle hhhh,reg (case 1)
+@zp_rel:        lda opcode
+                and #$0F
+                eor #$0F            ; must end on F for zero,rel mode
+                bne @err
+                jsr g_adr_r           ; rel part
+                jsr get_rel_a
+
                 ;
                 ; cases 2-4
 @indirect:      jsr g_adr           ; address comes after the brace in any case left..
@@ -600,7 +609,12 @@ get_rel_a:      stx xreg
 @chk_neg:       bit calcl
                 bpl @chkerr
 @chkok:         lda calcl
-                sta adrl            ; done, rel addr in adrl
+                ldx opcode
+                cpx #$0f
+                bne @n_branch       ; if not 0f, do normal branch routine
+                sta adrh            ; else bbr/bbs
+                jmp three_bytes
+@n_branch:      sta adrl            ; done, rel addr in adrl
                 jmp two_bytes       ; no opb variants for rel branches
                 ;
                 ; asm_direct: absolute or zero addr

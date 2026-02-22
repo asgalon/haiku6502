@@ -96,7 +96,7 @@ with open("opcodes_compressed.s", "w") as f:
             map0 = (ord(mnem[0]) & 0x1F)
             map1 = (ord(mnem[1]) & 0x1F)
             map2 = (ord(mnem[2]) & 0x1F)
-            val = (map0 << 11) + (map1 << 6) + (map2 << 1)
+            val = (map0 << 10) + (map1 << 5) + map2
             f.write(f"                .word {"${:04x}".format(val)}    ; #{"${:02x}".format(i)} - {mnem}   ({"${:02x}".format(2* i)})\n")
         f.flush()
 

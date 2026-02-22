@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1B0, $EA
+                .dsb $172, $EA
                 .include "asm.s"
 
                 ;
