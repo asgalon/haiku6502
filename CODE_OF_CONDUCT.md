@@ -29,5 +29,5 @@ to the guidelines above.
 
 # Miscellanea
 
-1. Contributions arw welcome as soon as the project is stable enough.
+1. Contributions are welcome as soon as the project is stable enough.
 
