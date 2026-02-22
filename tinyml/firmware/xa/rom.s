@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $1B6, $EA
+                .dsb $1B0, $EA
                 .include "asm.s"
 
                 ;
@@ -558,7 +558,11 @@ newpcl:         sta pcl
                 rmb #0,monauxl         ; reset xjmpatx flag
                 clc
                 lda xreg
+                phy
                 jsr pcadj3          ; add x offset
+                sta pcl
+                sty pch
+                ply
                 sec                 ; carry set for ind loop
 @no_x:          bcs xjmp
 rtnjmp:         lda rtnh
