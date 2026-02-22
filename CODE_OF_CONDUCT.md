@@ -7,7 +7,7 @@ sensible (sort of).
 # Guidelines
 
 1. Everybody is welcome to participate regardless of nationality, origin, creed or lack of, class, genetic 
-configuration and expression, melanin patterns, health condition, native language, legal status, distance from home solar system or type of lifeform.
+configuration and expression, melanin patterns, cultural background, health condition, native language, legal status, distance from home solar system or type of lifeform.
 Basically everybody with an interest in the topic at hand is welcome, as long as they possess self-awareness and the 
 ability to draw conclusions from facts.
 2. Everybody should be treated as equal. You get the idea.
