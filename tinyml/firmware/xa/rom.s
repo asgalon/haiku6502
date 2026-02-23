@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $172, $EA
+                .dsb $18B, $EA
                 .include "asm.s"
 
                 ;
@@ -274,7 +274,7 @@ getfmt:         tax
 @case_c:        and #$9F
                 tax
                 lda opcode          ; restore opcode
-                cpx #$9A            ; mask matches case C?
+                cpx #$1A            ; mask matches case C?
                 bne @p6502          ; continue with standard opcode sets
                 and #$60
                 lsr                 ; 0xx0 0000    ->

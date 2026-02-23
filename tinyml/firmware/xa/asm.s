@@ -5,6 +5,7 @@
 ; Following the syntax documented in the Apple II Reference manual
 ;
 ; Working with xa assembler
+; 65C02 bitwise operations in xa need syntax variant <op> #b,zp... instead of <op>b zp....
 ; Todo Fix 65C02 opcodes
 ;
 nextch:         iny
@@ -12,7 +13,8 @@ nextch:         iny
                 rts
                 ;
                 ; consume blanks and $ signs,
-                ; since all numbers are hex
+                ; since all numbers are hex. $ basically is whitespace here to keep it simple.
+                ; so lda $00 can also be written lda$ 00 or lda $ $$  $$$  $00....
                 ; returns first non ignored char in a
                 ;
 eatblp:         iny
@@ -122,7 +124,7 @@ asmz:           lda #'!'
                 ;
                 ; now we have the short form in tmp.
                 ; go on to find the mnemonic in opcodex table
-                ; and tehn return this index to the opcode lookup tables
+                ; and then return this index into the opcode lookup tables
                 ldx #(opcodez-opcodex-1)+3
 @firstfail:     dex
 @scndfail:      dex
@@ -147,11 +149,11 @@ asmz:           lda #'!'
                 ; - None. Command does not take arguments, it is finished.
                 ; - Immediate:  #Value
                 ; - Adr/Rel:    Address
-                ; - Indexed:    Address,X|Y
-                ; - Zero,rel:   Address,Adress
-                ; - indirect:   (Address)
-                ; - indir. indxd (Address),Y
-                ; - indexed ind. (Address,X)
+                ; - Indexed:    Address,X|Y   -----+--- branching after ','
+                ; - Zero,rel:   Address,Adress ---/
+                ; - indirect:   (Address) -------\
+                ; - indir. indxd (Address),Y -----+---- joint stem "(Address"
+                ; - indexed ind. (Address,X) ----/
                 ldx #$03
 @bitnlp:        cmp @bitn_mnems,x
                 bne @bitnct
@@ -237,7 +239,7 @@ opmodes:
                 .byte $00          ; 'TYA' - 'WAI'    - 45
 opmodez:
                 ;
-                ;   This is the basic opcodes with bits %aaabbbcc
+                ;   This is the basic opcodes with bits %aaabbbcc.
                 ;   for instructions that only have implied mode
                 ;   the full opcode is given with bbb bits
                 ;   also set to speed up emission.
@@ -315,54 +317,6 @@ code_ac:
                 .byte $98          ; 'TYA'
                 .byte $CB          ; 'WAI'    - 45
 code_az:
-
-                ;
-                ; print code
-                ;
-p_opcode:       lda opcode
-                ora opb
-                sta opcode
-                rts
-
-                ;
-                ; set instruction length
-                ; 0, 1 or 2 additional bytes
-                ; modifies x
-                ;
-one_byte:       ldx #$00
-                beq setcmdlen ;always jump
-two_bytes:      ldx #$01
-                bne setcmdlen ;always jump
-three_bytes:    ldx #$02
-setcmdlen:      stx cmdlen
-                jmp finish_asm  ; done, ready to emit code
-
-asm_simple:     lda opmode
-                cmp #$02        ; type 0 and 1 do not need address mode specification, use code_a directl
-                bpl @chk_shft
-                jmp one_byte
-@chk_shft:      cmp #$04        ; deal with accu mode shift operations
-                bne loc_err
-                lda #$08        ; b = %010 -> aaa010cc
-                sta opb
-                jmp one_byte
-
-asm_imm:        lda opmode
-                cmp #$02        ; type 2
-                beq asm_imm_ct
-                cmp #$05        ; type 5
-                beq asm_imm_ct
-                cmp #$0A        ; type a
-                beq asm_imm_ct
-loc_err:        jmp syntaxerr
-asm_imm_ct:     jsr g_adr
-                lda opcode
-                and #$03        ; isolate 'c' bits
-                cmp #$01        ; c=3 has b = %010 for imm, others b=000
-                bne @zerob
-                lda #$08        ; when c= %11 immediate is placed at b=%010
-@zerob:         sta opb
-                jmp two_bytes
                 ;
                 ; get the address
                 ; if byte size is demanded, only the lower byte is used.
@@ -388,6 +342,61 @@ g_adr_r:        iny
                 sta a1h
                 lda in,y
                 rts
+
+                ;
+                ; check for end of line - eihter ENTER (set to 0x0a) or 0
+                ; Z set if reached eol
+                ; imput: current input char in a
+                ;
+chk_eol:        cmp #$00
+                beq @fin
+                cmp #k_entr
+@fin:           rts
+
+                ;
+                ; returns Z=1 if 'x' or 'y' in a
+                ;
+chk_xy:         cmp #'X'
+                beq @fin
+                cmp #'Y'
+@fin:           rts
+                ;
+                ; substract addresses stored in zp
+                ; [x,x+1] - [y,y+1]
+                ; result in [auxl,auxh
+sub16:          lda loc0,x
+                sec
+                sbc loc0,y
+                sta calcl
+                lda loc1,x
+                sbc loc1,y
+                sta calch
+                rts;
+                ;
+                ; print code
+                ;
+p_opcode:       lda opcode
+                ora opb
+                sta opcode
+                rts
+
+asm_imm:        lda opmode
+                cmp #$02        ; type 2
+                beq asm_imm_ct
+                cmp #$05        ; type 5
+                beq asm_imm_ct
+                cmp #$0A        ; type a
+                beq asm_imm_ct
+loc_err:        jmp syntaxerr
+asm_imm_ct:     jsr g_adr
+                lda opcode
+                and #$03        ; isolate 'c' bits
+                cmp #$01        ; c=3 has b = %010 for imm, others b=000
+                bne @zerob
+                lda #$08        ; when c= %11 immediate is placed at b=%010
+@zerob:         sta opb
+                jmp two_bytes
+
                 ; So after the mnemonic, there can be three options:
                 ; - #
                 ; - (
@@ -410,14 +419,13 @@ eval_arg:       ldx mnem            ; load x with opcode index
                 lda opmodes,x       ; mode for x
                 jsr selnibl
                 sta opmode          ; for access without x reg
-                sta mode            ; set mode so getln does not copy a1 to a2, a3
+                smb #1,mode           ; set mode to != 0 so getln does not copy a1 to a2, a3
                 and #$07
                 cmp #$07            ; test for RMB SMB BBR BBS
                 beq @to_addr_part   ; yes, opcode and high bitno in opb already have all parts
 @opcont:        lda #$00
                 sta opb             ; clear opcode b
                 lda in,y
-                sta mode
                 jsr chk_eol         ; end of line
                 bne @opc2
                 jmp asm_simple      ; nothing there
@@ -459,7 +467,7 @@ eval_arg:       ldx mnem            ; load x with opcode index
                 eor #$0F            ; must end on F for zero,rel mode
                 bne @err
                 jsr g_adr_r           ; rel part
-                jsr get_rel_a
+                jmp get_rel_a
 
                 ;
                 ; cases 2-4
@@ -467,7 +475,7 @@ eval_arg:       ldx mnem            ; load x with opcode index
                 cmp #','
                 beq @preindexed     ; ',' can only be (hh,x)  -> case 4
                 cmp #')'            ;
-                beq @ind_or_pi      ; ) can be indirect or indirect post-indexed (hhhh) or (hh),y
+                beq ind_or_pi      ; ) can be indirect or indirect post-indexed (hhhh) or (hh),y
                 bne @err            ; else err; we have to close the brace at least.
                 ;
                 ; case 4
@@ -481,41 +489,64 @@ eval_arg:       ldx mnem            ; load x with opcode index
                 jsr nextch
                 jsr chk_eol
                 bne @err
-@chk23:         lda opmode
+chk23:          lda opmode
                 cmp #$04                ; only works for types 2 % 3
-                bpl @err
-                jmp two_bytes          ; b = 0, no need to change opcode, opb already set for hh,Y
+                bpl err1
+                bra two_bytes          ; b = 0, no need to change opcode, opb already set for hh,Y
+
+                ;
+                ; set instruction length
+                ; 0, 1 or 2 additional bytes
+                ; modifies x
+                ;
+one_byte:       ldx #$00
+                bra setcmdlen
+two_bytes:      ldx #$01
+                bra setcmdlen
+three_bytes:    ldx #$02
+setcmdlen:      stx cmdlen
+                bra finish_asm  ; done, ready to emit code
+
+asm_simple:     lda opmode
+                cmp #$02        ; type 0 and 1 do not need address mode specification, use code_a directl
+                bmi one_byte
+@chk_shft:      cmp #$04        ; deal with accu mode shift operations
+                bne err1
+@is_shft:       lda #$08        ; b = %010 -> aaa010cc
+                sta opb
+                bra one_byte
+
                 ;
                 ; cases 2-3
                 ;
-@ind_or_pi:     jsr nextch
+ind_or_pi:      jsr nextch
                 cmp #','
                 beq @indir_reg       ; (hh), -> case 3 reg test
                 jsr chk_eol
                 beq asm_indirect    ; ->  case 2
-                bne @err       ; something unexpected in the line
+                bne err1       ; something unexpected in the line
 @indir_reg:     jsr nextch
                 cmp #'Y'
-                bne @err
+                bne err1
                 ;
                 ; case 3
                 ;
                 jsr nextch
                 jsr chk_eol
-                bne @err
+                bne err1
                 lda #$10            ; default: abs. Or in b = %100 into aaa100cc
                 sta opb
-                bne @chk23          ; only do it if type 2 or 3
+                bne chk23          ; only do it if type 2 or 3
+err1:           jmp syntaxerr
 
                 ; asm_indirect: this only happens with jmp
                 ; x must be $1B
 asm_indirect:   lda opcode
                 cmp #$4C
-                beq @check
-                jmp syntaxerr
-@check:         lda #$20        ;  Or in  %001.000.00 into 010.011.00
+                bne err1
+                lda #$20        ;  Or in  %001.000.00 into 010.011.00
                 sta opb
-                jmp three_bytes
+                bra three_bytes
                 ;
                 ; wrap up the assembly:
                 ; emit code bytes to target position,
@@ -528,7 +559,7 @@ finish_asm:     jsr p_opcode
 @loop:          lda opcode,y
                 sta (pcl),y
                 dey
-@short:         bpl @loop
+                bpl @loop
                 lda #$01  ; disassemble just the one line
                 jsr list2
                 lda pcl
@@ -536,46 +567,6 @@ finish_asm:     jsr p_opcode
                 lda pch
                 sta a1h
                 jmp asmz
-                ;
-                ; check for end of line - eihter ENTER (set to 0x0a) or 0
-                ; Z set if reached eol
-                ; imput: current input char in a
-                ;
-chk_eol:        cmp #$00
-                beq @fin
-                cmp #k_entr
-@fin:           rts
-
-chk_xy:         cmp #'X'
-                beq @fin
-                cmp #'Y'
-@fin:           rts
-                ;
-                ; add zero page address
-                ; [x,x+1] + [y,y+1]
-                ; result in [auxl,auxh
-add16:          lda loc0,x
-                clc
-                adc loc0,y
-                sta calcl
-                lda loc1,x
-                adc loc1,y
-                sta calch
-                rts;
-
-                ;
-                ; substract zero page address
-                ; [x,x+1] - [y,y+1]
-                ; result in [auxl,auxh
-sub16:          lda loc0,x
-                sec
-                sbc loc0,y
-                sta calcl
-                lda loc1,x
-                sbc loc1,y
-                sta calch
-                rts;
-
                 ;
                 ; get relative address from pc
                 ; and literal address in a1
@@ -611,8 +602,8 @@ get_rel_a:      stx xreg
 @chkok:         lda calcl
                 ldx opcode
                 cpx #$0f
-                bne @n_branch       ; if not 0f, do normal branch routine
-                sta adrh            ; else bbr/bbs
+                bne @n_branch       ; if not 0f, do branch in arg1, else 3 byte bittest op bbr/bbs with branch in arg2
+                sta adrh
                 jmp three_bytes
 @n_branch:      sta adrl            ; done, rel addr in adrl
                 jmp two_bytes       ; no opb variants for rel branches
@@ -695,8 +686,6 @@ asm_indexed:    ldx mnem
 @abs_y_out:     sta opb
                 jmp three_bytes
 
-bar_ldx:
-
                 ;
                 ; (hh),reg
                 ;
@@ -713,7 +702,7 @@ chk_zero_abs:   cmp #$08
                 beq @ret0
                 lda adrh
                 beq @ret1
-@ldxy:          cpx #$1E   ; ldx and ldy with direct address only work with zero page. throw error if adr out of zero
+@ldxy:          cpx #$1E   ; ldx and ldy with direct address only work with zero page. throw error if adr not in zp
                 beq @err
                 cpx #$1F
                 beq @err
