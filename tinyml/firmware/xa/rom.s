@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $18B, $EA
+                .dsb $16e, $EA
                 .include "asm.s"
 
                 ;
@@ -135,9 +135,16 @@ insds2:         tay
                 ;
                 ror                 ; bit 1 test, acc now 10aa abbb, c high bit in carry flag
                 bcc @insc1          ; xxxxxx11 -> RMB SMB, WAI, STP, BBR BBS on 65C02
-                and #03             ; test low bb bits. 1 -> RMB/SMB, 2-> WAI,STP, 3 -> BBR,BBS
-                tax
-                lda @fmt_xtra,x     ; fmt2 index for 0-N/A, 1-RMB SMB->ZERO 2-WAI,STP->IMPLIED, 3-BBR BBS->$10 zpg,rel
+                and #03             ; test low bb bits. 1 -> RMB/SMB, 2-> WAI,STP, 3 -> BBR,BBS 0-> column 03 -> err
+                beq err
+@fmt_cnt:       tax
+                cpx #$02
+                bne @not_b
+                lda opcode
+                and #$E0            ; column B has only CB and DB.
+                cmp #$C0
+                bne err
+@not_b:         lda @fmt_xtra,x     ; fmt2 index for 0-N/A, 1-RMB SMB->ZERO 2-WAI,STP->IMPLIED, 3-BBR BBS->$10 zpg,rel
                 bra getfmt
 @fmt_xtra:      .byte $00,$02,$00,$10
 @insc1:         and #$87            ; mask bits c000 0bbb
@@ -148,8 +155,10 @@ ieven:          lsr                 ; lsb into carry for l/r test (b low bit), a
                 jsr selnibl         ; r/l h-byte on carry
                 bne getfmt          ; 0 marks invalid ops
 
-err:            ldy #$80            ; substitute $80 for invalid ops
-                lda #$0             ; set print format index to 0
+err:            lda #$20             ; set print format index to 0
+                stz format
+                stz length
+                rts
 getfmt:         tax
                 lda fmt2,x          ; index into print format table
                 sta format          ; save for addr field formatting
@@ -248,14 +257,16 @@ getfmt:         tax
                 txa                 ; 0YYY 0111 -> RMB at $40, 0YYY 1111 -> BBR at $42
                 adc #$00            ; 1YYY 0111 -> SMB at $41, 1YYY 1111 -> BBS at $43
                 rts
-@case_b:        and #$E4            ; mask for case b
+@case_b:        and #$E7            ; mask for case b
                 cmp #$04            ; 000x y100
                 bne @case_a
                 lda opcode
                 jsr selhigh
                 ora #$48
                 rts
-@case_a:        cpx #$04            ; 0XYY 0100
+@case_a:        lda opcode
+                and #$8F
+                cmp #$04            ; 0XYY 0100
                 bne @case_e
                 ldx #$4A
                 bbr #6,opcode,@mnbit  ; bbr6 opcode,@mnbit
@@ -339,8 +350,12 @@ prnm2:          asl rmnem           ; shift 5 bits of
                 rol                 ;      (clears carry)
                 dey
                 bne prnm2
-                ora #'@'            ; set char offset for A-Z
-                jsr cout            ; output a char of mnem
+                cmp #$00            ; 0 should be '?'
+                bne @alpha
+                lda #'?'
+                bra @m_out
+@alpha:         ora #'@'            ; set char offset for A-Z
+@m_out:         jsr cout            ; output a char of mnem
                 dex
                 bne prmn1
                 jsr prcbit          ; print bit op index, carry set if 2 blanks output

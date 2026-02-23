@@ -108,7 +108,7 @@ namespace haiku6502 {
     }
 
     void Engine::load_ram(uint16_t addr, uint16_t len, const char *filepath) const {
-        if (addr < 0xC000 && addr + len < 0xC00) {
+        if (addr < 0xC000 && addr + len < 0xC000) {
             FILE *ram_file = fopen(filepath, "rb");
 
             if (ram_file != nullptr) {

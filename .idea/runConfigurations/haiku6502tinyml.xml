@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="haiku6502tinyml" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-d -r tinyml/firmware/xa/haiku6502.rom -m tinyml/firmware/xa/testdata_x300_lx28.bin -l 300  -c -w" REDIRECT_INPUT="false" REDIRECT_INPUT_PATH="tinyml/firmware/xa//testpattern" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="haiku6502" TARGET_NAME="haiku6502" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="haiku6502" RUN_TARGET_NAME="haiku6502_tinyml">
+  <configuration default="false" name="haiku6502tinyml" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-d -r tinyml/firmware/xa/haiku6502.rom -m tinyml/firmware/xa/etcdata -l 1000  -c -w" REDIRECT_INPUT="false" REDIRECT_INPUT_PATH="tinyml/firmware/xa//testpattern" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="haiku6502" TARGET_NAME="haiku6502" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="haiku6502" RUN_TARGET_NAME="haiku6502_tinyml">
     <envs>
       <env name="TERM" value="xterm-256color" />
     </envs>

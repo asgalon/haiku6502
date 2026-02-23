@@ -1,0 +1,286 @@
+*1000.11f0l
+
+1000-   00          BRK
+1001-   01 FF       ORA   ($FF,X)
+1003-   02          ???
+1004-   03          ???
+1005-   04 FF       TSB   $FF
+1007-   05 FF       ORA   $FF
+1009-   06 FF       ASL   $FF
+100B-   07 FF       RMB0  $FF
+100D-   08          PHP
+100E-   09 FF       ORA   #$FF
+1010-   0A          ASL
+1011-   0B          ???
+1012-   0C FF FF    TSB   $FFFF
+1015-   0D FF FF    ORA   $FFFF
+1018-   0E FF FF    ASL   $FFFF
+101B-   0F 03 FF    BBR0  $03,$101D
+101E-   10 FF       BPL   $101F
+1020-   11 FF       ORA   ($FF),Y
+1022-   12 FF       ORA   ($FF)
+1024-   13          ???
+*l
+
+1025-   14 FF       TRB   $FF
+1027-   15 FF       ORA   $FF,X
+1029-   16 FF       ASL   $FF,X
+102B-   17 FF       RMB1  $FF
+102D-   18          CLC
+102E-   19 FF FF    ORA   $FFFF,Y
+1031-   1A          INC
+1032-   1B          ???
+1033-   1C FF FF    TRB   $FFFF
+1036-   1D FF FF    ORQ   $FFFF,X
+1039-   1E FF FF    ASL   $FFFF,X
+103C-   1F 04 FF    BBR1  $04,$103E
+103F-   20 FF FF    JSR   $FFFF
+1042-   21 FF       AND   ($FF,X)
+1044-   22          ???
+1045-   23          ???
+1046-   24 FF       BIT   $FF
+1048-   25 FF       AND   $FF
+104A-   26 FF       ROL   $FF
+104C-   27 FF       RMB2  $FF
+*l
+
+104E-   28          PLP
+104F-   29 FF       AND   #$FF
+1051-   2A          ROL
+1052-   2B          ???
+1053-   2C FF FF    BIT   $FFFF
+1056-   2D FF FF    AND   $FFFF
+1059-   2E FF FF    ROL   $FFFF
+105C-   2F 01 FF    BBR2  $01,$105E
+105F-   30 FF       BMI   $1060
+1061-   31 FF       AND   ($FF),Y
+1063-   32 FF       AND   ($FF)
+1065-   33          ???
+1066-   34 FF       BIT   $FF,X
+1068-   35 FF       AND   $FF,X
+106A-   36 FF       ROL   $FF,X
+106C-   37 FF       RMB3  $FF
+106E-   38          SEC
+106F-   39 FF FF    AND   $FFFF,Y
+1072-   3A          DEC
+1073-   3B          ???
+*l
+
+1074-   3C FF FF    BIT   $FFFF,X
+1077-   3D FF FF    AND   $FFFF,X
+107A-   3E FF FF    ROL   $FFFF,X
+107D-   3F 05 FF    BBR3  $05,$107F
+1080-   40          RTI
+1081-   41 FF       EOR   ($FF,X)
+1083-   42          ???
+1084-   43          ???
+1085-   44          ???
+1086-   45 FF       EOR   $FF
+1088-   46 FF       LSR   $FF
+108A-   47 FF       RMB4  $FF
+108C-   48          PHA
+108D-   49 FF       EOR   #$FF
+108F-   4A          LSR
+1090-   4B          ???
+1091-   4C FF FF    JMP   $FFFF
+1094-   4D FF FF    EOR   $FFFF
+1097-   4E FF FF    LSR   $FFFF
+109A-   4F 07 FF    BBR4  $07,$109C
+*l
+
+109D-   50 FF       BVC   $109E
+109F-   51 FF       EOR   ($FF),Y
+10A1-   52 FF       EOR   ($FF)
+10A3-   53          ???
+10A4-   54          ???
+10A5-   55 FF       EOR   $FF,X
+10A7-   56 FF       LSR   $FF,X
+10A9-   57 FF       RMB5  $FF
+10AB-   58          CLI
+10AC-   59 FF FF    EOR   $FFFF,Y
+10AF-   5A          PHY
+10B0-   5B          ???
+10B1-   5C          ???
+10B2-   5D FF FF    EOR   $FFFF,X
+10B5-   5E FF FF    LSR   $FFFF,X
+10B8-   5F 07 FF    BBR5  $07,$10BA
+10BB-   60          RTS
+10BC-   61 FF       ADC   ($FF,X)
+10BE-   62          ???
+10BF-   63          ???
+*l
+
+10C0-   64 FF       STZ   $FF
+10C2-   65 FF       ADC   $FF
+10C4-   66 FF       ROR   $FF
+10C6-   67 FF       RMB6  $FF
+10C8-   68          PLA
+10C9-   69 FF       ADC   #$FF
+10CB-   6A          ROR
+10CC-   6B          ???
+10CD-   6C FF FF    JMP   ($FFFF)
+10D0-   6D FF FF    ADC   $FFFF
+10D3-   6E FF FF    ROR   $FFFF
+10D6-   6F 01 FF    BBR6  $01,$10D8
+10D9-   70 FF       BVS   $10DA
+10DB-   71 FF       ADC   ($FF),Y
+10DD-   72 FF       ADC   ($FF)
+10DF-   73          ???
+10E0-   74 FF       STZ   $FF,X
+10E2-   75 FF       ADC   $FF,X
+10E4-   76 FF       ROR   $FF,X
+10E6-   77 FF       RMB7  $FF
+*l
+
+10E8-   78          SEI
+10E9-   79 FF FF    ADC   $FFFF,Y
+10EC-   7A          PLY
+10ED-   7B          ???
+10EE-   7C FF FF    JMP   ($FFFF,X)
+10F1-   7D FF FF    ADC   $FFFF,X
+10F4-   7E FF FF    ROR   $FFFF,X
+10F7-   7F 00 FF    BBR7  $00,$10F9
+10FA-   80 FF       BRA   $10FB
+10FC-   81 FF       STA   ($FF,X)
+10FE-   82          ???
+10FF-   83          ???
+1100-   84 FF       STY   $FF
+1102-   85 FF       STA   $FF
+1104-   86 FF       STX   $FF
+1106-   87 FF       SMB0  $FF
+1108-   88          DEY
+1109-   89 FF       BIT   #$FF
+110B-   8A          TXA
+110C-   8B          ???
+*l
+
+110D-   8C FF FF    STY   $FFFF
+1110-   8D FF FF    STA   $FFFF
+1113-   8E FF FF    STX   $FFFF
+1116-   8F 02 FF    BBS0  $02,$1118
+1119-   90 FF       BCC   $111A
+111B-   91 FF       STA   ($FF),Y
+111D-   92 FF       STA   ($FF)
+111F-   93          ???
+1120-   94 FF       STY   $FF,X
+1122-   95 FF       STA   $FF,X
+1124-   96 FF       STX   $FF,Y
+1126-   97 FF       SMB1  $FF
+1128-   98          TYA
+1129-   99 FF FF    STA   $FFFF,Y
+112C-   9A          TXS
+112D-   9B          ???
+112E-   9C FF FF    STY   $FFFF
+1131-   9D FF FF    STA   $FFFF,X
+1134-   9E FF FF    STX   $FFFF,X
+1137-   9F 03 FF    BBS1  $03,$1139
+*l
+
+113A-   A0 FF       LDA   #$FF
+113C-   A1 FF       LDA   ($FF,X)
+113E-   A2 FF       LDX   #$FF
+1140-   A3          ???
+1141-   A4 FF       LDY   $FF
+1143-   A5 FF       LDA   $FF
+1145-   A6 FF       LDX   $FF
+1147-   A7 FF       SMB2  $FF
+1149-   A8          TAY
+114A-   A9 FF       LDA   #$FF
+114C-   AA          TAX
+114D-   AB          ???
+114E-   AC FF FF    LDY   $FFFF
+1151-   AD FF FF    LDA   $FFFF
+1154-   AE FF FF    LDX   $FFFF
+1157-   AF 04 FF    BBS2  $04,$1159
+115A-   B0 FF       BCS   $115B
+115C-   B1 FF       LDA   ($FF),Y
+115E-   B2 FF       LDA   ($FF)
+1160-   B3          ???
+*l
+
+1161-   B4 FF       LDY   $FF,X
+1163-   B5 FF       LDA   $FF,X
+1165-   B6 FF       LDX   $FF,Y
+1167-   B7 FF       SMB3  $FF
+1169-   B8          CLV
+116A-   B9 FF FF    LDA   $FFFF,Y
+116D-   BA          TSX
+116E-   BB          ???
+116F-   BC FF FF    LDY   $FFFF,X
+1172-   BD FF FF    LDA   $FFFF,X
+1175-   BE FF FF    LDX   $FFFF,Y
+1178-   BF 05 FF    BBS3  $05,$117A
+117B-   C0 FF       CPY   #$FF
+117D-   C1 FF       CMP   ($FF,X)
+117F-   C2          ???
+1180-   C3          ???
+1181-   C4 FF       CPY   $FF
+1183-   C5 FF       CMP   $FF
+1185-   C6 FF       DEC   $FF
+1187-   C7 FF       SMB4  $FF
+*l
+
+1189-   C8          INY
+118A-   C9 FF       CMP   #$FF
+118C-   CA          DEX
+118D-   CB          WAI
+118E-   CC FF FF    CPY   $FFFF
+1191-   CD FF FF    CMP   $FFFF
+1194-   CE FF FF    DEC   $FFFF
+1197-   CF 06 FF    BBS4  $06,$1199
+119A-   D0 FF       BNE   $119B
+119C-   D1 FF       CMP   ($FF),Y
+119E-   D2 FF       CMP   ($FF)
+11A0-   D3          ???
+11A1-   D4          ???
+11A2-   D5 FF       CMP   $FF,X
+11A4-   D6 FF       DEC   $FF,X
+11A6-   D7 FF       SMB5  $FF
+11A8-   D8          CLD
+11A9-   D9 FF FF    CMP   $FFFF,Y
+11AC-   DA          PHX
+11AD-   DB          STP
+*l
+
+11AE-   DC          ???
+11AF-   DD FF FF    CMP   $FFFF,X
+11B2-   DE FF FF    DEC   $FFFF,X
+11B5-   DF 07 FF    BBS5  $07,$11B7
+11B8-   E0 FF       CPX   #$FF
+11BA-   E1 FF       SBC   ($FF,X)
+11BC-   E2          ???
+11BD-   E3          ???
+11BE-   E4 FF       CPX   $FF
+11C0-   E5 FF       SBC   $FF
+11C2-   E6 FF       INC   $FF
+11C4-   E7 FF       SMB6  $FF
+11C6-   E8          INX
+11C7-   E9 FF       SBC   #$FF
+11C9-   EA          NOP
+11CA-   EB          ???
+11CB-   EC FF FF    CPX   $FFFF
+11CE-   ED FF FF    SBC   $FFFF
+11D1-   EE FF FF    INC   $FFFF
+11D4-   EF 00 FF    BBS6  $00,$11D6
+*l
+
+11D7-   F0 FF       BEQ   $11D8
+11D9-   F1 FF       SBC   ($FF),Y
+11DB-   F2 FF       SBC   ($FF)
+11DD-   F3          ???
+11DE-   F4          ???
+11DF-   F5 FF       SBC   $FF,X
+11E1-   F6 FF       INC   $FF,X
+11E3-   F7 FF       SMB7  $FF
+11E5-   F8          SED
+11E6-   F9 FF FF    SBC   $FFFF,Y
+11E9-   FA          PLX
+11EA-   FB          ???
+11EB-   FC          ???
+11EC-   FD FF FF    SBC   $FFFF,X
+11EF-   FE FF FF    INC   $FFFF,X
+11F2-   FF 01 FF    BBS7  $01,$11F4
+11F5-   00          BRK
+11F6-   00          BRK
+11F7-   00          BRK
+11F8-   00          BRK
