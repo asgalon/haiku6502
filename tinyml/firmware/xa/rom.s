@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $16e, $EA
+                .dsb $176, $EA
                 .include "asm.s"
 
                 ;
@@ -350,12 +350,8 @@ prnm2:          asl rmnem           ; shift 5 bits of
                 rol                 ;      (clears carry)
                 dey
                 bne prnm2
-                cmp #$00            ; 0 should be '?'
-                bne @alpha
-                lda #'?'
-                bra @m_out
-@alpha:         ora #'@'            ; set char offset for A-Z
-@m_out:         jsr cout            ; output a char of mnem
+                adc #'?'            ; set char offset for A-Z
+                jsr cout            ; output a char of mnem
                 dex
                 bne prmn1
                 jsr prcbit          ; print bit op index, carry set if 2 blanks output

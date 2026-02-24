@@ -91,6 +91,14 @@ mappings = [
         "BIT, ---, ---, ---, ---, ---, ---, ---"
 ]
 
+def get_mnem_val(mnem):
+        map0 = ord(mnem[0]) - ord('?')
+        map1 = ord(mnem[1]) - ord('?')
+        map2 = ord(mnem[2]) - ord('?')
+
+        val = (map0 << 11) + (map1 << 6) + (map2 << 1)
+        return val
+
 with open("opcodes_compressed.s", "w") as f:
         for i, mnem in enumerate(opcodes):
             map0 = (ord(mnem[0]) & 0x1F)
@@ -117,18 +125,14 @@ with open("sysmon_mnemonics_compressed.s", "w") as f:
                 else:
                         f.write("               .byte ")
 
+                # base index on 3F instead of 40 so 0 becomes '?'
                 for n,mnem in enumerate(re.split(',? ', mline)):
-                        if mnem == '???':
-                                f.write("$00")
-                        elif mnem == '---':
+                        if mnem == '---':
                                 f.write("    ")
                         else:
                                 if n > 0:
                                         f.write(",")
-                                map0 = (ord(mnem[0]) & 0x1F)
-                                map1 = (ord(mnem[1]) & 0x1F)
-                                map2 = (ord(mnem[2]) & 0x1F)
-                                val = (map0 << 11) + (map1 << 6) + (map2 << 1)
+                                val = get_mnem_val(mnem)
                                 f.write(f"{"${:02x}".format((val & 0xFF00) >> 8)}")
                 f.write(f"     ; {mline.replace(', ---','')}\n")
         f.write("\n")
@@ -147,11 +151,8 @@ with open("sysmon_mnemonics_compressed.s", "w") as f:
                         else:
                                 if n > 0:
                                         f.write(",")
-                                map0 = (ord(mnem[0]) & 0x1F)
-                                map1 = (ord(mnem[1]) & 0x1F)
-                                map2 = (ord(mnem[2]) & 0x1F)
+                                val = get_mnem_val(mnem)
 
-                                val = (map0 << 11) + (map1 << 6) + (map2 << 1)
                                 f.write(f"{"${:02x}".format(val & 0x0FF)}")
                 f.write(f"     ; {mline.replace(', ---','')}\n")
 

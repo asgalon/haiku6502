@@ -1,29 +1,29 @@
-mneml:         .byte $14,$82,$14,$1b,$54,$83,$13,$99     ; BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC
-               .byte $95,$82,$15,$1b,$95,$83,$15,$99     ; RTI, PHA, BVC, CLI, RTS, PLA, BVS, SEI
-               .byte $14,$21,$10,$a6,$61,$a0,$10,$1b     ; BRA, DEY, BCC, TYA, LDY, TAY, BCS, CLV
-               .byte $1c,$4b,$13,$1b,$1c,$4b,$11,$99     ; CPY, INY, BNE, CLD, CPX, INX, BEQ, SED
-               .byte $00,$12,$53,$53,$9d,$61,$1c,$1c     ; ???, BIT, JMP, JMP, STY, LDY, CPY, CPX
-               .byte $a6,$a6,$a0,$a4,$21,$82,$73,$83     ; TXA, TXS, TAX, TSX, DEX, PHX, NOP, PLX
-               .byte $0c,$93,$64,$93,$9d,$61,$21,$4b     ; ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
-               .byte $7c,$0b,$2b,$09,$9d,$61,$1b,$98     ; ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
-               .byte $93,$9b,$10,$10                     ; RMB, SMB, BBR, BBS
-               .byte $4b,$21,$82,$83                     ; INC, DEC, PHY, PLY
-               .byte $a4,$a4                             ; TSB, TRB
-               .byte $12,$9d                             ; BIT, STZ
-               .byte $b8,$9d                             ; WAI, STP
-mneml_d:       .byte $12                                 ; BIT
+mneml:         .byte $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1     ; BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC
+               .byte $9d,$8a,$1d,$23,$9d,$8b,$1d,$a1     ; RTI, PHA, BVC, CLI, RTS, PLA, BVS, SEI
+               .byte $1c,$29,$19,$ae,$69,$a8,$19,$23     ; BRA, DEY, BCC, TYA, LDY, TAY, BCS, CLV
+               .byte $24,$53,$1b,$23,$24,$53,$19,$a1     ; CPY, INY, BNE, CLD, CPX, INX, BEQ, SED
+               .byte $00,$1a,$5b,$5b,$a5,$69,$24,$24     ; ???, BIT, JMP, JMP, STY, LDY, CPY, CPX
+               .byte $ae,$ae,$a8,$ad,$29,$8a,$7c,$8b     ; TXA, TXS, TAX, TSX, DEX, PHX, NOP, PLX
+               .byte $15,$9c,$6d,$9c,$a5,$69,$29,$53     ; ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
+               .byte $84,$13,$34,$11,$a5,$69,$23,$a0     ; ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
+               .byte $9b,$a3,$18,$18                     ; RMB, SMB, BBR, BBS
+               .byte $53,$29,$8a,$8b                     ; INC, DEC, PHY, PLY
+               .byte $ad,$ac                             ; TSB, TRB
+               .byte $1a,$a5                             ; BIT, STZ
+               .byte $c0,$a5                             ; WAI, STP
+mneml_d:       .byte $1a                                 ; BIT
 
-mnemr:         .byte $96,$20,$18,$06,$e4,$20,$52,$46     ; BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC
-               .byte $12,$02,$86,$12,$26,$02,$a6,$52     ; RTI, PHA, BVC, CLI, RTS, PLA, BVS, SEI
-               .byte $82,$72,$c6,$42,$32,$72,$e6,$2c     ; BRA, DEY, BCC, TYA, LDY, TAY, BCS, CLV
-               .byte $32,$b2,$8a,$08,$30,$b0,$62,$48     ; CPY, INY, BNE, CLD, CPX, INX, BEQ, SED
-               .byte $00,$68,$60,$60,$32,$32,$32,$30     ; ???, BIT, JMP, JMP, STY, LDY, CPY, CPX
-               .byte $02,$26,$70,$f0,$70,$30,$e0,$30     ; TXA, TXS, TAX, TSX, DEX, PHX, NOP, PLX
-               .byte $d8,$d8,$e4,$e4,$30,$30,$46,$86     ; ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
-               .byte $82,$88,$e4,$06,$02,$02,$60,$86     ; ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
-               .byte $44,$44,$a4,$a6                     ; RMB, SMB, BBR, BBS
-               .byte $86,$46,$32,$32                     ; INC, DEC, PHY, PLY
-               .byte $c4,$84                             ; TSB, TRB
-               .byte $68,$34                             ; BIT, STZ
-               .byte $52,$20                             ; WAI, STP
-               .byte $68                                 ; BIT
+mnemr:         .byte $d8,$62,$5a,$48,$26,$62,$94,$88     ; BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC
+               .byte $54,$44,$c8,$54,$68,$44,$e8,$94     ; RTI, PHA, BVC, CLI, RTS, PLA, BVS, SEI
+               .byte $c4,$b4,$08,$84,$74,$b4,$28,$6e     ; BRA, DEY, BCC, TYA, LDY, TAY, BCS, CLV
+               .byte $74,$f4,$cc,$4a,$72,$f2,$a4,$8a     ; CPY, INY, BNE, CLD, CPX, INX, BEQ, SED
+               .byte $00,$aa,$a2,$a2,$74,$74,$74,$72     ; ???, BIT, JMP, JMP, STY, LDY, CPY, CPX
+               .byte $44,$68,$b2,$32,$b2,$72,$22,$72     ; TXA, TXS, TAX, TSX, DEX, PHX, NOP, PLX
+               .byte $1a,$1a,$26,$26,$72,$72,$88,$c8     ; ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
+               .byte $c4,$ca,$26,$48,$44,$44,$a2,$c8     ; ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
+               .byte $86,$86,$e6,$e8                     ; RMB, SMB, BBR, BBS
+               .byte $c8,$88,$74,$74                     ; INC, DEC, PHY, PLY
+               .byte $06,$c6                             ; TSB, TRB
+               .byte $aa,$76                             ; BIT, STZ
+               .byte $94,$62                             ; WAI, STP
+               .byte $aa                                 ; BIT
