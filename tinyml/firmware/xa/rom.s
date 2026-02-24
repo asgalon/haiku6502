@@ -56,7 +56,7 @@
 
                 .org    $F200       ; ROM start address
 
-                .dsb $176, $EA
+                .dsb $1B9, $EA
                 .include "asm.s"
 
                 ;
@@ -228,7 +228,7 @@ getfmt:         tax
                 ;
                 cmp #$89            ; case d) bit, only one opcode
                 bne @mnndxc1
-                lda #<(mneml_d-mneml)  ; one mnemonic, last one.
+                lda #<(mnemidx_d-mnemidx)  ; one mnemonic, last one.
                 rts
 @mnndxc1:       and #$1F            ; test case g first
                 cmp #$12            ; odd hi rows in lo column 2
@@ -338,10 +338,12 @@ instdsp:        jsr insds1          ; gen fmt, len bytes
                 lsr                 ; $40-$41 -> $20,$42-$43 -> $21, for BBR BBS special address mode
                 sec
                 sbc #$21            ; BBR/BBS
-                sta monauxl         ; monaucl == 0 if BBR/BBS, not zero else
-                lda mneml,y
+                sta monauxl         ; monauxl == 0 if BBR/BBS, not zero else
+                lda mnemidx,y       ; mnemind now has the index into opcode_mnem table
+                tay
+                lda opcode_mnem+1,y
                 sta lmnem           ; fetch 3 char mnemonic
-                lda mnemr,y         ;   (packed in 2 bytes, only chars A-Z
+                lda opcode_mnem,y ;   (packed in 2 bytes, only chars A-Z
                 sta rmnem
 prmn1:          lda #$00
                 ldy #$05

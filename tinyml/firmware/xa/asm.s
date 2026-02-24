@@ -103,24 +103,30 @@ asmz:           lda #'!'
                 ; ((menm0 & 0x1f) << 10) + ((menm1 & 0x1f) << 5) + (menm2 & 0x1f)
                 ; so the opcode forms a word with 13 bits used.
                 ; impossible mnemonics produce a syntax error, invalid mnemonics will produce an
-                ; unknown opcode
+                ; unknown opcode. Had to invest a few bytes here to moake it compatible with sysmon
+                ; mnem encoding, so this could be used for indir4ct access from there, saving the mneml-mnemr double table
                 ;
-@procmnm:       and #$1F    ; ex.:  PHP                                            'P' = $50 -> $10
-                sta tmph     ;
+@procmnm:       sbc #'?'    ; ex.:  PHP                                            'P' = $50 -> $11  C==0 here, going for -'?'
+                sta tmph    ;                                                            $11 00
                 stz in      ; put a zero into first position to mark input buffer old news.
                 jsr nextch  ; $1F useful bits, have to make room for 5 more        `H' = $48, useful $08
-                asl         ; $3E                                                        $90
-                asl         ; $7C                                                        $20
-                asl         ; $F8                                                        $40
-                asl         ; $01F0 high bit-> carry                                     $80 + 0
-                rol tmph     ; $3FF0                                               $20    $80
-                asl         ; $03E0 high bit-> carry                                     $00 + 1
-                rol tmph     ; $7FE0                                               $41    $00
-                sta tmpl     ; $E0 , five lower bits free                                 $00
+                inc         ; adjust for '?' (3F) base                                   $49
+                asl         ; $3E                                                        $92
+                asl         ; $7C                                                        $24
+                asl         ; $F8                                                        $48
+                asl         ; $01F0 high bit-> carry                                     $90 + 0
+                rol tmph    ; $3FF0                                                      $22 90
+                asl         ; $03E0 high bit-> carry                                     $20 + 1
+                rol tmph    ; $7FE0                                                      $45 20
+                asl         ; $03E0 high bit-> carry                                     $40 + 0
+                rol tmph    ; $FFC0                                                      $8A 40
+                sta tmpl    ; $E0 , five lower bits free                                 $10
                 jsr nextch  ; $1F                                                  'P' = $50
                 and #$1F    ;                                                            $10
-                ora tmpl     ;                                                            $10
-                sta tmpl     ;                                                     $41    $10
+                inc         ;                                                            $11
+                asl         ;                                                            $22
+                ora tmpl    ;                                                            $8A 62
+                sta tmpl    ;
                 ;
                 ; now we have the short form in tmp.
                 ; go on to find the mnemonic in opcodex table
@@ -177,7 +183,6 @@ asmz:           lda #'!'
 ;
 ; opcode char mappings
 ;
-opcodex:
                 .include "opcodes_compressed.s"
 opcodez:
 ;

@@ -1,0 +1,259 @@
+*1000!
+
+BRK                 ; 1000-   00           
+ORA   ($FF,X)       ; 1001-   01 FF        
+NOP                 ; 1003-   02           
+NOP                 ; 1004-   03           
+TSB   $FF           ; 1005-   04 FF        
+ORA   $FF           ; 1007-   05 FF        
+ASL   $FF           ; 1009-   06 FF        
+RMB0  $FF           ; 100B-   07 FF        
+PHP                 ; 100D-   08           
+ORA   #$FF          ; 100E-   09 FF        
+ASL                 ; 1010-   0A           
+NOP                 ; 1011-   0B           
+TSB   $FFFF         ; 1012-   0C FF FF     
+ORA   $FFFF         ; 1015-   0D FF FF     
+ASL   $FFFF         ; 1018-   0E FF FF     
+BBR0  $03,$101D     ; 101B-   0F 03 FF     
+BPL   $101F         ; 101E-   10 FF        
+ORA   ($FF),Y       ; 1020-   11 FF        
+ORA   ($FF)         ; 1022-   12 FF        
+NOP                 ; 1024-   13           
+TRB   $FF           ; 1025-   14 FF        
+ORA   $FF,X         ; 1027-   15 FF        
+ASL   $FF,X         ; 1029-   16 FF        
+RMB1  $FF           ; 102B-   17 FF        
+CLC                 ; 102D-   18           
+ORA   $FFFF,Y       ; 102E-   19 FF FF     
+INC                 ; 1031-   1A           
+NOP                 ; 1032-   1B           
+TRB   $FFFF         ; 1033-   1C FF FF     
+ORQ   $FFFF,X       ; 1036-   1D FF FF     
+ASL   $FFFF,X       ; 1039-   1E FF FF     
+BBR1  $04,$103E     ; 103C-   1F 04 FF     
+JSR   $FFFF         ; 103F-   20 FF FF     
+AND   ($FF,X)       ; 1042-   21 FF        
+NOP                 ; 1044-   22           
+NOP                 ; 1045-   23           
+BIT   $FF           ; 1046-   24 FF        
+AND   $FF           ; 1048-   25 FF        
+ROL   $FF           ; 104A-   26 FF        
+RMB2  $FF           ; 104C-   27 FF        
+PLP                 ; 104E-   28           
+AND   #$FF          ; 104F-   29 FF        
+ROL                 ; 1051-   2A           
+NOP                 ; 1052-   2B           
+BIT   $FFFF         ; 1053-   2C FF FF     
+AND   $FFFF         ; 1056-   2D FF FF     
+ROL   $FFFF         ; 1059-   2E FF FF     
+BBR2  $01,$105E     ; 105C-   2F 01 FF     
+BMI   $1060         ; 105F-   30 FF        
+AND   ($FF),Y       ; 1061-   31 FF        
+AND   ($FF)         ; 1063-   32 FF        
+NOP                 ; 1065-   33           
+BIT   $FF,X         ; 1066-   34 FF        
+AND   $FF,X         ; 1068-   35 FF        
+ROL   $FF,X         ; 106A-   36 FF        
+RMB3  $FF           ; 106C-   37 FF        
+SEC                 ; 106E-   38           
+AND   $FFFF,Y       ; 106F-   39 FF FF     
+DEC                 ; 1072-   3A           
+NOP                 ; 1073-   3B           
+BIT   $FFFF,X       ; 1074-   3C FF FF     
+AND   $FFFF,X       ; 1077-   3D FF FF     
+ROL   $FFFF,X       ; 107A-   3E FF FF     
+BBR3  $05,$107F     ; 107D-   3F 05 FF     
+RTI                 ; 1080-   40           
+EOR   ($FF,X)       ; 1081-   41 FF        
+NOP                 ; 1083-   42           
+NOP                 ; 1084-   43           
+NOP                 ; 1085-   44           
+EOR   $FF           ; 1086-   45 FF        
+LSR   $FF           ; 1088-   46 FF        
+RMB4  $FF           ; 108A-   47 FF        
+PHA                 ; 108C-   48           
+EOR   #$FF          ; 108D-   49 FF        
+LSR                 ; 108F-   4A           
+NOP                 ; 1090-   4B           
+JMP   $FFFF         ; 1091-   4C FF FF     
+EOR   $FFFF         ; 1094-   4D FF FF     
+LSR   $FFFF         ; 1097-   4E FF FF     
+BBR4  $07,$109C     ; 109A-   4F 07 FF     
+BVC   $109E         ; 109D-   50 FF        
+EOR   ($FF),Y       ; 109F-   51 FF        
+EOR   ($FF)         ; 10A1-   52 FF        
+NOP                 ; 10A3-   53           
+NOP                 ; 10A4-   54           
+EOR   $FF,X         ; 10A5-   55 FF        
+LSR   $FF,X         ; 10A7-   56 FF        
+RMB5  $FF           ; 10A9-   57 FF        
+CLI                 ; 10AB-   58           
+EOR   $FFFF,Y       ; 10AC-   59 FF FF     
+PHY                 ; 10AF-   5A           
+NOP                 ; 10B0-   5B           
+NOP                 ; 10B1-   5C           
+EOR   $FFFF,X       ; 10B2-   5D FF FF     
+LSR   $FFFF,X       ; 10B5-   5E FF FF     
+BBR5  $07,$10BA     ; 10B8-   5F 07 FF     
+RTS                 ; 10BB-   60           
+ADC   ($FF,X)       ; 10BC-   61 FF        
+NOP                 ; 10BE-   62           
+NOP                 ; 10BF-   63           
+STZ   $FF           ; 10C0-   64 FF        
+ADC   $FF           ; 10C2-   65 FF        
+ROR   $FF           ; 10C4-   66 FF        
+RMB6  $FF           ; 10C6-   67 FF        
+PLA                 ; 10C8-   68           
+ADC   #$FF          ; 10C9-   69 FF        
+ROR                 ; 10CB-   6A           
+NOP                 ; 10CC-   6B           
+JMP   ($FFFF)       ; 10CD-   6C FF FF     
+ADC   $FFFF         ; 10D0-   6D FF FF     
+ROR   $FFFF         ; 10D3-   6E FF FF     
+BBR6  $01,$10D8     ; 10D6-   6F 01 FF     
+BVS   $10DA         ; 10D9-   70 FF        
+ADC   ($FF),Y       ; 10DB-   71 FF        
+ADC   ($FF)         ; 10DD-   72 FF        
+NOP                 ; 10DF-   73           
+STZ   $FF,X         ; 10E0-   74 FF        
+ADC   $FF,X         ; 10E2-   75 FF        
+ROR   $FF,X         ; 10E4-   76 FF        
+RMB7  $FF           ; 10E6-   77 FF        
+SEI                 ; 10E8-   78           
+ADC   $FFFF,Y       ; 10E9-   79 FF FF     
+PLY                 ; 10EC-   7A           
+NOP                 ; 10ED-   7B           
+JMP   ($FFFF,X)     ; 10EE-   7C FF FF     
+ADC   $FFFF,X       ; 10F1-   7D FF FF     
+ROR   $FFFF,X       ; 10F4-   7E FF FF     
+BBR7  $00,$10F9     ; 10F7-   7F 00 FF     
+BRA   $10FB         ; 10FA-   80 FF        
+STA   ($FF,X)       ; 10FC-   81 FF        
+NOP                 ; 10FE-   82           
+NOP                 ; 10FF-   83           
+STY   $FF           ; 1100-   84 FF        
+STA   $FF           ; 1102-   85 FF        
+STX   $FF           ; 1104-   86 FF        
+SMB0  $FF           ; 1106-   87 FF        
+DEY                 ; 1108-   88           
+BIT   #$FF          ; 1109-   89 FF        
+TXA                 ; 110B-   8A           
+NOP                 ; 110C-   8B           
+STY   $FFFF         ; 110D-   8C FF FF     
+STA   $FFFF         ; 1110-   8D FF FF     
+STX   $FFFF         ; 1113-   8E FF FF     
+BBS0  $02,$1118     ; 1116-   8F 02 FF     
+BCC   $111A         ; 1119-   90 FF        
+STA   ($FF),Y       ; 111B-   91 FF        
+STA   ($FF)         ; 111D-   92 FF        
+NOP                 ; 111F-   93           
+STY   $FF,X         ; 1120-   94 FF        
+STA   $FF,X         ; 1122-   95 FF        
+STX   $FF,Y         ; 1124-   96 FF        
+SMB1  $FF           ; 1126-   97 FF        
+TYA                 ; 1128-   98           
+STA   $FFFF,Y       ; 1129-   99 FF FF     
+TXS                 ; 112C-   9A           
+NOP                 ; 112D-   9B           
+STY   $FFFF         ; 112E-   9C FF FF     
+STA   $FFFF,X       ; 1131-   9D FF FF     
+STX   $FFFF,X       ; 1134-   9E FF FF     
+BBS1  $03,$1139     ; 1137-   9F 03 FF     
+LDY   #$FF          ; 113A-   A0 FF        
+LDA   ($FF,X)       ; 113C-   A1 FF        
+LDX   #$FF          ; 113E-   A2 FF        
+NOP                 ; 1140-   A3           
+LDY   $FF           ; 1141-   A4 FF        
+LDA   $FF           ; 1143-   A5 FF        
+LDX   $FF           ; 1145-   A6 FF        
+SMB2  $FF           ; 1147-   A7 FF        
+TAY                 ; 1149-   A8           
+LDA   #$FF          ; 114A-   A9 FF        
+TAX                 ; 114C-   AA           
+NOP                 ; 114D-   AB           
+LDY   $FFFF         ; 114E-   AC FF FF     
+LDA   $FFFF         ; 1151-   AD FF FF     
+LDX   $FFFF         ; 1154-   AE FF FF     
+BBS2  $04,$1159     ; 1157-   AF 04 FF     
+BCS   $115B         ; 115A-   B0 FF        
+LDA   ($FF),Y       ; 115C-   B1 FF        
+LDA   ($FF)         ; 115E-   B2 FF        
+NOP                 ; 1160-   B3           
+LDY   $FF,X         ; 1161-   B4 FF        
+LDA   $FF,X         ; 1163-   B5 FF        
+LDX   $FF,Y         ; 1165-   B6 FF        
+SMB3  $FF           ; 1167-   B7 FF        
+CLV                 ; 1169-   B8           
+LDA   $FFFF,Y       ; 116A-   B9 FF FF     
+TSX                 ; 116D-   BA           
+NOP                 ; 116E-   BB           
+LDY   $FFFF,X       ; 116F-   BC FF FF     
+LDA   $FFFF,X       ; 1172-   BD FF FF     
+LDX   $FFFF,Y       ; 1175-   BE FF FF     
+BBS3  $05,$117A     ; 1178-   BF 05 FF     
+CPY   #$FF          ; 117B-   C0 FF        
+CMP   ($FF,X)       ; 117D-   C1 FF        
+NOP                 ; 117F-   C2           
+NOP                 ; 1180-   C3           
+CPY   $FF           ; 1181-   C4 FF        
+CMP   $FF           ; 1183-   C5 FF        
+DEC   $FF           ; 1185-   C6 FF        
+SMB4  $FF           ; 1187-   C7 FF        
+INY                 ; 1189-   C8           
+CMP   #$FF          ; 118A-   C9 FF        
+DEX                 ; 118C-   CA           
+WAI                 ; 118D-   CB           
+CPY   $FFFF         ; 118E-   CC FF FF     
+CMP   $FFFF         ; 1191-   CD FF FF     
+DEC   $FFFF         ; 1194-   CE FF FF     
+BBS4  $06,$1199     ; 1197-   CF 06 FF     
+BNE   $119B         ; 119A-   D0 FF        
+CMP   ($FF),Y       ; 119C-   D1 FF        
+CMP   ($FF)         ; 119E-   D2 FF        
+NOP                 ; 11A0-   D3           
+NOP                 ; 11A1-   D4           
+CMP   $FF,X         ; 11A2-   D5 FF        
+DEC   $FF,X         ; 11A4-   D6 FF        
+SMB5  $FF           ; 11A6-   D7 FF        
+CLD                 ; 11A8-   D8           
+CMP   $FFFF,Y       ; 11A9-   D9 FF FF     
+PHX                 ; 11AC-   DA           
+STP                 ; 11AD-   DB           
+NOP                 ; 11AE-   DC           
+CMP   $FFFF,X       ; 11AF-   DD FF FF     
+DEC   $FFFF,X       ; 11B2-   DE FF FF     
+BBS5  $07,$11B7     ; 11B5-   DF 07 FF     
+CPX   #$FF          ; 11B8-   E0 FF        
+SBC   ($FF,X)       ; 11BA-   E1 FF        
+NOP                 ; 11BC-   E2           
+NOP                 ; 11BD-   E3           
+CPX   $FF           ; 11BE-   E4 FF        
+SBC   $FF           ; 11C0-   E5 FF        
+INC   $FF           ; 11C2-   E6 FF        
+SMB6  $FF           ; 11C4-   E7 FF        
+INX                 ; 11C6-   E8           
+SBC   #$FF          ; 11C7-   E9 FF        
+NOP                 ; 11C9-   EA           
+NOP                 ; 11CA-   EB           
+CPX   $FFFF         ; 11CB-   EC FF FF     
+SBC   $FFFF         ; 11CE-   ED FF FF     
+INC   $FFFF         ; 11D1-   EE FF FF     
+BBS6  $00,$11D6     ; 11D4-   EF 00 FF     
+BEQ   $11D8         ; 11D7-   F0 FF        
+SBC   ($FF),Y       ; 11D9-   F1 FF        
+SBC   ($FF)         ; 11DB-   F2 FF        
+NOP                 ; 11DD-   F3           
+NOP                 ; 11DE-   F4           
+SBC   $FF,X         ; 11DF-   F5 FF        
+INC   $FF,X         ; 11E1-   F6 FF        
+SMB7  $FF           ; 11E3-   F7 FF        
+SED                 ; 11E5-   F8           
+SBC   $FFFF,Y       ; 11E6-   F9 FF FF     
+PLX                 ; 11E9-   FA           
+NOP                 ; 11EA-   FB           
+NOP                 ; 11EB-   FC           
+SBC   $FFFF,X       ; 11EC-   FD FF FF     
+INC   $FFFF,X       ; 11EF-   FE FF FF     
+BBS7  $01,$11F4     ; 11F2-   FF 01 FF     
+

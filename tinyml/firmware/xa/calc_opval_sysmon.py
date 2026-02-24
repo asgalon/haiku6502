@@ -100,12 +100,12 @@ def get_mnem_val(mnem):
         return val
 
 with open("opcodes_compressed.s", "w") as f:
+        f.write(f"opcode_mnem:    .word $0000    ; '???' for sysmon\n")
+        f.write(f"opcodex:\n")
+
         for i, mnem in enumerate(opcodes):
-            map0 = (ord(mnem[0]) & 0x1F)
-            map1 = (ord(mnem[1]) & 0x1F)
-            map2 = (ord(mnem[2]) & 0x1F)
-            val = (map0 << 10) + (map1 << 5) + map2
-            f.write(f"                .word {"${:04x}".format(val)}    ; #{"${:02x}".format(i)} - {mnem}   ({"${:02x}".format(2* i)})\n")
+                val = get_mnem_val(mnem)
+                f.write(f"                .word {"${:04x}".format(val)}    ; #{"${:02x}".format(i)} - {mnem}   ({"${:02x}".format(2* i)})\n")
         f.flush()
 
 # for mline in mappings:
@@ -119,30 +119,13 @@ with open("opcodes_compressed.s", "w") as f:
 with open("sysmon_mnemonics_compressed.s", "w") as f:
         for i, mline in enumerate(mappings):
                 if i==0:
-                        f.write("mneml:         .byte ")
+                        f.write("mnemidx:       .byte ")
                 elif i==13:
-                        f.write("mneml_d:       .byte ")
+                        f.write("mnemidx_d:     .byte ")
                 else:
                         f.write("               .byte ")
 
                 # base index on 3F instead of 40 so 0 becomes '?'
-                for n,mnem in enumerate(re.split(',? ', mline)):
-                        if mnem == '---':
-                                f.write("    ")
-                        else:
-                                if n > 0:
-                                        f.write(",")
-                                val = get_mnem_val(mnem)
-                                f.write(f"{"${:02x}".format((val & 0xFF00) >> 8)}")
-                f.write(f"     ; {mline.replace(', ---','')}\n")
-        f.write("\n")
-
-        for i, mline in enumerate(mappings):
-                if i==0:
-                        f.write("mnemr:         .byte ")
-                else:
-                        f.write("               .byte ")
-
                 for n,mnem in enumerate(re.split(',? ', mline)):
                         if mnem == '???':
                                 f.write("$00")
@@ -151,8 +134,7 @@ with open("sysmon_mnemonics_compressed.s", "w") as f:
                         else:
                                 if n > 0:
                                         f.write(",")
-                                val = get_mnem_val(mnem)
-
-                                f.write(f"{"${:02x}".format(val & 0x0FF)}")
+                                val = (opcodes.index(mnem)+1) << 1  # word table, index is double.
+                                f.write(f"{"${:02x}".format(val)}")
                 f.write(f"     ; {mline.replace(', ---','')}\n")
-
+        f.write("\n")
