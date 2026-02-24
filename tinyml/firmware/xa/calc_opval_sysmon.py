@@ -77,7 +77,7 @@ opcodes = [
 mappings = [
         "BRK, PHP, BPL, CLC, JSR, PLP, BMI, SEC",
         "RTI, PHA, BVC, CLI, RTS, PLA, BVS, SEI",
-        "BRA, DEY, BCC, TYA, LDA, TAY, BCS, CLV",
+        "BRA, DEY, BCC, TYA, LDY, TAY, BCS, CLV",
         "CPY, INY, BNE, CLD, CPX, INX, BEQ, SED",
         "???, BIT, JMP, JMP, STY, LDY, CPY, CPX",
         "TXA, TXS, TAX, TSX, DEX, PHX, NOP, PLX",

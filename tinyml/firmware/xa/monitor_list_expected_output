@@ -176,7 +176,7 @@
 1137-   9F 03 FF    BBS1  $03,$1139
 *l
 
-113A-   A0 FF       LDA   #$FF
+113A-   A0 FF       LDY   #$FF
 113C-   A1 FF       LDA   ($FF,X)
 113E-   A2 FF       LDX   #$FF
 1140-   A3          ???
