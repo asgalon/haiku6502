@@ -466,8 +466,10 @@ get_rel_a:      stx xreg            ; example: 1000: bbr4 22,1003
 @chkok:         lda calcl
                 ldx opcode
                 cpx #$0f
+                beq @f_branch       ; if not 0f, do branch in arg1, else 3 byte bittest op bbr/bbs with branch in arg2
+                cpx #$8f
                 bne @n_branch       ; if not 0f, do branch in arg1, else 3 byte bittest op bbr/bbs with branch in arg2
-                sta adrh
+@f_branch:      sta adrh
                 jmp three_bytes
 @n_branch:      sta adrl            ; done, rel addr in adrl
                 jmp two_bytes       ; no opb variants for rel branches
